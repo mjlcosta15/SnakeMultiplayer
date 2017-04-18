@@ -3,6 +3,9 @@
 
 using namespace std;
 
+// Isto é um exemplo dos slides, nao deve ser o mais correto
+
+/*
 DWORD WINAPI Thread(LPVOID lpParam) {
 
 	// local variables
@@ -19,7 +22,7 @@ HANDLE Thread(
 	DWORD dwCreationFlags,						// Creation Options
 	LPWORD lpThreadId							// Ptr Thread ID
 
-);
+);*/
 
 
 
