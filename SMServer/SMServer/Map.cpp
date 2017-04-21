@@ -5,11 +5,23 @@ Map::Map(string filePath) {
 	loadFromFile(filePath);
 }
 
+void Map::printMap() {
+
+	int pos = 0;
+
+	while (pos!=MAPSIZE) {
+		cout << this->map[pos];
+		pos++;
+	}
+
+	cout << endl;
+
+}
+
 void Map::loadFromFile(string filePath) {
 
 	char c;
-	char str[2048];
-	ifstream is(str);
+	ifstream is(filePath);
 
 	File.open(filePath); // Open file
 
@@ -18,11 +30,12 @@ void Map::loadFromFile(string filePath) {
 		exit(1);
 	}
 
-	cin.get(str, 2048);
-	
 
-	while (is.get(c))
-		cout << c;
+	while (is.get(c)) {
+		//cout << c;
+		this->map.push_back(c);
+	}
+	
 
 	is.close();
 

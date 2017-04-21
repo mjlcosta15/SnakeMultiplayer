@@ -31,7 +31,7 @@ HANDLE Thread(
 
 int main()
 {
-	cout << "Hello World!" << endl;
 
 	Map map("\lvl1.txt");
+	map.printMap();
 }
