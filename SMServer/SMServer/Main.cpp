@@ -1,6 +1,8 @@
 #include <iostream>
 #include <windows.h>
 
+#include "Map.h"
+
 using namespace std;
 
 // Isto é um exemplo dos slides, nao deve ser o mais correto
@@ -29,5 +31,7 @@ HANDLE Thread(
 
 int main()
 {
-	cout << "Hello World!" << endl;
+
+	Map map("\lvl1.txt");
+	map.printMap();
 }
