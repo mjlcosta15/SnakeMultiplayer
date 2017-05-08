@@ -27,11 +27,11 @@ HANDLE Thread(
 );*/
 
 
-
-
 int main()
 {
-
 	Map map("\lvl1.txt");
 	map.printMap();
 }
+
+
+
