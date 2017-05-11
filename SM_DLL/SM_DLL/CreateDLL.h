@@ -1,20 +1,33 @@
 #ifndef __CREATEDLL_H__
 #define __CREATEDLL_H__
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <windows.h>
+using namespace std;
 
-#define DLL_EXPORT __declspec(dllexport)
+#ifdef SNAKE_MULTIPLAYER_EXPORTS  
+#define SNAKE_MULTIPLAYER_API __declspec(dllexport)   
+#else  
+#define SNAKE_MULTIPLAYER_API __declspec(dllimport)   
+#endif  
 
-#ifdef __cplusplus
+#define SM_BUFFER_SIZE 2048
 
-extern "C"
+
+class SharedMemoryHelper 
 {
-#endif
-	int DLL_EXPORT MsgBox(int x);
-}
+	HANDLE smMap;
+public:
+	// Returns a + b  
+	SNAKE_MULTIPLAYER_API double CreateSharedMemBuffer();
 
-#ifdef __cpulsplus
+	// Returns a * b  
+	SNAKE_MULTIPLAYER_API double ReadFromSharedMemoryBuffer();
 
-#endif
+	// Returns a + (a * b)  
+	SNAKE_MULTIPLAYER_API double WriteToSharedMemoryBuffer();
+};
+
 
 #endif //__CREATEDLL_H__
