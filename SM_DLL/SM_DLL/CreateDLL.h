@@ -14,5 +14,7 @@ extern "C"
 }
 
 #ifdef __cpulsplus
-}
+
 #endif
+
+#endif //__CREATEDLL_H__

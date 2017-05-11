@@ -1,2 +1,2 @@
-﻿  CreateDLL.cpp
-\\mac\home\documents\git\snakemultiplayer\sm_dll\sm_dll\createdll.h(19): fatal error C1070: mismatched #if/#endif pair in file '\\mac\home\documents\git\snakemultiplayer\sm_dll\sm_dll\createdll.h'
+﻿  SM_DLL.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SM_DLL.dll
+  SM_DLL.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SM_DLL.pdb (Full PDB)
