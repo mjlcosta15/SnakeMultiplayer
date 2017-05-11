@@ -1,3 +1,8 @@
-﻿  Map.cpp
-  SMServer.vcxproj -> Y:\Documents\Git\SnakeMultiplayer\SMServer\x64\Debug\SMServer.exe
-  SMServer.vcxproj -> Y:\Documents\Git\SnakeMultiplayer\SMServer\x64\Debug\SMServer.pdb (Full PDB)
+﻿  SharedMemoryHelper.cpp
+  Server.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\server.h(5): error C2143: syntax error: missing ';' before 'public'
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\server.h(5): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  Main.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\main.cpp(32): warning C4129: 'l': unrecognized character escape sequence
+  Map.cpp
+  Generating Code...
