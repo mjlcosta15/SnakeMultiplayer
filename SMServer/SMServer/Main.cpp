@@ -1,7 +1,4 @@
-#include <iostream>
-#include <windows.h>
-
-#include "Map.h"
+#include "Server.h"
 
 using namespace std;
 
@@ -27,10 +24,10 @@ HANDLE Thread(
 );*/
 
 
-int main()
+int _tmain()
 {
-	Map map("\lvl1.txt");
-	map.printMap();
+	Server server;
+	server.startServer();
 }
 
 

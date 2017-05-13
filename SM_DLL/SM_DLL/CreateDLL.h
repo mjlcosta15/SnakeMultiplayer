@@ -3,30 +3,48 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#ifdef SNAKE_MULTIPLAYER_EXPORTS
+#define SNAKE_MULTIPLAYER_API __declspec(dllexport) 
+#else
+#define SNAKE_MULTIPLAYER_API __declspec(dllimport) 
+#endif
+
 #include <windows.h>
+#include <vector>
+#include <tchar.h>
+#include <sstream>
+
 using namespace std;
 
-#ifdef SNAKE_MULTIPLAYER_EXPORTS  
-#define SNAKE_MULTIPLAYER_API __declspec(dllexport)   
-#else  
-#define SNAKE_MULTIPLAYER_API __declspec(dllimport)   
-#endif  
+#ifdef UNICODE 
+#define tstring wstring
+#define tstringstream wstringstream
+#else
+#define tstring string
+#define tstringstream stringstream
+#endif
 
 #define SM_BUFFER_SIZE 2048
 
-
-class SharedMemoryHelper 
-{
-	HANDLE smMap;
+class Msg {
+	TCHAR szBuffer[SM_BUFFER_SIZE];
 public:
-	// Returns a + b  
-	SNAKE_MULTIPLAYER_API double CreateSharedMemBuffer();
+	SNAKE_MULTIPLAYER_API tstring getBuffer() const;
+};
 
-	// Returns a * b  
-	SNAKE_MULTIPLAYER_API double ReadFromSharedMemoryBuffer();
+class CreateDLL
+{
+	
+	Msg * szBuffer;
+	HANDLE hMapFile;
+public:
 
-	// Returns a + (a * b)  
-	SNAKE_MULTIPLAYER_API double WriteToSharedMemoryBuffer();
+	CreateDLL();
+	~CreateDLL();
+
+	SNAKE_MULTIPLAYER_API bool ReadFromSharedMemoryBuffer();
+
+	SNAKE_MULTIPLAYER_API bool WriteToSharedMemoryBuffer();
 };
 
 

@@ -1,2 +1,6 @@
-﻿  SMServer.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SMServer.exe
+﻿  SharedMemoryHelper.cpp
+  Server.cpp
+  Main.cpp
+  Generating Code...
+  SMServer.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SMServer.exe
   SMServer.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SMServer.pdb (Full PDB)

@@ -1,16 +1,23 @@
 #include "CreateDLL.h"
 
-SNAKE_MULTIPLAYER_API double SharedMemoryHelper::CreateSharedMemBuffer()
+static const TCHAR szName[] = TEXT("SnakeMultiplayerSharedMem");
+
+CreateDLL::CreateDLL()
 {
-	return SNAKE_MULTIPLAYER_API double();
 }
 
-SNAKE_MULTIPLAYER_API double SharedMemoryHelper::ReadFromSharedMemoryBuffer()
+CreateDLL::~CreateDLL()
 {
-	return SNAKE_MULTIPLAYER_API double();
 }
 
-SNAKE_MULTIPLAYER_API double SharedMemoryHelper::WriteToSharedMemoryBuffer()
+
+SNAKE_MULTIPLAYER_API bool CreateDLL::ReadFromSharedMemoryBuffer()
 {
-	return SNAKE_MULTIPLAYER_API double();
+	return false;
 }
+
+SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer()
+{
+	return false;
+}
+

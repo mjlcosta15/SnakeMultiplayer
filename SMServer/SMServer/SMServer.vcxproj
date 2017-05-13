@@ -152,6 +152,7 @@
     <ClCompile Include="SharedMemoryHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MainHeader.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="SharedMemoryHelper.h" />

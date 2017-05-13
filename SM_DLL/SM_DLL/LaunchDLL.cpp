@@ -7,7 +7,7 @@ typedef int(*MsgFunction)(int);
 
 HINSTANCE hinstDLL;
 
-int main() {
+int _tmain() {
 
 	LPCWSTR file = L"ficheiro.dll";
 
