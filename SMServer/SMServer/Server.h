@@ -15,7 +15,9 @@ public:
 	Server();
 	~Server();
 	void startServer();
+	void serverMainLoop();
 	void finishServer();
+	void treatCommands(tstring command);
 	bool getSharedMemFlag() const;
 };
 

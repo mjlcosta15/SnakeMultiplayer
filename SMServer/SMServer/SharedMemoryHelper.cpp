@@ -49,6 +49,7 @@ bool SharedMemoryHelper::initSharedMemory()
 
 bool SharedMemoryHelper::finishSharedMemory()
 {
+	_tprintf(TEXT("Unmaping Shared memory\n"));
 	UnmapViewOfFile(hMapFile);
 	return UnmapViewOfFile(hMapFile);
 }
