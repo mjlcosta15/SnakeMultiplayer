@@ -4,9 +4,11 @@
 
 #include "SharedMemoryHelper.h"
 #include "Map.h"
+#include "Game.h"
 
 class Server
 {
+	Game game;
 	SharedMemoryHelper smHelper;
 	HANDLE hThreadSharedMemory;
 	bool threadSharedMemFlag;
@@ -17,6 +19,9 @@ public:
 	void startServer();
 	void serverMainLoop();
 	void finishServer();
+	
+	void startGame();
+
 	void treatCommands(tstring command);
 	bool getSharedMemFlag() const;
 };

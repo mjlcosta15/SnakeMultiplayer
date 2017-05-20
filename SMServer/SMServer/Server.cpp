@@ -58,6 +58,11 @@ void Server::finishServer()
 	CloseHandle(hThreadSharedMemory);
 }
 
+void Server::startGame()
+{
+	game = new Game();
+}
+
 void Server::treatCommands(tstring command)
 {
 }
