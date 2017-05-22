@@ -13,30 +13,57 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\ServerConnection">
+      <UniqueIdentifier>{e4e08732-8667-4e1f-8e54-0dec784bd96f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Game">
+      <UniqueIdentifier>{6fab6e1c-f89a-46a0-bfaf-f2ffcd6622cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game">
+      <UniqueIdentifier>{0334b540-54d1-41e8-a127-70cbb84d723e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ServerConnection">
+      <UniqueIdentifier>{371f123d-3c51-40a1-b876-6b169d8cb4ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
     <ClCompile Include="Map.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="Server.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\ServerConnection</Filter>
     </ClCompile>
     <ClCompile Include="SharedMemoryHelper.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\ServerConnection</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Map.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Server.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Map.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="SharedMemoryHelper.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\ServerConnection</Filter>
+    </ClInclude>
+    <ClInclude Include="MainHeader.h">
+      <Filter>Header Files\ServerConnection</Filter>
+    </ClInclude>
+    <ClInclude Include="Server.h">
+      <Filter>Header Files\ServerConnection</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

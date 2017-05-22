@@ -146,13 +146,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="SharedMemoryHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="MainHeader.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="SharedMemoryHelper.h" />
   </ItemGroup>

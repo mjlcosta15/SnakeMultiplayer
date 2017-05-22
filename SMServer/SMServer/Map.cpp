@@ -5,6 +5,10 @@ Map::Map(string filePath) {
 	loadFromFile(filePath);
 }
 
+Map::~Map()
+{
+}
+
 void Map::printMap() {
 
 	int pos = 0;
