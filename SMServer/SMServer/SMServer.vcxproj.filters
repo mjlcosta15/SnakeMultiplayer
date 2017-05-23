@@ -45,6 +45,9 @@
     <ClCompile Include="SharedMemoryHelper.cpp">
       <Filter>Source Files\ServerConnection</Filter>
     </ClCompile>
+    <ClCompile Include="ServerPipeControl.cpp">
+      <Filter>Source Files\ServerConnection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -63,6 +66,9 @@
       <Filter>Header Files\ServerConnection</Filter>
     </ClInclude>
     <ClInclude Include="Server.h">
+      <Filter>Header Files\ServerConnection</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerPipeControl.h">
       <Filter>Header Files\ServerConnection</Filter>
     </ClInclude>
   </ItemGroup>
