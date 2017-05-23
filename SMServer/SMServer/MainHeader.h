@@ -35,21 +35,7 @@ using namespace std;
 #define tstringstream stringstream
 #endif
 
-#define BUFFERSIZE 2048
-#define MAX_TAM_MAP 80
 
-struct Map
-{
-	int maxX;
-	int maxY;
-	char map[MAX_TAM_MAP][MAX_TAM_MAP];
-};
 
-struct Message
-{
-	int pid;
-	char msg[BUFFERSIZE];
-	Map map;
-};
 
 #endif //MAIN_HEADER_H
