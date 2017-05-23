@@ -9,15 +9,15 @@
 using namespace std;
 
 class Map {
-
-public:
-	Map(string filePath);
-	void printMap();
-	
-private:
 	ifstream File;
 	vector<char> map;
-
+public:
+	
+	Map(string filePath);
+	~Map();
+	void printMap();
 	void loadFromFile(string filePath);
+
+
 
 };

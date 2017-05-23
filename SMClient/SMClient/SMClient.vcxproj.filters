@@ -13,5 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\ClientConnection">
+      <UniqueIdentifier>{90eb3713-a313-443b-b3d7-f1a3cb2f6498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ClientConnection">
+      <UniqueIdentifier>{1b4648b2-5263-4764-a565-4980beb6b046}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\SM_DLL\SM_DLL\LaunchDLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPipeControl.cpp">
+      <Filter>Source Files\ClientConnection</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ClientPipeControl.h">
+      <Filter>Header Files\ClientConnection</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
