@@ -4,6 +4,10 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#define MAX_TAM_MAP 80
+#define MAX_PLAYERS 10
+#define BUFFER_SIZE 2048
+
 #include <Windows.h>
 #include <vector>
 #include <tchar.h>
@@ -35,7 +39,20 @@ using namespace std;
 #define tstringstream stringstream
 #endif
 
+struct Map
+{
+	int actualX;
+	int actualY;
+	TCHAR map[MAX_TAM_MAP][MAX_TAM_MAP];
+};
 
-
+struct Message
+{
+	int pid;
+	int numOfPlayers;
+	char msg[BUFFER_SIZE];
+	int scores[MAX_PLAYERS];
+	Map map;
+};
 
 #endif //MAIN_HEADER_H

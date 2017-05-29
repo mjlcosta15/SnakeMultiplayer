@@ -1,11 +1,19 @@
 #pragma once
+#include "MainHeader.h"
 class Player
 {
-	unsigned int playerID;
+	unsigned int pid;
 	int points;
-
+	string name;
+	
 public:
-	Player();
+	
+	Player(int pid, string name);
 	~Player();
+
+	int getPoints() const;
+	string getName() const;
+	int getPID() const;
+
 };
 
