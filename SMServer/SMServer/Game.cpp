@@ -4,10 +4,77 @@
 
 Game::Game()
 {
+	gamePhase = INITIAL_PHASE;
 }
 
 
 Game::~Game()
+{
+}
+
+void Game::addPlayer(Player newPlayer)
+{
+	players.push_back(newPlayer);
+}
+
+void Game::addPlayer(int pid, string name)
+{
+	players.push_back(Player(pid, name));
+}
+
+bool Game::remvovePlayer(Player player)
+{
+	for(auto it = players.begin();	it != players.end(); it++)
+		if (it->getPID() == player.getPID()) {
+			it = players.erase(it);
+			return true;
+		}
+	return false;
+}
+
+int Game::getNumSnakesAI() const
+{
+	return numSnakesAI;
+}
+
+void Game::setNumSnakesAI(int num)
+{
+	numSnakesAI = num;
+}
+
+int Game::getGamePhase() const
+{
+	return gamePhase;
+}
+
+void Game::setInitalPhase()
+{
+	gamePhase = INITIAL_PHASE;
+}
+
+void Game::setInProgressPhase()
+{
+	gamePhase = IN_PROGRESS_PHASE;
+}
+
+void Game::setFinishPhase()
+{
+	gamePhase = FINISH_PHASE;
+}
+
+void Game::initMap()
+{
+	for (int i = 0; i < mapHeight; i++) {
+		vector<Block> temp;
+		
+		for (int j = 0; j < mapWidth; j++) {
+			temp.push_back(Block(i,j));
+		}
+		map.push_back(temp);
+	}
+}
+
+void Game::updateMap()
 {
 }
 
