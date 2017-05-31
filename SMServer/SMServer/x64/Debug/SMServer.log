@@ -1,3 +1,26 @@
-﻿  Server.cpp
-  SMServer.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SMServer.exe
-  SMServer.vcxproj -> C:\Repositories\SnakeMultiplayer\SM_DLL\x64\Debug\SMServer.pdb (Full PDB)
+﻿  SnakeBlock.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\snakeblock.cpp(5): error C2027: use of undefined type 'Player'
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\snakeblock.h(4): note: see declaration of 'Player'
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\snakeblock.h(4): note: see declaration of 'Player'
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\snakeblock.cpp(5): error C2439: 'SnakeBlock::player': member could not be initialized
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\snakeblock.h(9): note: see declaration of 'SnakeBlock::player'
+  SharedMemoryHelper.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\sharedmemoryhelper.cpp(54): warning C4800: 'BOOL': forcing value to bool 'true' or 'false' (performance warning)
+  Server.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\map.h(11): error C2011: 'Map': 'struct' type redefinition
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\mainheader.h(43): note: see declaration of 'Map'
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\server.cpp(63): error C2679: binary '=': no operator found which takes a right-hand operand of type 'Game *' (or there is no acceptable conversion)
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\game.h(16): note: could be 'Game &Game::operator =(const Game &)'
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\server.cpp(63): note: while trying to match the argument list '(Game, Game *)'
+  Player.cpp
+  ServerPipeControl.cpp
+  Main.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\map.h(11): error C2011: 'Map': 'struct' type redefinition
+  \\mac\home\documents\git\snakemultiplayer\smserver\smserver\mainheader.h(43): note: see declaration of 'Map'
+  Map.cpp
+  Game.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\game.cpp(17): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\game.cpp(18): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Block.cpp
+\\mac\home\documents\git\snakemultiplayer\smserver\smserver\block.cpp(35): error C2059: syntax error: ')'
+  Generating Code...
