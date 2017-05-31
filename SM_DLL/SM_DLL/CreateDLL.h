@@ -19,7 +19,7 @@ using namespace std;
 #ifdef UNICODE 
 #define tstring wstring
 #define tstringstream wstringstream
-#else
+#else 
 #define tstring string
 #define tstringstream stringstream
 #endif
