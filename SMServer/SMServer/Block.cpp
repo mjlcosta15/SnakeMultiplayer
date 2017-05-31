@@ -32,5 +32,5 @@ char Block::getCharId()
 
 void Block::setBlockPosition(int x, int y)
 {
-	if(x < 0 || x > )
+	if (x < 0 || x > 80);
 }
