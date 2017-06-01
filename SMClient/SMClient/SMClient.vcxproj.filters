@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\SM_DLL\SM_DLL\LaunchDLL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ClientPipeControl.cpp">
       <Filter>Source Files\ClientConnection</Filter>
     </ClCompile>
