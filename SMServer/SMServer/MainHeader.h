@@ -39,20 +39,20 @@ using namespace std;
 #define tstringstream stringstream
 #endif
 
-struct Map
+typedef struct
 {
 	int actualX;
 	int actualY;
 	TCHAR map[MAX_TAM_MAP][MAX_TAM_MAP];
-};
+}Map;
 
-struct Message
+typedef struct
 {
 	int pid;
 	int numOfPlayers;
 	char msg[BUFFER_SIZE];
 	int scores[MAX_PLAYERS];
 	Map map;
-};
+}Message;
 
 #endif //MAIN_HEADER_H

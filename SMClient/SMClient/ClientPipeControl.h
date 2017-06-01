@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+
 class ClientPipeControl
 {
 public:
