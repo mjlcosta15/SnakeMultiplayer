@@ -18,7 +18,7 @@ void Player::initSnake(int posX, int posY)
 	}
 }
 
-void Player::increaseSnake(int numBlocks)
+void Player::increaseSnake(unsigned int numBlocks)
 {
 	int x, y;
 	for (int i = 0; i < numBlocks; i++) {
@@ -28,7 +28,7 @@ void Player::increaseSnake(int numBlocks)
 	}
 }
 
-void Player::decreaseSnake(int numBlocks)
+void Player::decreaseSnake(unsigned int numBlocks)
 {
 	for (int i = 0; i < numBlocks; i++)
 		snake.pop_back();
@@ -37,8 +37,7 @@ void Player::decreaseSnake(int numBlocks)
 void Player::moveSnake()
 {
 	int coord, temp;
-	switch (direction)
-	{
+	switch (direction) {
 	case GOING_UP:
 		coord = snake.front().getPosY() - 1;
 		for (auto it = snake.begin(); it != snake.end(); it++) {
@@ -122,15 +121,43 @@ void Player::effectAfterMovement(Block block)
 
 int Player::getPoints() const
 {
-	return 0;
+	return points;
+}
+
+void Player::addPoints(unsigned int points)
+{
+	this->points += points;
+}
+
+void Player::removePoints(unsigned int points)
+{
+	this->points -= points;
 }
 
 string Player::getName() const
 {
-	return string();
+	return name;
+}
+
+void Player::setName(string name)
+{
+	this->name = name;
 }
 
 int Player::getPID() const
 {
-	return 0;
+	return pid;
+}
+
+int Player::getDirection() const
+{
+	return direction;
+}
+
+void Player::setDirection(unsigned int direction)
+{
+	if (direction <= 0 && direction > GOING_RIGHT)
+		return;
+
+	this->direction = direction;
 }

@@ -22,21 +22,28 @@ class Player
 
 public:
 
-
-	
 	Player(int pid, string name, Game * g);
 	~Player();
 	 
 	void initSnake(int posX, int posY);
-
-	void increaseSnake(int numBlocks);
-	void decreaseSnake(int numBlocks);
+	void increaseSnake(unsigned int numBlocks);
+	void decreaseSnake(unsigned int numBlocks);
 	void moveSnake();
+	
 	void effectAfterMovement(Block block);
 
 	int getPoints() const;
+	void addPoints(unsigned int points);
+	void removePoints(unsigned int points);
+
+
 	string getName() const;
+	void setName(string name);
+	
 	int getPID() const;
+
+	int getDirection() const;
+	void setDirection(unsigned int direction);
 
 };
 
