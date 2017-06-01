@@ -19,12 +19,12 @@ void Game::addPlayer(Player newPlayer)
 
 void Game::addPlayer(int pid, string name)
 {
-	players.push_back(Player(pid, name));
+	players.push_back(Player(pid, name, this));
 }
 
 bool Game::remvovePlayer(Player player)
 {
-	for(auto it = players.begin();	it != players.end(); it++)
+	for (auto it = players.begin(); it != players.end(); it++)
 		if (it->getPID() == player.getPID()) {
 			it = players.erase(it);
 			return true;
@@ -40,6 +40,19 @@ int Game::getNumSnakesAI() const
 void Game::setNumSnakesAI(int num)
 {
 	numSnakesAI = num;
+}
+
+int Game::getSnakeSize() const
+{
+	return initialSnakeSize;
+}
+
+void Game::setSnakeSize(int size)
+{
+	if (size >= 1)
+		initialSnakeSize = size;
+	else
+		initialSnakeSize = 1;
 }
 
 int Game::getGamePhase() const
@@ -64,14 +77,16 @@ void Game::setFinishPhase()
 
 void Game::initMap()
 {
+	//Init map with empty blocks
 	for (int i = 0; i < mapHeight; i++) {
 		vector<Block> temp;
-		
 		for (int j = 0; j < mapWidth; j++) {
-			temp.push_back(Block(i,j));
+			temp.push_back(Block(i, j, EMPTY_BLOCK));
 		}
 		map.push_back(temp);
 	}
+
+	//fill with some objects
 }
 
 void Game::updateMap()

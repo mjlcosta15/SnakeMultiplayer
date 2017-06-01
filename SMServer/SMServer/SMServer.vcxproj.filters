@@ -57,9 +57,6 @@
     <ClCompile Include="Block.cpp">
       <Filter>Source Files\Game\Blocks</Filter>
     </ClCompile>
-    <ClCompile Include="SnakeBlock.cpp">
-      <Filter>Source Files\Game\Blocks</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -84,9 +81,6 @@
       <Filter>Header Files\ServerConnection</Filter>
     </ClInclude>
     <ClInclude Include="Block.h">
-      <Filter>Header Files\Game\Blocks</Filter>
-    </ClInclude>
-    <ClInclude Include="SnakeBlock.h">
       <Filter>Header Files\Game\Blocks</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,5 @@
 #pragma once
 #include "Player.h"
-#include "Block.h"
 class Game
 {
 	vector<Player> players;
@@ -26,6 +25,9 @@ public:
 	
 	int getNumSnakesAI() const;
 	void setNumSnakesAI(int num);
+
+	int getSnakeSize() const;
+	void setSnakeSize(int size);
 
 	int getGamePhase() const;
 	void setInitalPhase();
