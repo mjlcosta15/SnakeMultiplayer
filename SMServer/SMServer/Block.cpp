@@ -43,6 +43,11 @@ int Block::getBlockType() const
 	return blockType;
 }
 
+void Block::setBlockType(int type)
+{
+	blockType = type;
+}
+
 char Block::getCharId()
 {
 	switch (blockType)
@@ -79,6 +84,15 @@ char Block::getCharId()
 		break;
 	case SNAKE_BLOCK:
 		return 's';
+		break;
+	case OILED_SNAKE_BLOCK:
+		return '>';
+		break;
+	case GLUED_SNAKE_BLOCK:
+		return '<';
+		break;
+	case VODKA_SNAKE_BLOCK:
+		return '+';
 		break;
 	default:
 		return '?';

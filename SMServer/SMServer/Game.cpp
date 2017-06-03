@@ -12,6 +12,11 @@ Game::~Game()
 {
 }
 
+vector<Player> Game::getPlayers()
+{
+	return players;
+}
+
 void Game::addPlayer(Player newPlayer)
 {
 	players.push_back(newPlayer);
@@ -22,7 +27,7 @@ void Game::addPlayer(int pid, string name)
 	players.push_back(Player(pid, name, this));
 }
 
-bool Game::remvovePlayer(Player player)
+bool Game::removePlayer(Player player)
 {
 	for (auto it = players.begin(); it != players.end(); it++)
 		if (it->getPID() == player.getPID()) {
@@ -77,7 +82,7 @@ void Game::setFinishPhase()
 
 void Game::initMap()
 {
-	//Init map with empty blocks
+	//init map with empty blocks
 	for (int i = 0; i < mapHeight; i++) {
 		vector<Block> temp;
 		for (int j = 0; j < mapWidth; j++) {
@@ -87,17 +92,78 @@ void Game::initMap()
 	}
 
 	//fill with some objects
+	int objectType, x, y;
+	for (int i = 0; i < numberOfObjects; i++) {
+		objectType = rand() % O_GLUE_BLOCK + 1;
+		do {
+			x = rand() % mapWidth;
+			y = rand() % mapHeight;
+		} while (map.at(x).at(y).getBlockType() != EMPTY_BLOCK);
+		map.at(x).at(y).setBlockType(objectType);
+	}
+
+	//make the snakes
+	for (auto it = players.begin(); it != players.end(); it++) {
+		x = rand() % mapWidth + 2;
+		y = rand() % mapHeight + 2;
+		it->initSnake(x, y);
+	}
+
 }
 
 void Game::updateMap()
 {
+	Sleep(250);
+	for (auto it = players.begin(); it != players.end(); it++) {
+		if (it->isOiled()) {
+			it->moveSnake();
+			it->effectAfterMovement();
+		}
+	}
+	Sleep(250);
+	for (auto it = players.begin(); it != players.end(); it++) {
+		if (!it->isOiled() && !it->isGlued()) {
+			it->moveSnake();
+			it->effectAfterMovement();
+		}
+	}
+	Sleep(250);
+	for (auto it = players.begin(); it != players.end(); it++) {
+		if (it->isGlued()) {
+			it->moveSnake();
+			it->effectAfterMovement();
+		}
+	}
+}
+
+void Game::changeBlock(Block block)
+{
+	map.at(block.getPosX()).at(block.getPosY()).setBlockType(EMPTY_BLOCK);
+	addSpecialBlock();
+}
+
+void Game::addSpecialBlock()
+{
+	int objectType = rand() % O_GLUE_BLOCK + 1;
+	int x, y;
+	do {
+		x = rand() % mapWidth;
+		y = rand() % mapHeight;
+	} while (map.at(x).at(y).getBlockType() != EMPTY_BLOCK);
+
+	map.at(x).at(y).setBlockType(objectType);
+}
+
+Block Game::getBlock(int x, int y)
+{
+	return map.at(x).at(y);
 }
 
 Message Game::exportInfoToMessage()
 {
 	Message msg;
-	msg.map.actualX = map.size();
-	msg.map.actualY = map.at(0).size();
+	msg.map.actualX = mapWidth;
+	msg.map.actualY = mapHeight;
 
 	//fill the map
 	for (int i = 0; i < MAX_TAM_MAP; i++) {

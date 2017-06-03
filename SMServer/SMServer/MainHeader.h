@@ -12,6 +12,8 @@
 #include <vector>
 #include <tchar.h>
 #include <sstream>
+#include <stdlib.h>
+#include <time.h> 
 #include <process.h>
 #include <io.h>
 

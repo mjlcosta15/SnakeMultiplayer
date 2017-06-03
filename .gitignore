@@ -18,3 +18,6 @@ SM_DLL/.vs/SM_DLL/v14/.suo
 *.vcxproj
 
 *.filters
+*.tlog
+*.idb
+*.lastbuildstate
