@@ -10,6 +10,7 @@
 class Game
 {
 	vector<Player> players;
+	vector<Player> snakesAI;
 	int initialSnakeSize;
 	int numSnakesAI;
 	int mapWidth;
@@ -31,6 +32,15 @@ public:
 
 	bool removePlayer(Player player);
 	
+	vector<Player> getSnakeAIs();
+
+	void addSnakeAI(Player newPlayer);
+	void addSnakeAI();
+	void addSnakeAIInGame();
+
+	bool removeSnakeAI(Player player);
+
+
 	int getNumSnakesAI() const;
 	void setNumSnakesAI(int num);
 
@@ -41,6 +51,12 @@ public:
 	void setInitalPhase();
 	void setInProgressPhase();
 	void setFinishPhase();
+
+	int getMapWidth() const;
+	void setMapWidth(int width);
+
+	int getMapHeight() const;
+	void setMapHeight(int height);
 
 	void initMap();
 	void updateMap();

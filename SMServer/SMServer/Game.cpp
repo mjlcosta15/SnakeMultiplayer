@@ -19,12 +19,14 @@ vector<Player> Game::getPlayers()
 
 void Game::addPlayer(Player newPlayer)
 {
-	players.push_back(newPlayer);
+	if (gamePhase == INITIAL_PHASE)
+		players.push_back(newPlayer);
 }
 
 void Game::addPlayer(int pid, string name)
 {
-	players.push_back(Player(pid, name, this));
+	if (gamePhase == INITIAL_PHASE)
+		players.push_back(Player(pid, name, this));
 }
 
 bool Game::removePlayer(Player player)
@@ -34,6 +36,31 @@ bool Game::removePlayer(Player player)
 			it = players.erase(it);
 			return true;
 		}
+	return false;
+}
+
+vector<Player> Game::getSnakeAIs()
+{
+	return vector<Player>();
+}
+
+void Game::addSnakeAI(Player newPlayer)
+{
+	snakesAI.push_back(newPlayer);
+}
+
+void Game::addSnakeAI()
+{
+	snakesAI.push_back(Player(this));
+}
+
+void Game::addSnakeAIInGame()
+{
+	snakesAI.push_back(Player(this));
+}
+
+bool Game::removeSnakeAI(Player player)
+{
 	return false;
 }
 
@@ -78,6 +105,32 @@ void Game::setInProgressPhase()
 void Game::setFinishPhase()
 {
 	gamePhase = FINISH_PHASE;
+}
+
+int Game::getMapWidth() const
+{
+	return mapWidth;
+}
+
+void Game::setMapWidth(int width)
+{
+	if (width < 0 || width > MAX_TAM_MAP)
+		return;
+
+	mapWidth = width;
+}
+
+int Game::getMapHeight() const
+{
+	return mapHeight;
+}
+
+void Game::setMapHeight(int height)
+{
+	if (height < 0 || height > MAX_TAM_MAP)
+		return;
+
+	mapHeight = height;
 }
 
 void Game::initMap()
