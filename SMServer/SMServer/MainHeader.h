@@ -16,6 +16,7 @@
 #include <time.h> 
 #include <process.h>
 #include <io.h>
+#include <iostream>
 
 using namespace std;
 

@@ -25,11 +25,16 @@ class Player
 	bool hasGlue;
 	bool hasOil;
 	bool drunk;
-
+	bool lost;
+	//AI Snakes
+	bool isAutomated;
 
 public:
-
+	//Constructor for Player
 	Player(int pid, string name, Game * g);
+	//Constructor for AI snake
+	Player(Game * g);
+	
 	~Player();
 	
 	//Create the snake in the position [x,y]
@@ -46,6 +51,9 @@ public:
 
 	//Makes the consequence of the snake's movement
 	void effectAfterMovement();
+
+	//Check if the snake was hit by another snake
+	bool hitByOtherSnake(int x, int y);
 
 	int getPoints() const;
 	//Add N points to the score
@@ -71,6 +79,10 @@ public:
 	bool isDrunk() const;
 	void setDrunk(bool drunk);
 
+	bool isLost()const;
+	void setLost(bool lost);
+
+	void detectObstacle();
 };
 
 #endif //PLAYER_H

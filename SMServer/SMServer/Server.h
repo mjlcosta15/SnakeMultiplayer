@@ -3,7 +3,6 @@
 #define SERVER_H
 
 #include "SharedMemoryHelper.h"
-#include "Map.h"
 #include "Game.h"
 
 class Server
