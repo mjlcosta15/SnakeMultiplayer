@@ -25,21 +25,12 @@
     <Filter Include="Source Files\ServerConnection">
       <UniqueIdentifier>{371f123d-3c51-40a1-b876-6b169d8cb4ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Game\Blocks">
-      <UniqueIdentifier>{9c5f3f2c-a413-40fa-9d56-dd452b8400a2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Game\Blocks">
-      <UniqueIdentifier>{0ec4cfda-ee15-4d17-8365-c780daab8268}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
@@ -55,17 +46,11 @@
       <Filter>Source Files\ServerConnection</Filter>
     </ClCompile>
     <ClCompile Include="Block.cpp">
-      <Filter>Source Files\Game\Blocks</Filter>
-    </ClCompile>
-    <ClCompile Include="SnakeBlock.cpp">
-      <Filter>Source Files\Game\Blocks</Filter>
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
-      <Filter>Header Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Map.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
@@ -84,10 +69,7 @@
       <Filter>Header Files\ServerConnection</Filter>
     </ClInclude>
     <ClInclude Include="Block.h">
-      <Filter>Header Files\Game\Blocks</Filter>
-    </ClInclude>
-    <ClInclude Include="SnakeBlock.h">
-      <Filter>Header Files\Game\Blocks</Filter>
+      <Filter>Header Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

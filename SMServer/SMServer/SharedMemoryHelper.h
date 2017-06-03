@@ -3,18 +3,10 @@
 
 #include "MainHeader.h"
 
-#define SM_BUFFER_SIZE 2048
-
-class Msg {
-	TCHAR szBuffer[SM_BUFFER_SIZE];
-public:
-	 tstring getBuffer() const;
-};
-
 class SharedMemoryHelper
 {
 	HANDLE hMapFile;
-	Msg * szBuffer;
+	Message message;
 public:
 	SharedMemoryHelper();
 	~SharedMemoryHelper();
@@ -22,7 +14,7 @@ public:
 	bool initSharedMemory();
 
 	bool finishSharedMemory();
-	Msg* getBuffer();
+	Message getBuffer();
 };
 
 #endif //

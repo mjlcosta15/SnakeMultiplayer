@@ -3,7 +3,6 @@
 #define SERVER_H
 
 #include "SharedMemoryHelper.h"
-#include "Map.h"
 #include "Game.h"
 
 class Server
@@ -22,7 +21,14 @@ public:
 	
 	void startGame();
 
-	void treatCommands(tstring command);
+
+	//Function that validates the command inputed
+	bool commandParser(vector<string> command);
+	//Function that process the requested command
+	void treatCommand(vector<string> command);
+	//Function to convert all string characters into upper case version
+	string commandToUpperCase(string command);
+
 	bool getSharedMemFlag() const;
 };
 
