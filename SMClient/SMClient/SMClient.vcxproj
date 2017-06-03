@@ -146,7 +146,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\SM_DLL\SM_DLL\LaunchDLL.cpp" />
     <ClCompile Include="ClientPipeControl.cpp" />
   </ItemGroup>
   <ItemGroup>

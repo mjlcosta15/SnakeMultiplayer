@@ -15,6 +15,7 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 
 Server::Server()
 {
+	game = Game();
 }
 
 
@@ -60,11 +61,12 @@ void Server::finishServer()
 
 void Server::startGame()
 {
-	game = new Game();
+	game.initMap();
 }
 
 void Server::treatCommands(tstring command)
 {
+
 }
 
 
