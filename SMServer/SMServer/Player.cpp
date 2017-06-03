@@ -8,7 +8,19 @@ Player::Player(int pid, string playerName, Game * g) :
 	game(g),
 	hasGlue(false),
 	hasOil(false),
-	drunk(false) {}
+	drunk(false),
+	lost(false),
+	isAutomated(false) {}
+
+Player::Player(Game * g) :
+	name("CPU Snake"),
+	points(0),
+	game(g),
+	hasGlue(false),
+	hasOil(false),
+	drunk(false),
+	lost(false),
+	isAutomated(true) {}
 
 Player::~Player()
 {
@@ -36,15 +48,28 @@ void Player::decreaseSnake(unsigned int numBlocks)
 {
 	for (unsigned int i = 0; i < numBlocks; i++)
 		snake.pop_back();
+	//se não houver mais blocos de cobra
+	if (snake.empty())
+		setLost(true);
 }
 
- 
+
 void Player::moveSnake()
 {
+	if (lost)
+		return;
+
+	if (isAutomated)
+		detectObstacle();
+
 	int coord, y, x;
 	switch (direction) {
 	case GOING_UP:
-		coord = snake.front().getPosY() - 1;
+		if (drunk)
+			coord = snake.front().getPosY() + 1;
+		else
+			coord = snake.front().getPosY() - 1;
+
 		for (auto it = snake.begin(); it != snake.end(); it++) {
 			y = it->getPosY();
 			x = it->getPosX();
@@ -53,7 +78,11 @@ void Player::moveSnake()
 		}
 		break;
 	case GOING_DOWN:
-		coord = snake.front().getPosY() + 1;
+		if (drunk)
+			coord = snake.front().getPosY() - 1;
+		else
+			coord = snake.front().getPosY() + 1;
+
 		for (auto it = snake.begin(); it != snake.end(); it++) {
 			y = it->getPosY();
 			x = it->getPosX();
@@ -62,7 +91,11 @@ void Player::moveSnake()
 		}
 		break;
 	case GOING_LEFT:
-		coord = snake.front().getPosX() - 1;
+		if (drunk)
+			coord = snake.front().getPosX() + 1;
+		else
+			coord = snake.front().getPosX() - 1;
+
 		for (auto it = snake.begin(); it != snake.end(); it++) {
 			x = it->getPosX();
 			y = it->getPosY();
@@ -71,7 +104,11 @@ void Player::moveSnake()
 		}
 		break;
 	case GOING_RIGHT:
-		coord = snake.front().getPosX() + 1;
+		if (drunk)
+			coord = snake.front().getPosX() - 1;
+		else
+			coord = snake.front().getPosX() + 1;
+
 		for (auto it = snake.begin(); it != snake.end(); it++) {
 			x = it->getPosX();
 			y = it->getPosY();
@@ -95,7 +132,19 @@ void Player::setSnakeBlocksType(int type)
 
 void Player::effectAfterMovement()
 {
+	if (lost)
+		return;
+
+	//Bater nas paredes
+	if (snake.begin()->getPosX() < 0 || snake.begin()->getPosX() > game->getMapWidth() ||
+		snake.begin()->getPosY() < 0 || snake.begin()->getPosY() > game->getMapHeight())
+	{
+		setLost(true);
+		return;
+	}
+
 	Block * block = &game->getBlock(snake.begin()->getPosX(), snake.begin()->getPosY());
+
 	switch (block->getBlockType()) {
 	case EMPTY_BLOCK:
 		//Não fazer nada
@@ -114,54 +163,92 @@ void Player::effectAfterMovement()
 		break;
 	case VODKA_BLOCK:
 		//inverter as teclas
-		setDrunk(true);
-		game->changeBlock(*block);
+		if (!isAutomated) {
+			setDrunk(true);
+			game->changeBlock(*block);
+		}
 		break;
 	case GRANADE_BLOCK:
 		//perde
-		game->changeBlock(*block);
+		if (!isAutomated) {
+			setLost(true);
+			game->changeBlock(*block);
+		}
 		break;
 	case OIL_BLOCK:
 		//aumenta a velocidade
-		setOiled(true);
-		game->changeBlock(*block);
+		if (!isAutomated) {
+			setOiled(true);
+			game->changeBlock(*block);
+		}
 		break;
 	case GLUE_BLOCK:
 		//diminiu a velocidade
-		setGlued(true);
-		game->changeBlock(*block);
+		if (!isAutomated) {
+			setGlued(true);
+			game->changeBlock(*block);
+		}
 		break;
 	case O_VODKA_BLOCK:
 		//inverte as teclas aos outros
-		for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-			if (it->getPID() != pid)
-				it->setDrunk(true);
+		if (!isAutomated) {
+			for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
+				if (it->getPID() != pid)
+					it->setDrunk(true);
+			}
+			game->changeBlock(*block);
 		}
-		game->changeBlock(*block);
 		break;
 	case O_OIL_BLOCK:
 		//aumenta a velocidade aos outros
-		for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-			if (it->getPID() != pid)
-				it->setOiled(true);
+		if (!isAutomated) {
+			for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
+				if (it->getPID() != pid)
+					it->setOiled(true);
+			}
+			game->changeBlock(*block);
 		}
-		game->changeBlock(*block);
 		break;
 	case O_GLUE_BLOCK:
 		//diminiu a velocidade aos outros
-		for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-			if (it->getPID() != pid)
-				it->setGlued(true);
+		if (!isAutomated) {
+			for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
+				if (it->getPID() != pid)
+					it->setGlued(true);
+			}
+			game->changeBlock(*block);
 		}
-		game->changeBlock(*block);
 		break;
 	case SNAKE_BLOCK:
 		//perde
+		for (auto it = snake.begin(); it != snake.end(); it++) {
+			if (it->getPosX() == block->getPosX() && it->getPosY() == block->getPosY()) {
+				setLost(true);
+				break;
+			}
+		}
+		for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
+			if (it->hitByOtherSnake(block->getPosX(), block->getPosY())) {
+				setLost(true);
+			}
+		}
+
 		break;
 
 	default:
 		break;
 	}
+}
+
+bool Player::hitByOtherSnake(int x, int y)
+{
+	for (auto it = snake.begin(); it != snake.end(); it++) {
+		if (it->getPosX() == x && it->getPosY() == y) {
+			addPoints(10);
+			return true;
+		}
+	}
+	return false;
 }
 
 int Player::getPoints() const
@@ -203,8 +290,14 @@ void Player::setDirection(unsigned int direction)
 {
 	if (direction <= 0 && direction > GOING_RIGHT)
 		return;
-
-	this->direction = direction;
+	if(this->direction == GOING_UP && direction != GOING_DOWN)
+		this->direction = direction;
+	else if(this->direction == GOING_DOWN && direction != GOING_UP)
+		this->direction = direction;
+	else if (this->direction == GOING_LEFT && direction != GOING_RIGHT)
+		this->direction = direction;
+	else if (this->direction == GOING_RIGHT && direction != GOING_LEFT)
+		this->direction = direction;
 }
 
 bool Player::isGlued() const
@@ -249,6 +342,60 @@ void Player::setDrunk(bool drunk)
 		setSnakeBlocksType(SNAKE_BLOCK);
 }
 
+bool Player::isLost() const
+{
+	return lost;
+}
+
+void Player::setLost(bool lost)
+{
+	this->lost = lost;
+}
+
+void Player::detectObstacle()
+{
+	int x = snake.front().getPosX();
+	int y = snake.front().getPosY();
+	switch (direction) {
+	case GOING_UP:
+		//detetar cobra
+		if (game->getBlock(x, y - 1).getBlockType() == SNAKE_BLOCK) {
+			setDirection(GOING_RIGHT);
+		}//detetar parede acima
+		else if (y - 1 < 0) {
+			setDirection(GOING_RIGHT);
+		}
+		break;
+	case GOING_DOWN:
+		//detetar cobra
+		if (game->getBlock(x, y + 1).getBlockType() == SNAKE_BLOCK) {
+			setDirection(GOING_RIGHT);
+		}//detetar parede abaixo
+		else if (y + 1 > game->getMapHeight()) {
+			setDirection(GOING_LEFT);
+		}
+		break;
+	case GOING_LEFT:
+		//detetar cobra
+		if (game->getBlock(x -1, y).getBlockType() == SNAKE_BLOCK) {
+			setDirection(GOING_UP);
+		}//detetar parede à esquerda
+		else if (x - 1 < 0) {
+			setDirection(GOING_UP);
+		}
+		break;
+	case GOING_RIGHT:
+		//detetar cobra
+		if (game->getBlock(x + 1, y).getBlockType() == SNAKE_BLOCK) {
+			setDirection(GOING_DOWN);
+		}//detetar parede à direita
+		else if (x + 1 > game->getMapWidth()) {
+			setDirection(GOING_DOWN);
+		}
+		break;
+	}
+}
+
 DWORD WINAPI countEffect(LPVOID param) {
 
 	Player * p = (Player *)param;
@@ -261,4 +408,5 @@ DWORD WINAPI countEffect(LPVOID param) {
 		p->setGlued(false);
 	else if (p->isOiled())
 		p->setOiled(false);
+	return 1;
 }
