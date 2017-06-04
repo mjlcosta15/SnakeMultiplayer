@@ -1,0 +1,4 @@
+﻿  ClientPipeControl.cpp
+\\mac\home\documents\git\snakemultiplayer\smclient\smclient\clientpipecontrol.cpp(35): error C2065: 'request': undeclared identifier
+\\mac\home\documents\git\snakemultiplayer\smclient\smclient\clientpipecontrol.cpp(35): error C2065: 'msg_sz': undeclared identifier
+\\mac\home\documents\git\snakemultiplayer\smclient\smclient\clientpipecontrol.cpp(35): error C2065: 'cbBytesRead': undeclared identifier

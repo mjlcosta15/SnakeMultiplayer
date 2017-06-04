@@ -2,29 +2,55 @@
 
 #include <windows.h>
 
+#include "MainHeader.h"
+
+#define msg_sz sizeof(Message)
+
 
 class ClientPipeControl
 {
+private:
+	LPCTSTR lpFileName;
+	DWORD dwDesiredAccess;
+	DWORD dwShareMode;
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes;
+	DWORD dwCreaationDisposition;
+	DWORD dwFlaghsAndAttributes;
+	HANDLE hTemplateFile;
+
+	LPCSTR lpNamedPipeName;
+	DWORD nTimeOut;
+
+	HANDLE readReady;
+	OVERLAPPED OverlRd;
+
+	HANDLE hPipe;
+
+	BOOL fSuccess;
+
+	Message msg;
+	LPDWORD cbBytesRead;
+
+
+
+
 public:
 	ClientPipeControl();
 	~ClientPipeControl();
 
-	HANDLE WINAPI CallNamedPipe(
-		LPCTSTR lpFileName,
-		DWORD dwDesiredAccess,
-		DWORD dwShareMode,
-		LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-		DWORD dwCreaationDisposition,
-		DWORD dwFlaghsAndAttributes,
-		HANDLE hTemplateFile
-	);
+	void OpenPipe();
 
-	BOOL WINAPI WaitNamedPipe(
-		LPCSTR lpNamedPipeName,
-		DWORD nTimeOut
-	);
+	// 1 - Cria/Liga
+	HANDLE Create();
 
-	void ReadFile();
-	void WriteFile();
+	// 2 - Inicializa
+	void InitializeOverlappedStructure();
+
+	void Read();
+
+	void Wait();
+
+
+
 };
 

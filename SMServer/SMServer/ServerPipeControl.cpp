@@ -16,8 +16,6 @@ ServerPipeControl::ServerPipeControl()
 	// Connect Pipe
 
 	this->hNamedPipe = Create();
-	this->lpOverlapped;
-
 
 }
 
@@ -31,7 +29,7 @@ HANDLE ServerPipeControl::Create() {
 }
 
 BOOL ServerPipeControl::Connect() {
-	return ConnectNamedPipe(hNamedPipe, lpOverlapped);
+	return ConnectNamedPipe(hNamedPipe, NULL);
 }
 
 BOOL ServerPipeControl::Disconnect() {

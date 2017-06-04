@@ -34,7 +34,7 @@ private:
 	LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
 	HANDLE hNamedPipe;
-	LPOVERLAPPED lpOverlapped;
+	//LPOVERLAPPED lpOverlapped;
 
 
 public:

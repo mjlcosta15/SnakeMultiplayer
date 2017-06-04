@@ -29,5 +29,8 @@
     <ClInclude Include="ClientPipeControl.h">
       <Filter>Header Files\ClientConnection</Filter>
     </ClInclude>
+    <ClInclude Include="MainHeader.h">
+      <Filter>Header Files\ClientConnection</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
