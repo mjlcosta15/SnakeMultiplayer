@@ -33,23 +33,17 @@ private:
 	DWORD nDefaultTimeOut;
 	LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
+	HANDLE hNamedPipe;
+	LPOVERLAPPED lpOverlapped;
+
 
 public:
 	ServerPipeControl();
 	~ServerPipeControl();
 
-	HANDLE WINAPI CreateNamedPipe(
-		LPCTSTR lpName,
-		DWORD dwOpenMode,
-		DWORD dwPipeMode,
-		DWORD nMaxInstances,
-		DWORD nOutBufferSize,
-		DWORD nInBufferSize,
-		DWORD nDefaultTimeOut,
-		LPSECURITY_ATTRIBUTES lpSecurityAttributes
-	);
-	BOOL WINAPI ConnectNamedPipe(HANDLE hNamedPipe,	LPOVERLAPPED lpOverlapped);
-	BOOL WINAPI DisconnectNamedPipe(HANDLE hNamedPipe);
+	HANDLE Create();
+	BOOL Connect();
+	BOOL Disconnect();
 
 	void ReadFile();
 	void WriteFile();
