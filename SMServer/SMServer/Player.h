@@ -37,7 +37,7 @@ public:
 	
 	~Player();
 	
-	//Create the snake in the position [x,y]
+	//Create the snake in the position (x,y)
 	void initSnake(int posX, int posY);
 	//Add N blocks to the snake
 	void increaseSnake(unsigned int numBlocks);

@@ -153,7 +153,7 @@ bool Server::commandParser(vector<string> command)
 void Server::treatCommand(vector<string> command)
 {
 	if (command[0] == "START") {
-
+		game.setInProgressPhase();
 	}
 	else if (command[0] == "ADDPLAYER") {
 		//game.addPlayer(this));
