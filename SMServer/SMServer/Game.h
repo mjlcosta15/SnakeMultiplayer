@@ -10,15 +10,15 @@
 class Game
 {
 	vector<Player *> players;
-	vector<Player *> snakesAI;
 	int initialSnakeSize;
 	int numSnakesAI;
+	int idSnakeAI;
 	int mapWidth;
 	int mapHeight;
 	int numberOfObjects;
 	vector<vector<Block>> map;
 	int gamePhase;
-
+	int tick;
 
 
 public:
@@ -31,12 +31,10 @@ public:
 	void addPlayer(int pid, string name);
 
 	bool removePlayer(Player player);
-	
-	vector<Player> getSnakeAIs();
 
 	void addSnakeAI(Player newPlayer);
-	void addSnakeAI();
-	void addSnakeAIInGame();
+	void addSnakeAI(int id);
+	void addSnakeAIInGame(int id);
 
 	bool removeSnakeAI(Player player);
 

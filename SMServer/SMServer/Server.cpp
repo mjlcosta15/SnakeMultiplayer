@@ -16,7 +16,7 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 Server::Server()
 {
 	game = Game();
-	game.setInitalPhase();
+	/*game.setInitalPhase();
 	game.setMapHeight(10);
 	game.setMapWidth(10);
 	game.setNumSnakesAI(3);
@@ -33,7 +33,7 @@ Server::Server()
 	game.updateMap();
 	game.updateMap();
 	game.updateMap();
-	game.setFinishPhase();
+	game.setFinishPhase();*/
 }
 
 
@@ -56,16 +56,49 @@ void Server::startServer()
 
 void Server::serverMainLoop()
 {
-	tstring msg;
-	tcout << "Server Online." << "Write \"exit\" to shutdown the server" << endl;
+
+	tcout << "Server Online." << endl;
+	game.setInitalPhase();
+
 	do {
-		tcin >> msg;
+		
+		//Initial Phase
+		if (game.getGamePhase() == INITIAL_PHASE)
+			initialPhaseLoop();
+		//Game Phase
+		if (game.getGamePhase() == IN_PROGRESS_PHASE)
+			GamePhaseLoop();
 
-
-
-	} while (msg != TEXT("exit"));
-
+	} while (game.getGamePhase() == FINISH_PHASE);
+	//Finish Phase
 	finishServer();
+}
+
+void Server::initialPhaseLoop()
+{
+	tcout << "Initial Phase Loop started" << endl;
+	
+	do {
+
+		game.setMapHeight(10);
+		game.setMapWidth(10);
+		game.setNumSnakesAI(3);
+		game.setNumberOfObjects(3);
+		game.setSnakeSize(3);
+		game.addPlayer(1, "jorge");
+		game.initMap();
+		game.setInProgressPhase();
+
+	} while (game.getGamePhase() == INITIAL_PHASE);
+}
+
+void Server::GamePhaseLoop()
+{
+	tcout << "Game Phase Loop started" << endl;
+	do {
+		game.updateMap();
+		Sleep(33); //Fazer 30 atualizações por segundo (30 FPS oh yeah)
+	} while (game.getGamePhase() == IN_PROGRESS_PHASE);
 }
 
 void Server::finishServer()

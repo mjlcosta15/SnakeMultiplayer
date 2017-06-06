@@ -1,6 +1,6 @@
 #ifndef BLOCK_H
 #define BLOCK_H
-
+#include "MainHeader.h"
 #define EMPTY_BLOCK 1
 #define ICE_BLOCK  2
 #define FOOD_BLOCK  3
@@ -40,7 +40,7 @@ public:
 	void setBlockType(int type);
 	
 	//Get the char corresponding the type of the block
-	char getCharId();
+	TCHAR getCharId();
 	
 	
 };

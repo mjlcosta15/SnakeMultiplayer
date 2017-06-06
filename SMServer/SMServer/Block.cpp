@@ -48,7 +48,7 @@ void Block::setBlockType(int type)
 	blockType = type;
 }
 
-char Block::getCharId()
+TCHAR Block::getCharId()
 {
 	switch (blockType)
 	{

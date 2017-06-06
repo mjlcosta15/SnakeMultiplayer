@@ -5,14 +5,14 @@
 Game::Game()
 {
 	gamePhase = INITIAL_PHASE;
+	idSnakeAI = 1;
+	tick = 0;
 }
 
 
 Game::~Game()
 {
 	for (auto it = players.begin(); it != players.end(); it++)
-		delete *it;
-	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++)
 		delete *it;
 }
 
@@ -43,24 +43,21 @@ bool Game::removePlayer(Player player)
 	return false;
 }
 
-vector<Player> Game::getSnakeAIs()
-{
-	return vector<Player>();
-}
-
 void Game::addSnakeAI(Player newPlayer)
 {
-	snakesAI.push_back(&newPlayer);
+	players.push_back(&newPlayer);
 }
 
-void Game::addSnakeAI()
+void Game::addSnakeAI(int id)
 {
-	snakesAI.push_back(new Player(this));
+	players.push_back(new Player(id, this));
+	idSnakeAI++;
 }
 
-void Game::addSnakeAIInGame()
+void Game::addSnakeAIInGame(int id)
 {
-	snakesAI.push_back(new Player(this));
+	players.push_back(new Player(id, this));
+	idSnakeAI++;
 }
 
 bool Game::removeSnakeAI(Player player)
@@ -170,6 +167,11 @@ void Game::initMap()
 		map.at(x).at(y).setBlockType(objectType);
 	}
 
+	for (int i = 0; i < numSnakesAI; i++) {
+		addSnakeAI(idSnakeAI);
+
+	}
+
 	//make the snakes
 	for (auto it = players.begin(); it != players.end(); it++) {
 		x = rand() % mapWidth + 2;
@@ -181,47 +183,19 @@ void Game::initMap()
 
 void Game::updateMap()
 {
-	Sleep(250);
-	for (auto it = players.begin(); it != players.end(); it++) {
-		if ((*it)->isOiled()) {
-			(*it)->moveSnake();
-			(*it)->effectAfterMovement();
-		}
-	}
-	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++) {
-		if ((*it)->isOiled()) {
-			(*it)->moveSnake();
-			(*it)->effectAfterMovement();
-		}
-	}
+	tick++;
 
-	Sleep(250);
 	for (auto it = players.begin(); it != players.end(); it++) {
-		if (!(*it)->isOiled() && !(*it)->isGlued()) {
+		if ((*it)->getSpeed() == tick) {
+			cout << "[" << (*it)->getName() << "] Vou mexer-me com velocidade " << tick << endl;
 			(*it)->moveSnake();
 			(*it)->effectAfterMovement();
+			exportInfoToMessage();
 		}
-	}
-	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++) {
-		if (!(*it)->isOiled() && !(*it)->isGlued()) {
-			(*it)->moveSnake();
-			(*it)->effectAfterMovement();
-		}
-	}
 
-	Sleep(250);
-	for (auto it = players.begin(); it != players.end(); it++) {
-		if ((*it)->isGlued()) {
-			(*it)->moveSnake();
-			(*it)->effectAfterMovement();
-		}
 	}
-	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++) {
-		if ((*it)->isGlued()) {
-			(*it)->moveSnake();
-			(*it)->effectAfterMovement();
-		}
-	}
+	if (tick == SPEED_SLOW)
+		tick = 0;
 }
 
 void Game::changeBlock(Block block)
@@ -256,16 +230,34 @@ Message Game::exportInfoToMessage()
 	//fill the map
 	for (int i = 0; i < MAX_TAM_MAP; i++) {
 		for (int j = 0; j < MAX_TAM_MAP; j++) {
-			if (i < msg.map.actualX && j < msg.map.actualY)
+			if (i < msg.map.actualX && j < msg.map.actualY) {
 				msg.map.map[i][j] = map.at(i).at(j).getCharId();
+			}
 			else
 				msg.map.map[i][j] = '-';
+
 		}
+		
+	}
+	for (auto it = players.begin(); it != players.end(); it++) {
+		vector<Block> temp = (*it)->getSnake();
+		for (auto its = temp.begin(); its != temp.end(); its++)
+			msg.map.map[its->getPosX()][its->getPosY()] = its->getCharId();
+	}
+
+	for (int i = 0; i < mapWidth; i++) {
+		for (int j = 0; j < mapHeight; j++) {
+			cout << " " << msg.map.map[i][j] << " ";
+		}
+		if (i < mapHeight)
+			cout << endl;
 	}
 
 	//fill the scores
 	for (auto it = players.begin(); it != players.end(); it++)
 		msg.scores[distance(players.begin(), it)] = (*it)->getPoints();
+	
+	msg.numOfPlayers = players.size();
 
 	return msg;
 }

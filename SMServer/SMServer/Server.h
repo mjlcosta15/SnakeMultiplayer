@@ -17,6 +17,10 @@ public:
 	~Server();
 	void startServer();
 	void serverMainLoop();
+
+	void initialPhaseLoop();
+	void GamePhaseLoop();
+
 	void finishServer();
 	
 	void startGame();

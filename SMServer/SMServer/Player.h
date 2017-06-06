@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "MainHeader.h"
+
 #include "Block.h"
 
 #define GOING_UP 1
@@ -9,6 +9,9 @@
 #define GOING_LEFT 3
 #define GOING_RIGHT 4 
 
+#define SPEED_SLOW 45 
+#define SPEED_NORMAL 30 
+#define SPEED_FAST 15 
 
 
 class Game;
@@ -25,6 +28,8 @@ class Player
 	int direction;
 	bool hasGlue;
 	bool hasOil;
+
+	int speed;
 	bool drunk;
 	bool lost;
 	//AI Snakes
@@ -34,7 +39,7 @@ public:
 	//Constructor for Player
 	Player(int pid, string name, Game * g);
 	//Constructor for AI snake
-	Player(Game * g);
+	Player(int pid, Game * g);
 	
 	~Player();
 	
@@ -47,6 +52,8 @@ public:
 	//Moves the snake according with the chosed direction
 	void moveSnake();
 	
+	vector<Block> getSnake()const;
+
 	//Changes the blocks type of the snake
 	void setSnakeBlocksType(int type);
 
@@ -71,11 +78,8 @@ public:
 	int getDirection() const;
 	void setDirection(unsigned int direction);
 
-	bool isGlued() const;
-	void setGlued(bool glued);
-
-	bool isOiled() const;
-	void setOiled(bool oiled);
+	int getSpeed()const;
+	void setSpeed(int speed);
 
 	bool isDrunk() const;
 	void setDrunk(bool drunk);
