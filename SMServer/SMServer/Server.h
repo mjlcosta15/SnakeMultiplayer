@@ -3,6 +3,7 @@
 #define SERVER_H
 
 #include "SharedMemoryHelper.h"
+#include "ServerPipeControl.h"
 #include "Game.h"
 
 class Server
@@ -10,6 +11,7 @@ class Server
 	Game game;
 	SharedMemoryHelper smHelper;
 	HANDLE hThreadSharedMemory;
+	ServerPipeControl serverPipeControl;
 	bool threadSharedMemFlag;
 	unsigned int smThreadID;
 public:

@@ -25,7 +25,14 @@ ServerPipeControl::~ServerPipeControl()
 }
 
 HANDLE ServerPipeControl::Create() {
-	return CreateNamedPipe(lpName, dwOpenMode, dwPipeMode, nMaxInstances, nOutBufferSize, nInBufferSize,  nDefaultTimeOut, lpSecurityAttributes);
+	return CreateNamedPipe(lpName, 
+		dwOpenMode,
+		dwPipeMode,
+		nMaxInstances,
+		nOutBufferSize,
+		nInBufferSize,
+		nDefaultTimeOut,
+		lpSecurityAttributes);
 }
 
 BOOL ServerPipeControl::Connect() {
@@ -34,6 +41,37 @@ BOOL ServerPipeControl::Connect() {
 
 BOOL ServerPipeControl::Disconnect() {
 	return DisconnectNamedPipe(hNamedPipe);
+}
+
+int ServerPipeControl::Write(HANDLE hPipe, Message msg) {
+
+	DWORD cbWritten = 0;
+	BOOL fSuccess = 0;
+
+	OVERLAPPED OverlWr = { 0 };
+
+	ZeroMemory(&OverlWr, sizeof(OverlWr));  // não é necessário pq se inicializa com {0} mas mete-se na mesma
+	ResetEvent(WriteReady); // não assinalado
+	OverlWr.hEvent = WriteReady; // TENHO DE MUDAR ISTO!!!
+
+	fSuccess = WriteFile(
+		hPipe,	// handle para o pipe
+		&msg,	// message(ponteiro)
+		msg_sz,	// tamanho da mensagem
+		&cbWritten,	// ptr p/ guardar num bytes escritos
+		&OverlWr);	// != NULL -> É mesmo overlapped I/O
+
+}
+
+int ServerPipeControl::Broadcast(Message msg) {
+
+	int i, numwrites = 0;
+
+	for (i = 0; i < MAX_PLAYERS; i++){
+		if (clients[i] != 0)
+			numwrites += Write(clients[i], msg);
+	}
+
 }
 
 
