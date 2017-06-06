@@ -16,6 +16,8 @@
 #define QUEMSZ 60
 #define MSGTXTSZ 60
 
+#define msg_sz sizeof(Message)
+
 // Vamos usar uma arquitetura cliente-servidor Overlapped I/O
 // pois o pipe do cliente tem de conseguir ler e escrever em simultaneo
 
@@ -34,19 +36,27 @@ private:
 	LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
 	HANDLE hNamedPipe;
-	//LPOVERLAPPED lpOverlapped;
 
+	HANDLE WriteReady;
+
+	HANDLE clients[MAX_PLAYERS];
 
 public:
 	ServerPipeControl();
 	~ServerPipeControl();
 
+	// 1 - Criação do Pipe
 	HANDLE Create();
+
+	// 2 - Aguarda que um cliente se ligue
 	BOOL Connect();
 	BOOL Disconnect();
 
-	void ReadFile();
-	void WriteFile();
+	// 3 - Envia mensagem a cliente
+	int Write(HANDLE hPipe, Message msg);
+
+	// Manda alterações a todos os clientes
+	int Broadcast(Message msg);
 
 };
 
