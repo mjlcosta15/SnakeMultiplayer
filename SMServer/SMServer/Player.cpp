@@ -2,6 +2,9 @@
 #include "Game.h"
 
 
+HANDLE Player::hMutex = NULL;
+
+
 Player::Player(int pid, string playerName, Game * g) :
 	name(playerName),
 	points(0),
@@ -10,7 +13,11 @@ Player::Player(int pid, string playerName, Game * g) :
 	hasOil(false),
 	drunk(false),
 	lost(false),
-	isAutomated(false) {}
+	isAutomated(false),
+	direction(GOING_LEFT)
+{
+	hMutex = CreateMutex(NULL, FALSE, NULL);
+}
 
 Player::Player(Game * g) :
 	name("CPU Snake"),
@@ -20,10 +27,15 @@ Player::Player(Game * g) :
 	hasOil(false),
 	drunk(false),
 	lost(false),
-	isAutomated(true) {}
+	isAutomated(true),
+	direction(GOING_LEFT) 
+{
+	hMutex = CreateMutex(NULL, FALSE, NULL);
+}
 
 Player::~Player()
 {
+	CloseHandle(hMutex);
 	delete game;
 }
 
@@ -193,8 +205,8 @@ void Player::effectAfterMovement()
 		//inverte as teclas aos outros
 		if (!isAutomated) {
 			for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-				if (it->getPID() != pid)
-					it->setDrunk(true);
+				if ((*it)->getPID() != pid)
+					(*it)->setDrunk(true);
 			}
 			game->changeBlock(*block);
 		}
@@ -203,8 +215,8 @@ void Player::effectAfterMovement()
 		//aumenta a velocidade aos outros
 		if (!isAutomated) {
 			for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-				if (it->getPID() != pid)
-					it->setOiled(true);
+				if ((*it)->getPID() != pid)
+					(*it)->setOiled(true);
 			}
 			game->changeBlock(*block);
 		}
@@ -213,8 +225,8 @@ void Player::effectAfterMovement()
 		//diminiu a velocidade aos outros
 		if (!isAutomated) {
 			for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-				if (it->getPID() != pid)
-					it->setGlued(true);
+				if ((*it)->getPID() != pid)
+					(*it)->setGlued(true);
 			}
 			game->changeBlock(*block);
 		}
@@ -228,7 +240,7 @@ void Player::effectAfterMovement()
 			}
 		}
 		for (auto it = game->getPlayers().begin(); it != game->getPlayers().end(); it++) {
-			if (it->hitByOtherSnake(block->getPosX(), block->getPosY())) {
+			if ((*it)->hitByOtherSnake(block->getPosX(), block->getPosY())) {
 				setLost(true);
 			}
 		}
@@ -258,12 +270,20 @@ int Player::getPoints() const
 
 void Player::addPoints(unsigned int points)
 {
+	WaitForSingleObject(hMutex, INFINITE);
+
 	this->points += points;
+	
+	ReleaseMutex(hMutex);
 }
 
 void Player::removePoints(unsigned int points)
 {
+	WaitForSingleObject(hMutex, INFINITE);
+
 	this->points -= points;
+
+	ReleaseMutex(hMutex);
 }
 
 string Player::getName() const
@@ -273,7 +293,11 @@ string Player::getName() const
 
 void Player::setName(string name)
 {
+	WaitForSingleObject(hMutex, INFINITE);
+
 	this->name = name;
+
+	ReleaseMutex(hMutex);
 }
 
 int Player::getPID() const
@@ -290,6 +314,9 @@ void Player::setDirection(unsigned int direction)
 {
 	if (direction <= 0 && direction > GOING_RIGHT)
 		return;
+
+	WaitForSingleObject(hMutex, INFINITE);
+
 	if(this->direction == GOING_UP && direction != GOING_DOWN)
 		this->direction = direction;
 	else if(this->direction == GOING_DOWN && direction != GOING_UP)
@@ -298,6 +325,8 @@ void Player::setDirection(unsigned int direction)
 		this->direction = direction;
 	else if (this->direction == GOING_RIGHT && direction != GOING_LEFT)
 		this->direction = direction;
+
+	ReleaseMutex(hMutex);
 }
 
 bool Player::isGlued() const
@@ -307,11 +336,15 @@ bool Player::isGlued() const
 
 void Player::setGlued(bool glued)
 {
+	WaitForSingleObject(hMutex, INFINITE);
+
 	hasGlue = glued;
 	if (hasGlue)
 		setSnakeBlocksType(GLUED_SNAKE_BLOCK);
 	else
-		setSnakeBlocksType(SNAKE_BLOCK);
+		setSnakeBlocksType(SNAKE_BLOCK);	
+
+	ReleaseMutex(hMutex);
 }
 
 bool Player::isOiled() const
@@ -321,11 +354,15 @@ bool Player::isOiled() const
 
 void Player::setOiled(bool oiled)
 {
+	WaitForSingleObject(hMutex, INFINITE);
+
 	hasOil = oiled;
 	if (hasOil)
 		setSnakeBlocksType(OILED_SNAKE_BLOCK);
 	else
 		setSnakeBlocksType(SNAKE_BLOCK);
+
+	ReleaseMutex(hMutex);
 }
 
 bool Player::isDrunk() const
@@ -335,11 +372,16 @@ bool Player::isDrunk() const
 
 void Player::setDrunk(bool drunk)
 {
+
+	WaitForSingleObject(hMutex, INFINITE);
+
 	this->drunk = drunk;
 	if (this->drunk)
 		setSnakeBlocksType(VODKA_SNAKE_BLOCK);
 	else
 		setSnakeBlocksType(SNAKE_BLOCK);
+
+	ReleaseMutex(hMutex);
 }
 
 bool Player::isLost() const

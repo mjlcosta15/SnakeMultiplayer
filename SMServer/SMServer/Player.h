@@ -15,7 +15,8 @@ class Game;
 
 class Player
 {
-	
+	static HANDLE hMutex;
+
 	unsigned int pid;
 	int points;
 	string name;

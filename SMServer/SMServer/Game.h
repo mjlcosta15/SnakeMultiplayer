@@ -9,8 +9,8 @@
 
 class Game
 {
-	vector<Player> players;
-	vector<Player> snakesAI;
+	vector<Player *> players;
+	vector<Player *> snakesAI;
 	int initialSnakeSize;
 	int numSnakesAI;
 	int mapWidth;
@@ -25,7 +25,7 @@ public:
 	Game();
 	~Game();
 
-	vector<Player> getPlayers();
+	vector<Player *> getPlayers();
 
 	void addPlayer(Player newPlayer);
 	void addPlayer(int pid, string name);
@@ -40,6 +40,8 @@ public:
 
 	bool removeSnakeAI(Player player);
 
+	void setNumberOfObjects(unsigned int num);
+	int getNumberOfObjects() const;
 
 	int getNumSnakesAI() const;
 	void setNumSnakesAI(int num);

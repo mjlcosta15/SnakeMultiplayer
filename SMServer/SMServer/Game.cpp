@@ -10,9 +10,13 @@ Game::Game()
 
 Game::~Game()
 {
+	for (auto it = players.begin(); it != players.end(); it++)
+		delete *it;
+	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++)
+		delete *it;
 }
 
-vector<Player> Game::getPlayers()
+vector<Player *> Game::getPlayers()
 {
 	return players;
 }
@@ -20,19 +24,19 @@ vector<Player> Game::getPlayers()
 void Game::addPlayer(Player newPlayer)
 {
 	if (gamePhase == INITIAL_PHASE)
-		players.push_back(newPlayer);
+		players.push_back(&newPlayer);
 }
 
 void Game::addPlayer(int pid, string name)
 {
 	if (gamePhase == INITIAL_PHASE)
-		players.push_back(Player(pid, name, this));
+		players.push_back(new Player(pid, name, this));
 }
 
 bool Game::removePlayer(Player player)
 {
 	for (auto it = players.begin(); it != players.end(); it++)
-		if (it->getPID() == player.getPID()) {
+		if ((*it)->getPID() == player.getPID()) {
 			it = players.erase(it);
 			return true;
 		}
@@ -46,22 +50,32 @@ vector<Player> Game::getSnakeAIs()
 
 void Game::addSnakeAI(Player newPlayer)
 {
-	snakesAI.push_back(newPlayer);
+	snakesAI.push_back(&newPlayer);
 }
 
 void Game::addSnakeAI()
 {
-	snakesAI.push_back(Player(this));
+	snakesAI.push_back(new Player(this));
 }
 
 void Game::addSnakeAIInGame()
 {
-	snakesAI.push_back(Player(this));
+	snakesAI.push_back(new Player(this));
 }
 
 bool Game::removeSnakeAI(Player player)
 {
 	return false;
+}
+
+void Game::setNumberOfObjects(unsigned int num)
+{
+	numberOfObjects = num;
+}
+
+int Game::getNumberOfObjects() const
+{
+	return numberOfObjects;
 }
 
 int Game::getNumSnakesAI() const
@@ -135,6 +149,7 @@ void Game::setMapHeight(int height)
 
 void Game::initMap()
 {
+
 	//init map with empty blocks
 	for (int i = 0; i < mapHeight; i++) {
 		vector<Block> temp;
@@ -159,7 +174,7 @@ void Game::initMap()
 	for (auto it = players.begin(); it != players.end(); it++) {
 		x = rand() % mapWidth + 2;
 		y = rand() % mapHeight + 2;
-		it->initSnake(x, y);
+		(*it)->initSnake(x, y);
 	}
 
 }
@@ -168,23 +183,43 @@ void Game::updateMap()
 {
 	Sleep(250);
 	for (auto it = players.begin(); it != players.end(); it++) {
-		if (it->isOiled()) {
-			it->moveSnake();
-			it->effectAfterMovement();
+		if ((*it)->isOiled()) {
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
 		}
 	}
-	Sleep(250);
-	for (auto it = players.begin(); it != players.end(); it++) {
-		if (!it->isOiled() && !it->isGlued()) {
-			it->moveSnake();
-			it->effectAfterMovement();
+	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++) {
+		if ((*it)->isOiled()) {
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
 		}
 	}
+
 	Sleep(250);
 	for (auto it = players.begin(); it != players.end(); it++) {
-		if (it->isGlued()) {
-			it->moveSnake();
-			it->effectAfterMovement();
+		if (!(*it)->isOiled() && !(*it)->isGlued()) {
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
+		}
+	}
+	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++) {
+		if (!(*it)->isOiled() && !(*it)->isGlued()) {
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
+		}
+	}
+
+	Sleep(250);
+	for (auto it = players.begin(); it != players.end(); it++) {
+		if ((*it)->isGlued()) {
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
+		}
+	}
+	for (auto it = snakesAI.begin(); it != snakesAI.end(); it++) {
+		if ((*it)->isGlued()) {
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
 		}
 	}
 }
@@ -230,7 +265,7 @@ Message Game::exportInfoToMessage()
 
 	//fill the scores
 	for (auto it = players.begin(); it != players.end(); it++)
-		msg.scores[distance(players.begin(), it)] = it->getPoints();
+		msg.scores[distance(players.begin(), it)] = (*it)->getPoints();
 
 	return msg;
 }

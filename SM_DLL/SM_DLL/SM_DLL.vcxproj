@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{543D03DA-6083-4ECF-933B-C1760DC47954}</ProjectGuid>
+    <ProjectGuid>{9F590654-E35E-4C97-90FB-7EE2CE90F54F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SM_DLL</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>

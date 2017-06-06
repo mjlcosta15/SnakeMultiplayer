@@ -17,6 +17,23 @@ Server::Server()
 {
 	game = Game();
 	game.setInitalPhase();
+	game.setMapHeight(10);
+	game.setMapWidth(10);
+	game.setNumSnakesAI(3);
+	game.setNumberOfObjects(3);
+	game.setSnakeSize(3);
+	game.addPlayer(1, "jorge");
+	game.initMap();
+	game.setInProgressPhase();
+
+	game.updateMap();
+	game.updateMap();
+	game.updateMap();
+	game.updateMap();
+	game.updateMap();
+	game.updateMap();
+	game.updateMap();
+	game.setFinishPhase();
 }
 
 
