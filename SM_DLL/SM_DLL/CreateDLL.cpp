@@ -12,8 +12,6 @@ CreateDLL::~CreateDLL()
 
 SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 {
-
-
 	hMapFile = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,   // read/write access
 		FALSE,                 // do not inherit the name
@@ -51,7 +49,6 @@ SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 
 SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
 {
-
 	hMapFile = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,   // read/write access
 		FALSE,                 // do not inherit the name
@@ -63,7 +60,7 @@ SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
 			GetLastError());
 		return false;
 	}
-	
+
 	this->msg = (Message *)MapViewOfFile(hMapFile, // handle to map object
 		FILE_MAP_ALL_ACCESS,  // read/write permission
 		0,
@@ -79,10 +76,7 @@ SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
 		return false;
 	}
 
-	
-		
 	CopyMemory(this->msg, &msg, sizeof(Message));
-
 
 	UnmapViewOfFile(this->msg);
 
