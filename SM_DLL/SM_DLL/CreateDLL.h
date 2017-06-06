@@ -28,5 +28,8 @@ public:
 
 };
 
+SNAKE_MULTIPLAYER_API HANDLE hMutex;
+SNAKE_MULTIPLAYER_API HANDLE hEvent;
+
 
 #endif //__CREATEDLL_H__

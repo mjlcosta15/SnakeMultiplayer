@@ -24,6 +24,8 @@ SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 		return nullptr;
 	}
 
+	WaitForSingleObject(hEvent, INFINITE);
+
 	msg = (Message *)MapViewOfFile(hMapFile, // handle to map object
 		FILE_MAP_ALL_ACCESS,  // read/write permission
 		0,
@@ -49,6 +51,35 @@ SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 
 SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
 {
+
+	if (hEvent == NULL) {
+		hEvent = CreateEvent(
+			NULL,               // default security attributes
+			TRUE,               // manual-reset event
+			FALSE,              // initial state is nonsignaled
+			TEXT("DLL_SHARED_MEMORY_EVENT")  // object name
+		);
+		if (hEvent == NULL)
+		{
+			printf("CreateEvent failed (%d)\n", GetLastError());
+			return false;
+		}
+	}
+
+	if (hMutex == NULL) {
+		hMutex = CreateMutex(
+			NULL,
+			FALSE,
+			NULL
+		);
+
+		if (hMutex == NULL) {
+			printf("CreateMutex failed (%d)\n", GetLastError());
+			return false;
+		}
+	}
+
+
 	hMapFile = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,   // read/write access
 		FALSE,                 // do not inherit the name
@@ -76,7 +107,13 @@ SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
 		return false;
 	}
 
+	WaitForSingleObject(hMutex, INFINITE);
+
 	CopyMemory(this->msg, &msg, sizeof(Message));
+
+	ReleaseMutex(hMutex);
+
+	SetEvent(hEvent);
 
 	UnmapViewOfFile(this->msg);
 
