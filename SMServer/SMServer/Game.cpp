@@ -7,6 +7,8 @@ Game::Game()
 	gamePhase = INITIAL_PHASE;
 	idSnakeAI = 1;
 	tick = 0;
+	numPlayers = 1;
+	playersInGame = 0;
 }
 
 
@@ -21,10 +23,25 @@ vector<Player *> Game::getPlayers()
 	return players;
 }
 
-void Game::addPlayer(Player newPlayer)
+int Game::getNumPlayers() const
 {
-	if (gamePhase == INITIAL_PHASE)
-		players.push_back(&newPlayer);
+	return numPlayers;
+}
+
+void Game::setNumPlayers(int num)
+{
+	numPlayers = num;
+}
+
+void Game::addPlayer(Player *newPlayer)
+{
+	if (gamePhase == INITIAL_PHASE) {
+		if (playersInGame < numPlayers) {
+			players.push_back(newPlayer);
+			playersInGame++;
+		}
+	}
+		
 }
 
 void Game::addPlayer(int pid, string name)
@@ -33,14 +50,24 @@ void Game::addPlayer(int pid, string name)
 		players.push_back(new Player(pid, name, this));
 }
 
-bool Game::removePlayer(Player player)
+bool Game::removePlayer(int pid)
 {
 	for (auto it = players.begin(); it != players.end(); it++)
-		if ((*it)->getPID() == player.getPID()) {
+		if ((*it)->getPID() == pid) {
 			it = players.erase(it);
+			playersInGame--;
 			return true;
 		}
 	return false;
+}
+
+void Game::setDirectionToPlayer(int pid, int direction)
+{
+	for (auto it = players.begin(); it != players.end(); it++) {
+		if ((*it)->getPID() == pid) {
+			(*it)->setDirection(direction);
+		}
+	}
 }
 
 void Game::addSnakeAI(Player newPlayer)

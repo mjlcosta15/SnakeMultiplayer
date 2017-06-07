@@ -61,7 +61,7 @@ void Server::serverMainLoop()
 	game.setInitalPhase();
 
 	do {
-		
+
 		//Initial Phase
 		if (game.getGamePhase() == INITIAL_PHASE)
 			initialPhaseLoop();
@@ -77,7 +77,7 @@ void Server::serverMainLoop()
 void Server::initialPhaseLoop()
 {
 	tcout << "Initial Phase Loop started" << endl;
-	
+
 	do {
 
 		game.setMapHeight(10);
@@ -122,97 +122,126 @@ bool Server::commandParser(vector<string> command)
 	if (!command.size())
 		return false;
 
-	//commandos
+	//START
 	if (command[0] == "START") {
 		if (!game.getGamePhase() == INITIAL_PHASE) {
 			return true;
 		}
 		return false;
 	}
-	//DIFICULTY <number(1,99)>
-	/*else if (command[0] == "LEVEL") {
-		if (!missionStarted) {
-			if (command.size() == 2) {
-				if (stoi(command[1]) >= 1 && stoi(command[1]) <= 99)
-					return true;
-				return false;
-			}
-			return false;
-		}
-		return false;
-	}
-	//SETROOM <NAME> <ROOMNAME>
-	else if (command[0] == "SETROOM") {
-		if (!missionStarted) {
-			if (command.size() == 3) {
-				if (stoi(command[2]) >= 1 && stoi(command[2]) <= 12) {
-					if (command[1] == "REPAIRER")
-						return true;
-					if (command[1] == "BEDS")
-						return true;
-					if (command[1] == "INFIRMARY")
-						return true;
-					if (command[1] == "PROP")
-						return true;
-					if (command[1] == "ROBOT")
-						return true;
-					if (command[1] == "SECSYSTEM")
-						return true;
-					if (command[1] == "CAPTAIN")
-						return true;
-					if (command[1] == "LASER")
-						return true;
-					if (command[1] == "GUN")
-						return true;
+	//CREATEGAME <Map Width [1,80]> <Map Height [1,80]> <Nr Players [1,10]> <Snake Size [1,10]> <Nr Objects [1,10]> <Nr Snakes AI [1,10]> <Player Username>
+	else if (command[0] == "CREATEGAME") {
+		if (game.getGamePhase() == INITIAL_PHASE) {
+			if (command.size() == 8) {
+				if (stoi(command[1]) >= 1 && stoi(command[1]) <= MAX_TAM_MAP) {
+					if (stoi(command[2]) >= 1 && stoi(command[2]) <= MAX_TAM_MAP) {
+						if (stoi(command[3]) >= 1 && stoi(command[3]) <= MAX_PLAYERS) {
+							if (stoi(command[4]) >= 1 && stoi(command[4]) <= MAX_PLAYERS) {
+								if (stoi(command[5]) >= 1 && stoi(command[5]) <= MAX_PLAYERS) {
+									if (stoi(command[6]) >= 1 && stoi(command[6]) <= MAX_PLAYERS) {
+										if (command[7] != "") {
+											return true;
+										}
+										else {
+											cout << "COMMAND -" << command[0] << "- Error in Username" << endl;
+
+										}
+									}
+									else {
+										cout << "COMMAND -" << command[0] << "- Error in Nr Snakes AI" << endl;
+
+									}
+								}
+								else {
+									cout << "COMMAND -" << command[0] << "- Error in Nr Objects" << endl;
+								}
+							}
+							else {
+								cout << "COMMAND -" << command[0] << "- Error in Snake Size" << endl;
+							}
+						}
+						else {
+							cout << "COMMAND -" << command[0] << "- Error in Nr Players" << endl;
+						}
+					}
+					else {
+						cout << "COMMAND -" << command[0] << "- Error in Map Height" << endl;
+					}
+				}
+				else {
+					cout << "COMMAND -" << command[0] << "- Error in Map Width" << endl;
 				}
 				return false;
 			}
 			return false;
 		}
 		return false;
-	}
-	//MOVE <ID> <NEXTROOM>
-	else if (command[0] == "MOVE") {
-		if (command.size() == 3) {
-			if (missionStarted)
-				if (stoi(command[2]) > 0 && stoi(command[2]) < 13)
+	}//JOIN <username>
+	else if (command[0] == "JOIN") {
+		if (game.getGamePhase() == INITIAL_PHASE) {
+			if (command.size() == 2)
+				if (command[1] != "")
 					return true;
+				else
+					cout << "COMMAND -" << command[0] << "- Error in Username" << endl;
 			return false;
 		}
 		return false;
 	}
-	//HELP
-	else if (command[0] == "HELP") {
-		return true;
+	//SETDIRECTION <Direction(1,2,3,4)>
+	else if (command[0] == "SETDIRECTION") {
+		if (command.size() == 2) {
+			if (game.getGamePhase() == IN_PROGRESS_PHASE)
+				if (stoi(command[1]) > 0 && stoi(command[1]) < GOING_RIGHT)
+					return true;
+				else
+					cout << "COMMAND -" << command[0] << "- Error in Direction" << endl;
+			return false;
+		}
+		return false;
+	}//DISCONNECT <PID>
+	else if (command[0] == "DISCONNECT") {
+		if (command.size() == 2) {
+			char* p;
+			strtol(command[1].c_str(), &p, 10);
+			if (*p == 0)
+				return true;
+			else
+				cout << "COMMAND -" << command[0] << "- Error in PID" << endl;
+			return false;
+		}
+		return false;
 	}
-	//NEXT
-	else if (command[0] == "NEXT") {
-		if (missionStarted)
-			return true;
-	}
-	else if (command[0] == "MAKESHIP")
-		return true;
 	else {
 		//WRONG COMMAND
 		return false;
-	}*/
+	}
 	return false;
 }
 
 
-void Server::treatCommand(vector<string> command)
+void Server::treatCommand(vector<string> command, Message msg)
 {
 	if (command[0] == "START") {
 		game.setInProgressPhase();
 	}
-	else if (command[0] == "ADDPLAYER") {
-		//game.addPlayer(this));
+	else if (command[0] == "CREATEGAME") {
+		game.setMapWidth(stoi(command[1]));
+		game.setMapHeight(stoi(command[2]));
+		game.setNumPlayers(stoi(command[3]));
+		game.setSnakeSize(stoi(command[4]));
+		game.setNumberOfObjects(stoi(command[5]));
+		game.setNumSnakesAI(stoi(command[6]));
+		game.addPlayer(new Player(msg.pid, command[7], &game));
 	}
-	else if (command[0] == "SETNAME") {
-
+	else if (command[0] == "JOIN") {
+		game.addPlayer(new Player(msg.pid, command[1], &game));
 	}
 	else if (command[0] == "SETDIRECTION") {
-
+		game.setDirectionToPlayer(msg.pid, stoi(command[1]));
+	}
+	else if (command[0] == "DISCONNECT") {
+		game.removePlayer(msg.pid);
 	}
 
 }

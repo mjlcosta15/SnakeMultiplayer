@@ -11,6 +11,8 @@ class Game
 {
 	vector<Player *> players;
 	int initialSnakeSize;
+	int numPlayers;
+	int playersInGame;
 	int numSnakesAI;
 	int idSnakeAI;
 	int mapWidth;
@@ -27,10 +29,14 @@ public:
 
 	vector<Player *> getPlayers();
 
-	void addPlayer(Player newPlayer);
-	void addPlayer(int pid, string name);
+	int getNumPlayers()const;
+	void setNumPlayers(int num);
 
-	bool removePlayer(Player player);
+	void addPlayer(Player * newPlayer);
+	void addPlayer(int pid, string name);
+	bool removePlayer(int pid);
+	void setDirectionToPlayer(int pid, int direction);
+
 
 	void addSnakeAI(Player newPlayer);
 	void addSnakeAI(int id);
