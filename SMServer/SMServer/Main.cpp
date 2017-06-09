@@ -26,8 +26,17 @@ HANDLE Thread(
 
 int _tmain()
 {
+	BOOL fConnected = FALSE;
+	DWORD dwThreadId = 0;
+	HANDLE hPipe = INVALID_HANDLE_VALUE, hThread = NULL;
+	LPTSTR lpszPipename = TEXT("\\\\\.\\pipe\\pipeeexemplo");
+
+	
+
 	Server server;
 	server.startServer();
+
+	
 }
 
 
