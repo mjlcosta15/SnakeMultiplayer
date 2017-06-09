@@ -61,6 +61,38 @@ int ServerPipeControl::Write(HANDLE hPipe, Message msg) {
 		&cbWritten,	// ptr p/ guardar num bytes escritos
 		&OverlWr);	// != NULL -> É mesmo overlapped I/O
 
+	WaitForSingleObject(WriteReady, INFINITE);
+
+	GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE); 
+
+	if (cbWritten < msg_sz)
+		_tprintf(TEXT("\nNao chegou tudo"), GetLastError());
+
+	return 1;
+
+}
+
+void ServerPipeControl::addClient(HANDLE cli) {
+
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == NULL) {
+			clients[i] = cli;
+			return;
+		}
+	}
+
+}
+
+void ServerPipeControl::rmClient(HANDLE cli) {
+
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == cli) {
+			clients[i] = NULL; // O close HANDLE é feito na thread desse cliente
+			return;
+;		}
+	}
 }
 
 int ServerPipeControl::Broadcast(Message msg) {
