@@ -5,63 +5,101 @@
 Game::Game()
 {
 	gamePhase = INITIAL_PHASE;
+	idSnakeAI = 1;
+	tick = 0;
+	numPlayers = 1;
+	playersInGame = 0;
 }
 
 
 Game::~Game()
 {
+	for (auto it = players.begin(); it != players.end(); it++)
+		delete *it;
 }
 
-vector<Player> Game::getPlayers()
+vector<Player *> Game::getPlayers()
 {
 	return players;
 }
 
-void Game::addPlayer(Player newPlayer)
+int Game::getNumPlayers() const
 {
-	if (gamePhase == INITIAL_PHASE)
-		players.push_back(newPlayer);
+	return numPlayers;
+}
+
+void Game::setNumPlayers(int num)
+{
+	numPlayers = num;
+}
+
+void Game::addPlayer(Player *newPlayer)
+{
+	if (gamePhase == INITIAL_PHASE) {
+		if (playersInGame < numPlayers) {
+			players.push_back(newPlayer);
+			playersInGame++;
+		}
+	}
+		
 }
 
 void Game::addPlayer(int pid, string name)
 {
 	if (gamePhase == INITIAL_PHASE)
-		players.push_back(Player(pid, name, this));
+		players.push_back(new Player(pid, name, this));
 }
 
-bool Game::removePlayer(Player player)
+bool Game::removePlayer(int pid)
 {
 	for (auto it = players.begin(); it != players.end(); it++)
-		if (it->getPID() == player.getPID()) {
+		if ((*it)->getPID() == pid) {
 			it = players.erase(it);
+			playersInGame--;
 			return true;
 		}
 	return false;
 }
 
-vector<Player> Game::getSnakeAIs()
+void Game::setDirectionToPlayer(int pid, int direction)
 {
-	return vector<Player>();
+	for (auto it = players.begin(); it != players.end(); it++) {
+		if ((*it)->getPID() == pid) {
+			(*it)->setDirection(direction);
+		}
+	}
 }
 
 void Game::addSnakeAI(Player newPlayer)
 {
-	snakesAI.push_back(newPlayer);
+	players.push_back(&newPlayer);
 }
 
-void Game::addSnakeAI()
+void Game::addSnakeAI(int id)
 {
-	snakesAI.push_back(Player(this));
+	players.push_back(new Player(id, this));
+	idSnakeAI++;
 }
 
-void Game::addSnakeAIInGame()
+void Game::addSnakeAIInGame(int id)
 {
-	snakesAI.push_back(Player(this));
+	players.push_back(new Player(id, this));
+	idSnakeAI++;
 }
 
 bool Game::removeSnakeAI(Player player)
 {
 	return false;
+}
+
+void Game::setNumberOfObjects(unsigned int num)
+{
+	numberOfObjects = num;
+}
+
+int Game::getNumberOfObjects() const
+{
+	return numberOfObjects;
 }
 
 int Game::getNumSnakesAI() const
@@ -135,6 +173,7 @@ void Game::setMapHeight(int height)
 
 void Game::initMap()
 {
+
 	//init map with empty blocks
 	for (int i = 0; i < mapHeight; i++) {
 		vector<Block> temp;
@@ -155,38 +194,35 @@ void Game::initMap()
 		map.at(x).at(y).setBlockType(objectType);
 	}
 
+	for (int i = 0; i < numSnakesAI; i++) {
+		addSnakeAI(idSnakeAI);
+
+	}
+
 	//make the snakes
 	for (auto it = players.begin(); it != players.end(); it++) {
 		x = rand() % mapWidth + 2;
 		y = rand() % mapHeight + 2;
-		it->initSnake(x, y);
+		(*it)->initSnake(x, y);
 	}
 
 }
 
 void Game::updateMap()
 {
-	Sleep(250);
+	tick++;
+
 	for (auto it = players.begin(); it != players.end(); it++) {
-		if (it->isOiled()) {
-			it->moveSnake();
-			it->effectAfterMovement();
+		if ((*it)->getSpeed() == tick) {
+			cout << "[" << (*it)->getName() << "] Vou mexer-me com velocidade " << tick << endl;
+			(*it)->moveSnake();
+			(*it)->effectAfterMovement();
+			exportInfoToMessage();
 		}
+
 	}
-	Sleep(250);
-	for (auto it = players.begin(); it != players.end(); it++) {
-		if (!it->isOiled() && !it->isGlued()) {
-			it->moveSnake();
-			it->effectAfterMovement();
-		}
-	}
-	Sleep(250);
-	for (auto it = players.begin(); it != players.end(); it++) {
-		if (it->isGlued()) {
-			it->moveSnake();
-			it->effectAfterMovement();
-		}
-	}
+	if (tick == SPEED_SLOW)
+		tick = 0;
 }
 
 void Game::changeBlock(Block block)
@@ -221,16 +257,34 @@ Message Game::exportInfoToMessage()
 	//fill the map
 	for (int i = 0; i < MAX_TAM_MAP; i++) {
 		for (int j = 0; j < MAX_TAM_MAP; j++) {
-			if (i < msg.map.actualX && j < msg.map.actualY)
+			if (i < msg.map.actualX && j < msg.map.actualY) {
 				msg.map.map[i][j] = map.at(i).at(j).getCharId();
+			}
 			else
 				msg.map.map[i][j] = '-';
+
 		}
+		
+	}
+	for (auto it = players.begin(); it != players.end(); it++) {
+		vector<Block> temp = (*it)->getSnake();
+		for (auto its = temp.begin(); its != temp.end(); its++)
+			msg.map.map[its->getPosX()][its->getPosY()] = its->getCharId();
+	}
+
+	for (int i = 0; i < mapWidth; i++) {
+		for (int j = 0; j < mapHeight; j++) {
+			cout << " " << msg.map.map[i][j] << " ";
+		}
+		if (i < mapHeight)
+			cout << endl;
 	}
 
 	//fill the scores
 	for (auto it = players.begin(); it != players.end(); it++)
-		msg.scores[distance(players.begin(), it)] = it->getPoints();
+		msg.scores[distance(players.begin(), it)] = (*it)->getPoints();
+	
+	msg.numOfPlayers = players.size();
 
 	return msg;
 }

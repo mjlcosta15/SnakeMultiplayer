@@ -17,4 +17,4 @@ public:
 	Message getBuffer();
 };
 
-#endif //
+#endif // SHARED_MEMORY_HELPER_H

@@ -30,7 +30,7 @@
       <Filter>Header Files\ClientConnection</Filter>
     </ClInclude>
     <ClInclude Include="MainHeader.h">
-      <Filter>Header Files\ClientConnection</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -9,37 +9,43 @@
 
 class Game
 {
-	vector<Player> players;
-	vector<Player> snakesAI;
+	vector<Player *> players;
 	int initialSnakeSize;
+	int numPlayers;
+	int playersInGame;
 	int numSnakesAI;
+	int idSnakeAI;
 	int mapWidth;
 	int mapHeight;
 	int numberOfObjects;
 	vector<vector<Block>> map;
 	int gamePhase;
-
+	int tick;
 
 
 public:
 	Game();
 	~Game();
 
-	vector<Player> getPlayers();
+	vector<Player *> getPlayers();
 
-	void addPlayer(Player newPlayer);
+	int getNumPlayers()const;
+	void setNumPlayers(int num);
+
+	void addPlayer(Player * newPlayer);
 	void addPlayer(int pid, string name);
+	bool removePlayer(int pid);
+	void setDirectionToPlayer(int pid, int direction);
 
-	bool removePlayer(Player player);
-	
-	vector<Player> getSnakeAIs();
 
 	void addSnakeAI(Player newPlayer);
-	void addSnakeAI();
-	void addSnakeAIInGame();
+	void addSnakeAI(int id);
+	void addSnakeAIInGame(int id);
 
 	bool removeSnakeAI(Player player);
 
+	void setNumberOfObjects(unsigned int num);
+	int getNumberOfObjects() const;
 
 	int getNumSnakesAI() const;
 	void setNumSnakesAI(int num);
