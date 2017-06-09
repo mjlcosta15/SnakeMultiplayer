@@ -190,7 +190,7 @@ void Game::initMap()
 		do {
 			x = rand() % mapWidth;
 			y = rand() % mapHeight;
-		} while (map.at(x).at(y).getBlockType() != EMPTY_BLOCK);
+		} while (map.at(y).at(x).getBlockType() != EMPTY_BLOCK);
 		map.at(x).at(y).setBlockType(objectType);
 	}
 
@@ -203,7 +203,7 @@ void Game::initMap()
 	for (auto it = players.begin(); it != players.end(); it++) {
 		x = rand() % mapWidth + 2;
 		y = rand() % mapHeight + 2;
-		(*it)->initSnake(x, y);
+		(*it)->initSnake(y, x);
 	}
 
 }
@@ -238,14 +238,14 @@ void Game::addSpecialBlock()
 	do {
 		x = rand() % mapWidth;
 		y = rand() % mapHeight;
-	} while (map.at(x).at(y).getBlockType() != EMPTY_BLOCK);
+	} while (map.at(y).at(x).getBlockType() != EMPTY_BLOCK);
 
-	map.at(x).at(y).setBlockType(objectType);
+	map.at(y).at(x).setBlockType(objectType);
 }
 
 Block Game::getBlock(int x, int y)
 {
-	return map.at(x).at(y);
+	return map.at(y).at(x);
 }
 
 Message Game::exportInfoToMessage()

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <windows.h>
+#include "MainHeader.h"
+#include "resource.h"
 
 using namespace std;
 

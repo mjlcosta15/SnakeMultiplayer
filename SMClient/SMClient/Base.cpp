@@ -35,13 +35,13 @@
 
 // Pré-declaração da função WndProc (a que executa os procedimentos da janela por
 // "callback") 
-LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK TreatEvents(HWND, UINT, WPARAM, LPARAM);
 
 // Nome da classe da janela (para programas de uma só janela, normalmente este 
 // nome é igual ao do próprio programa)
 // "szprogName" é usado mais abaixo na definição das propriedades 
 // da classe da janela
-TCHAR *szProgName = TEXT("Base");
+TCHAR *szProgName = TEXT("Snake Multiplayer");
 
 
 // ============================================================================
@@ -67,7 +67,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 // 1. Criar a janela com a definição das características e registo da estrutura
 //	WNDCLASSEX no Windows
 // ============================================================================
-	WWindow Wnd(szProgName, TEXT("Exemplo de Janela Principal em C++"), (HWND)HWND_DESKTOP);
+	WWindow Wnd(szProgName, TEXT("Snake Multiplayer"), (HWND)HWND_DESKTOP);
 // ============================================================================
 // 4. Mostrar a janela
 // ============================================================================
