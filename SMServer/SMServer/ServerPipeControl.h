@@ -55,6 +55,12 @@ public:
 	// 3 - Envia mensagem a cliente
 	int Write(HANDLE hPipe, Message msg);
 
+	// Regista novo cliente
+	void addClient(HANDLE client);
+
+	// Remove registo
+	void rmClient(HANDLE client);
+
 	// Manda alterações a todos os clientes
 	int Broadcast(Message msg);
 
