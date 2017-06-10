@@ -40,12 +40,12 @@ bool WWindow::Register(){
 	_WndClsEx.cbClsExtra = 0;
 	_WndClsEx.cbWndExtra = sizeof(WWindow *);
 	_WndClsEx.hInstance = GetModuleHandle(AppName.c_str());
-	_WndClsEx.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	_WndClsEx.hIcon = LoadIcon(NULL, IDI_SHIELD);
 	_WndClsEx.hCursor = LoadCursor(NULL, IDC_ARROW);
 	_WndClsEx.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
 	_WndClsEx.lpszMenuName = NULL;
 	_WndClsEx.lpszClassName = AppName.c_str();
-	_WndClsEx.hIconSm = LoadIcon(NULL, IDI_INFORMATION);
+	_WndClsEx.hIconSm = LoadIcon(NULL, IDI_SHIELD);
 	if (!RegisterClassEx(&_WndClsEx)){
 		MessageBox(NULL,TEXT("no registo da classe"),TEXT("Erro"), MB_OK|MB_ICONERROR);
 		return false;
@@ -100,9 +100,9 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam){
 	BOOL eRato = FALSE;
 	switch (messg) {
 	case WM_CLOSE:	// Destruir a janela e terminar o programa
-		// "PostQuitMessage(Exit Status)"
-		if (pWin->doConfirmation())
-			PostQuitMessage(0);
+		PostQuitMessage(0);
+//		if (pWin->doConfirmation())
+//			PostQuitMessage(0);
 		break;
 	default:
 

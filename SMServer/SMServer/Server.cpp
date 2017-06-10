@@ -1,3 +1,4 @@
+
 #include "Server.h"
 
 Game game;
@@ -51,7 +52,7 @@ Server::Server()
 	// Create Pipe
 	
 	lpName = TEXT("\\\\.\\pipe\\exemplo");	//tem de ser alterado
-	dwOpenMode = PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED;	// est· correto
+	dwOpenMode = PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED;	// est√° correto
 	dwPipeMode = PIPE_TYPE_MESSAGE;
 	nMaxInstances = PIPE_UNLIMITED_INSTANCES;
 	nOutBufferSize = BUFSIZE;
@@ -83,7 +84,7 @@ void Server::startServer()
 	if (!smHelper.initSharedMemory()) {
 		finishServer();
 	}
-	//lanÁar a thread the leitura
+	//lan√ßar a thread the leitura
 	threadSharedMemFlag = true;
 	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
 	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
@@ -136,7 +137,7 @@ void Server::GamePhaseLoop()
 	tcout << "Game Phase Loop started" << endl;
 	do {
 		game.updateMap();
-		Sleep(33); //Fazer 30 atualizaÁıes por segundo (30 FPS oh yeah)
+		Sleep(33); //Fazer 30 atualiza√ß√µes por segundo (30 FPS oh yeah)
 	} while (game.getGamePhase() == IN_PROGRESS_PHASE);
 }
 
@@ -380,8 +381,8 @@ HANDLE Server::Create() {
 
 		OVERLAPPED OverlWr = { 0 };
 
-		ZeroMemory(&OverlWr, sizeof(OverlWr));  // n„o È necess·rio pq se inicializa com {0} mas mete-se na mesma
-		ResetEvent(WriteReady); // n„o assinalado
+		ZeroMemory(&OverlWr, sizeof(OverlWr));  // n√£o √© necess√°rio pq se inicializa com {0} mas mete-se na mesma
+		ResetEvent(WriteReady); // n√£o assinalado
 		OverlWr.hEvent = WriteReady; // TENHO DE MUDAR ISTO!!!
 
 		fSuccess = WriteFile(
@@ -389,7 +390,7 @@ HANDLE Server::Create() {
 			&msg,	// message(ponteiro)
 			msg_sz,	// tamanho da mensagem
 			&cbWritten,	// ptr p/ guardar num bytes escritos
-			&OverlWr);	// != NULL -> … mesmo overlapped I/O
+			&OverlWr);	// != NULL -> √â mesmo overlapped I/O
 
 		WaitForSingleObject(WriteReady, INFINITE);
 
@@ -419,7 +420,7 @@ HANDLE Server::Create() {
 		int i;
 		for (i = 0; i < MAX_PLAYERS; i++) {
 			if (clients[i] == cli) {
-				clients[i] = NULL; // O close HANDLE È feito na thread desse cliente
+				clients[i] = NULL; // O close HANDLE √© feito na thread desse cliente
 				return;
 				;
 			}
@@ -469,7 +470,7 @@ HANDLE Server::Create() {
 		DWORD cbBytesRead = 0, cbReplyBytes = 0;
 		int numresp = 0;
 		BOOL fSuccess = FALSE;
-		HANDLE hPipe = (HANDLE)lpvParam; // a infroamacao enviada ‡ thread È o handle do pipe
+		HANDLE hPipe = (HANDLE)lpvParam; // a infroamacao enviada √† thread √© o handle do pipe
 
 		HANDLE ReadReady;
 		OVERLAPPED OverlRd = { 0 };
@@ -479,7 +480,7 @@ HANDLE Server::Create() {
 		cout << "ola mundo" << endl;
 
 		if (hPipe == NULL) {
-			_tprintf(TEXT("\nErro - o handle enviado no param da thread È nulo"));
+			_tprintf(TEXT("\nErro - o handle enviado no param da thread √© nulo"));
 			return -1;
 		}
 
@@ -490,7 +491,7 @@ HANDLE Server::Create() {
 			NULL);
 
 		if (ReadReady == NULL) {
-			_tprintf(TEXT("\nServidor: n„o foi possÌvel criar o evento Read. Mais vale parar j·"));
+			_tprintf(TEXT("\nServidor: n√£o foi poss√≠vel criar o evento Read. Mais vale parar j√°"));
 			return 1;
 		}
 
@@ -514,7 +515,7 @@ HANDLE Server::Create() {
 			GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
 
 			if (cbBytesRead < msg_sz) {
-				_tprintf(TEXT("\nReadFile n„o leu os dados todos. Erro = %d"), GetLastError());
+				_tprintf(TEXT("\nReadFile n√£o leu os dados todos. Erro = %d"), GetLastError());
 
 				if (!fSuccess || cbBytesRead < msg_sz) {
 					_tprintf(TEXT("\nServidor: Recebi(?) de: [%d] msg: [%s]"), Pedido.pid, Pedido.msg);
@@ -539,8 +540,3 @@ HANDLE Server::Create() {
 		}
 
 	}
-
-
-
-
-
