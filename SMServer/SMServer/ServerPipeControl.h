@@ -26,43 +26,17 @@
 class ServerPipeControl
 {
 private:
-	LPCTSTR lpName;
-	DWORD dwOpenMode;
-	DWORD dwPipeMode;
-	DWORD nMaxInstances;
-	DWORD nOutBufferSize;
-	DWORD nInBufferSize;
-	DWORD nDefaultTimeOut;
-	LPSECURITY_ATTRIBUTES lpSecurityAttributes;
+	
+	
 
-	HANDLE hNamedPipe;
-
-	HANDLE WriteReady;
-
-	HANDLE clients[MAX_PLAYERS];
 
 public:
 	ServerPipeControl();
 	~ServerPipeControl();
 
-	// 1 - Criação do Pipe
-	HANDLE Create();
+	
 
-	// 2 - Aguarda que um cliente se ligue
-	BOOL Connect();
-	BOOL Disconnect();
 
-	// 3 - Envia mensagem a cliente
-	int Write(HANDLE hPipe, Message msg);
-
-	// Regista novo cliente
-	void addClient(HANDLE client);
-
-	// Remove registo
-	void rmClient(HANDLE client);
-
-	// Manda alterações a todos os clientes
-	int Broadcast(Message msg);
 
 };
 
