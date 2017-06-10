@@ -89,8 +89,6 @@ void Server::startServer()
 	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
 	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
-	waitConnection();
-
 	serverMainLoop();
 }
 
@@ -99,15 +97,18 @@ void Server::serverMainLoop()
 
 	tcout << "Server Online." << endl;
 	game.setInitalPhase();
-
+	//iniciar thread de aceitar clientes
 	do {
 
 		//Initial Phase
 		if (game.getGamePhase() == INITIAL_PHASE)
 			initialPhaseLoop();
 		//Game Phase
-		if (game.getGamePhase() == IN_PROGRESS_PHASE)
+		if (game.getGamePhase() == IN_PROGRESS_PHASE) {
+			//fechar thread de aceitar clientes
 			GamePhaseLoop();
+		}
+			
 
 	} while (game.getGamePhase() == FINISH_PHASE);
 	//Finish Phase
