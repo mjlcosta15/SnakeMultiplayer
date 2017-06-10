@@ -58,4 +58,5 @@ typedef struct
 	Map map;
 }Message;
 
+
 #endif //MAIN_HEADER_H
