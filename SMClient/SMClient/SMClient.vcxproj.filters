@@ -21,20 +21,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ClientPipeControl.cpp">
-      <Filter>Source Files\ClientConnection</Filter>
-    </ClCompile>
     <ClCompile Include="Base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>Source Files\ClientConnection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientPipeControl.h">
-      <Filter>Header Files\ClientConnection</Filter>
-    </ClInclude>
     <ClInclude Include="MainHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,6 +40,12 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>Header Files\ClientConnection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SMServer\SMServer\MainHeader.h">
+      <Filter>Header Files\ClientConnection</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

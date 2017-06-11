@@ -148,11 +148,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Base.cpp" />
-    <ClCompile Include="ClientPipeControl.cpp" />
+    <ClCompile Include="Client.cpp" />
     <ClCompile Include="MainWnd.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientPipeControl.h" />
+    <ClInclude Include="..\..\SMServer\SMServer\MainHeader.h" />
+    <ClInclude Include="Client.h" />
     <ClInclude Include="MainHeader.h" />
     <ClInclude Include="MainWnd.h" />
     <ClInclude Include="resource.h" />
