@@ -1,8 +1,12 @@
 #include "MainWnd.h"
+#include "Client.h"
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
 HINSTANCE WWindow::hInstance = NULL;
+
+Client client;
+
 //---------------------------------------------------------------------------
 WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 	HWND parent,
@@ -89,6 +93,9 @@ WWindow::operator HWND()
 //---------------------------------------------------------------------------
 void WWindow::StartUp(void) {
 	hInstance = GetModuleHandle(AppName.c_str());
+
+	client.start();
+
 	if (Register())
 		started = true;
 

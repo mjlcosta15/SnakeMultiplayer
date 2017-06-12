@@ -17,7 +17,7 @@ OVERLAPPED OverlRd;
 HANDLE hPipe;
 BOOL fSuccess = false;
 
-Message msg;
+//Message msg;
 LPDWORD cbBytesRead;
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 
@@ -31,7 +31,7 @@ int DeveContinuar = 1;
 int ReaderAlive = 0;
 
 DWORD WINAPI ThreadClienteReader(LPVOID lpvParam) {
-	Message fromServer;
+	Message FromServer;
 
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
@@ -101,7 +101,6 @@ DWORD WINAPI ThreadClienteReader(LPVOID lpvParam) {
 
 Client::Client()
 {
-	
 }
 
 
@@ -115,7 +114,8 @@ int Client::start() {
 	DWORD cbWritten, dwMode;
 	
 
-	Message msg;
+	//Message msg;
+	Message MsgToSend;
 
 	_setmode(_fileno(stdout), _O_WTEXT); // proteger com #ifdef UNICODE ... #endif
 
@@ -251,33 +251,5 @@ int Client::start() {
 
 }
 
-void Client::OpenPipe() {
-
-	hPipe = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreaationDisposition, dwFlaghsAndAttributes, hTemplateFile);
-
-}
-
-HANDLE Client::Create() {
-	return readReady = CreateEvent(NULL, 0, 0, NULL);
-}
-
-void Client::InitializeOverlappedStructure() {
-	
-	ZeroMemory(&OverlRd, sizeof(OverlRd));
-	ResetEvent(readReady);
-	OverlRd.hEvent = readReady;
-}
-
-void Client::Read(){
-
-	fSuccess = ReadFile(hPipe, &msg, msg_sz, cbBytesRead, &OverlRd);
-	
-}
-
-void Client::Wait() {
-
-	WaitForSingleObject(hPipe, INFINITE);
-
-}
 
 
