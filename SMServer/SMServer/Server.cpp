@@ -89,7 +89,9 @@ void Server::startServer()
 	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
 	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
-	serverMainLoop();
+	waitConnection();
+
+	//serverMainLoop();
 }
 
 void Server::serverMainLoop()

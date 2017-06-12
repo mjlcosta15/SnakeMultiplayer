@@ -19,21 +19,7 @@ public:
 	Client();
 	~Client();
 
-	void OpenPipe();
-
-	// 1 - Cria/Liga
-	HANDLE Create();
-
-	// 2 - Inicializa
-	void InitializeOverlappedStructure();
-
-	void Read();
-
-	void Wait();
-
 	int start();
-
-
 
 };
 
