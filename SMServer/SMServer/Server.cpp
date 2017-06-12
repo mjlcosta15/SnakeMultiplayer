@@ -6,6 +6,8 @@ SharedMemoryHelper smHelper;
 HANDLE hThreadSharedMemory;
 
 bool threadSharedMemFlag;
+bool threadReadFromSMFlag = false;
+bool threadWriteFromSMFlag = false;
 unsigned int smThreadID;
 
 HANDLE hNamedPipe;
@@ -32,13 +34,95 @@ HANDLE hThread;
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
 
+
+
+DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
+
+	HMODULE hDLL = LoadLibrary(TEXT("SM_DLL.dll"));
+	Message * (*ptr)(void);
+
+	if (hDLL == NULL) {
+		cout << "não Há dll" << endl;
+	}
+	ptr = (Message * (*)(void)) GetProcAddress(hDLL, "ReadFromSharedMemoryBuffer");
+	if (ptr == NULL) {
+		tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
+		return -1;
+	}
+	
+	while (1) {
+		Message * msg = ptr();
+		if(msg != nullptr)
+			tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
+
+		if (threadReadFromSMFlag) {
+			return 1;
+		}
+		
+	}
+	
+	return 1;
+}
+
+DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
+
+
+	HMODULE hDLL = LoadLibrary(TEXT("SM_DLL.dll"));
+	bool * (*ptr)(Message);
+
+	if (hDLL == NULL) {
+		cout << "não Há dll" << endl;
+	}
+	ptr = (bool * (*)(Message)) GetProcAddress(hDLL, "WriteToSharedMemoryBuffer");
+	if (ptr == NULL) {
+		tcout << TEXT("ptr não tem o metodo WriteToSharedMemoryBuffer") << endl;
+		return -1;
+	}
+
+	while (1) {
+
+		if (ptr(game.exportInfoToMessage())) {
+			tcout << TEXT("ENviado com sucesso") << endl;
+		}
+		else {
+			tcout << TEXT("Erro ao enviar") << endl;
+		}
+
+		if (threadWriteFromSMFlag) {
+			return 1;
+		}
+
+	}
+
+	return 1;
+}
 unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 {
 	Server * server = (Server *)p;
 
+	CreateThread(
+		NULL,
+		0,
+		readFromSharedMemory,
+		(LPVOID)hNamedPipe,
+		0,
+		&dwThreadId);
+
+	CreateThread(
+		NULL,
+		0,
+		WriteForSharedMemory,
+		(LPVOID)hNamedPipe,
+		0,
+		&dwThreadId);
+
 	while (server->getSharedMemFlag()) {
 		//Ler da memoria partilhada e imprimir no ecra
+
 	}
+	
+	threadReadFromSMFlag = true;
+	threadSharedMemFlag = true;
 
 	tcout << "ThreadSharedMemoryReader Closed" << endl;
 	return 0;
@@ -50,7 +134,7 @@ Server::Server()
 	game = Game();
 
 	// Create Pipe
-	
+
 	lpName = TEXT("\\\\.\\pipe\\exemplo");	//tem de ser alterado
 	dwOpenMode = PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED;	// está correto
 	dwPipeMode = PIPE_TYPE_MESSAGE;
@@ -79,8 +163,11 @@ Server::~Server()
 {
 }
 
+
 void Server::startServer()
 {
+
+
 	if (!smHelper.initSharedMemory()) {
 		finishServer();
 	}
@@ -110,7 +197,7 @@ void Server::serverMainLoop()
 			//fechar thread de aceitar clientes
 			GamePhaseLoop();
 		}
-			
+
 
 	} while (game.getGamePhase() == FINISH_PHASE);
 	//Finish Phase
@@ -130,7 +217,7 @@ void Server::initialPhaseLoop()
 		game.setSnakeSize(3);
 		game.addPlayer(1, "jorge");
 		game.initMap();
-		game.setInProgressPhase();
+		//		game.setInProgressPhase();
 
 	} while (game.getGamePhase() == INITIAL_PHASE);
 }
@@ -307,239 +394,240 @@ bool Server::getSharedMemFlag() const {
 
 
 int Server::waitConnection()
-	{
-		while (1) {
+{
+	while (1) {
 
-			hNamedPipe = CreateNamedPipe(
-				lpszPipename, // nome do pipe
-				PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-				PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
-				PIPE_WAIT,
-				PIPE_UNLIMITED_INSTANCES,
-				BUFSIZE,
-				BUFSIZE,
-				5000,
-				NULL);
+		hNamedPipe = CreateNamedPipe(
+			lpszPipename, // nome do pipe
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+			PIPE_WAIT,
+			PIPE_UNLIMITED_INSTANCES,
+			BUFSIZE,
+			BUFSIZE,
+			5000,
+			NULL);
 
-			if (hNamedPipe == INVALID_HANDLE_VALUE) {
-				_tprintf(TEXT("\Falhou a criacao do pipe, erro = %d"), GetLastError());
-				return -1;
-			}
-
-			_tprintf(TEXT("\nServidor a aguardar que um cliente se ligue"));
-
-			fConnected = ConnectNamedPipe(hNamedPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-
-			if (fConnected) {
-
-				hThread = CreateThread(
-					NULL,
-					0,
-					InstanceThread,
-					(LPVOID)hNamedPipe,
-					0,
-					&dwThreadId);
-
-				if (hThread == NULL) {
-					_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
-
-					return -1;
-				}
-				else
-					CloseHandle(hThread);
-
-			}
-			else
-				CloseHandle(hNamedPipe);
-
-		}
-		return 0;
-
-	}
-
-
-HANDLE Server::Create() {
-		return CreateNamedPipe(lpName,
-			dwOpenMode,
-			dwPipeMode,
-			nMaxInstances,
-			nOutBufferSize,
-			nInBufferSize,
-			nDefaultTimeOut,
-			lpSecurityAttributes);
-	}
-
-	BOOL Server::Connect() {
-		return ConnectNamedPipe(hNamedPipe, NULL);
-	}
-
-	BOOL Server::Disconnect() {
-		return DisconnectNamedPipe(hNamedPipe);
-	}
-
-	int Server::Write(HANDLE hPipe, Message msg) {
-
-		DWORD cbWritten = 0;
-		BOOL fSuccess = 0;
-
-		OVERLAPPED OverlWr = { 0 };
-
-		ZeroMemory(&OverlWr, sizeof(OverlWr));  // não é necessário pq se inicializa com {0} mas mete-se na mesma
-		ResetEvent(WriteReady); // não assinalado
-		OverlWr.hEvent = WriteReady; // TENHO DE MUDAR ISTO!!!
-
-		fSuccess = WriteFile(
-			hPipe,	// handle para o pipe
-			&msg,	// message(ponteiro)
-			msg_sz,	// tamanho da mensagem
-			&cbWritten,	// ptr p/ guardar num bytes escritos
-			&OverlWr);	// != NULL -> É mesmo overlapped I/O
-
-		WaitForSingleObject(WriteReady, INFINITE);
-
-		GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
-
-		if (cbWritten < msg_sz)
-			_tprintf(TEXT("\nNao chegou tudo %d"), GetLastError());
-
-		return 1;
-
-	}
-
-	void Server::addClient(HANDLE cli) {
-
-		int i;
-		for (i = 0; i < MAX_PLAYERS; i++) {
-			if (clients[i] == NULL) {
-				clients[i] = cli;
-				return;
-			}
-		}
-
-	}
-
-	void Server::rmClient(HANDLE cli) {
-
-		int i;
-		for (i = 0; i < MAX_PLAYERS; i++) {
-			if (clients[i] == cli) {
-				clients[i] = NULL; // O close HANDLE é feito na thread desse cliente
-				return;
-				;
-			}
-		}
-	}
-
-	int Server::Broadcast(Message msg) {
-
-		int i, numwrites = 0;
-
-		for (i = 0; i < MAX_PLAYERS; i++) {
-			if (clients[i] != 0)
-				numwrites += Write(clients[i], msg);
-		}
-
-		return 0;
-
-	}
-
-	void Server::setfConnected(BOOL flag) {
-
-		fConnected = flag;
-
-	}
-
-	void Server::initializeClients()
-	{
-		int i;
-		for (i = 0; i < MAX_PLAYERS; i++)
-			clients[i] = NULL;
-	}
-
-	void Server::setHNamedPipe(HANDLE namedPipe) {
-
-		hNamedPipe = namedPipe;
-
-	}
-
-	HANDLE Server::getHNamedPipe()
-	{
-		return HANDLE();
-	}
-
-	DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
-	{
-		Message Pedido, Resposta;
-		DWORD cbBytesRead = 0, cbReplyBytes = 0;
-		int numresp = 0;
-		BOOL fSuccess = FALSE;
-		HANDLE hPipe = (HANDLE)lpvParam; // a infroamacao enviada à thread é o handle do pipe
-
-		HANDLE ReadReady;
-		OVERLAPPED OverlRd = { 0 };
-
-		//_tcscpy(to_string(Resposta.pid), TEXT("SRV"))
-
-		cout << "ola mundo" << endl;
-
-		if (hPipe == NULL) {
-			_tprintf(TEXT("\nErro - o handle enviado no param da thread é nulo"));
+		if (hNamedPipe == INVALID_HANDLE_VALUE) {
+			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
 			return -1;
 		}
 
-		ReadReady = CreateEvent(
-			NULL,	// default 
-			TRUE,
-			FALSE,
-			NULL);
+		_tprintf(TEXT("\nServidor a aguardar que um cliente se ligue"));
 
-		if (ReadReady == NULL) {
-			_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
-			return 1;
-		}
+		fConnected = ConnectNamedPipe(hNamedPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
 
-		addClient(hPipe); // Regista cliente
+		if (fConnected) {
 
-		while (1) {
+			hThread = CreateThread(
+				NULL,
+				0,
+				InstanceThread,
+				(LPVOID)hNamedPipe,
+				0,
+				&dwThreadId);
 
-			ZeroMemory(&OverlRd, sizeof(OverlRd));
-			ResetEvent(ReadReady);
-			OverlRd.hEvent = ReadReady;
+			if (hThread == NULL) {
+				_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
 
-			fSuccess = ReadFile(
-				hPipe,
-				&Pedido,
-				msg_sz,
-				&cbBytesRead,
-				&OverlRd);
-
-			WaitForSingleObject(ReadReady, INFINITE);
-
-			GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
-
-			if (cbBytesRead < msg_sz) {
-				_tprintf(TEXT("\nReadFile não leu os dados todos. Erro = %d"), GetLastError());
-
-				if (!fSuccess || cbBytesRead < msg_sz) {
-					_tprintf(TEXT("\nServidor: Recebi(?) de: [%d] msg: [%s]"), Pedido.pid, Pedido.msg);
-					// _tcspy(Resposta.msg, s);
-					//_tcscat(Resposta.msg, Pedido.msg);
-					strcat_s(Resposta.msg, Pedido.msg);
-					numresp = Broadcast(Resposta);
-					_tprintf(TEXT("\nServidor: %d respostas enviadas"), numresp);
-				}
-
-				rmClient(hNamedPipe);
-
-				FlushFileBuffers(hNamedPipe);
-				DisconnectNamedPipe(hNamedPipe);
-				CloseHandle(hNamedPipe);
-
-				_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
-				return 1;
-
+				return -1;
 			}
+			else
+				CloseHandle(hThread);
+
+		}
+		else
+			CloseHandle(hNamedPipe);
+
+	}
+	return 0;
+
+}
+
+
+HANDLE Server::Create() {
+	return CreateNamedPipe(lpName,
+		dwOpenMode,
+		dwPipeMode,
+		nMaxInstances,
+		nOutBufferSize,
+		nInBufferSize,
+		nDefaultTimeOut,
+		lpSecurityAttributes);
+}
+
+BOOL Server::Connect() {
+	return ConnectNamedPipe(hNamedPipe, NULL);
+}
+
+BOOL Server::Disconnect() {
+	return DisconnectNamedPipe(hNamedPipe);
+}
+
+int Server::Write(HANDLE hPipe, Message msg) {
+
+	DWORD cbWritten = 0;
+	BOOL fSuccess = 0;
+
+	OVERLAPPED OverlWr = { 0 };
+
+	ZeroMemory(&OverlWr, sizeof(OverlWr));  // não é necessário pq se inicializa com {0} mas mete-se na mesma
+	ResetEvent(WriteReady); // não assinalado
+	OverlWr.hEvent = WriteReady; // TENHO DE MUDAR ISTO!!!
+
+	fSuccess = WriteFile(
+		hPipe,	// handle para o pipe
+		&msg,	// message(ponteiro)
+		msg_sz,	// tamanho da mensagem
+		&cbWritten,	// ptr p/ guardar num bytes escritos
+		&OverlWr);	// != NULL -> É mesmo overlapped I/O
+
+	WaitForSingleObject(WriteReady, INFINITE);
+
+	GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
+
+	if (cbWritten < msg_sz)
+		_tprintf(TEXT("\nNao chegou tudo %d"), GetLastError());
+
+	return 1;
+
+}
+
+void Server::addClient(HANDLE cli) {
+
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == NULL) {
+			clients[i] = cli;
+			return;
+		}
+	}
+
+}
+
+void Server::rmClient(HANDLE cli) {
+
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == cli) {
+			clients[i] = NULL; // O close HANDLE é feito na thread desse cliente
+			return;
+			;
+		}
+	}
+}
+
+int Server::Broadcast(Message msg) {
+
+	int i, numwrites = 0;
+
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] != 0)
+			numwrites += Write(clients[i], msg);
+	}
+
+	return 0;
+
+}
+
+void Server::setfConnected(BOOL flag) {
+
+	fConnected = flag;
+
+}
+
+void Server::initializeClients()
+{
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++)
+		clients[i] = NULL;
+}
+
+void Server::setHNamedPipe(HANDLE namedPipe) {
+
+	hNamedPipe = namedPipe;
+
+}
+
+HANDLE Server::getHNamedPipe()
+{
+	return HANDLE();
+}
+
+DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
+{
+	Message Pedido, Resposta;
+	DWORD cbBytesRead = 0, cbReplyBytes = 0;
+	int numresp = 0;
+	BOOL fSuccess = FALSE;
+	HANDLE hPipe = (HANDLE)lpvParam; // a infroamacao enviada à thread é o handle do pipe
+
+	HANDLE ReadReady;
+	OVERLAPPED OverlRd = { 0 };
+
+	//_tcscpy(to_string(Resposta.pid), TEXT("SRV"))
+
+	cout << "ola mundo" << endl;
+
+	if (hPipe == NULL) {
+		_tprintf(TEXT("\nErro - o handle enviado no param da thread é nulo"));
+		return -1;
+	}
+
+	ReadReady = CreateEvent(
+		NULL,	// default 
+		TRUE,
+		FALSE,
+		NULL);
+
+	if (ReadReady == NULL) {
+		_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+		return 1;
+	}
+
+	addClient(hPipe); // Regista cliente
+
+	while (1) {
+
+		ZeroMemory(&OverlRd, sizeof(OverlRd));
+		ResetEvent(ReadReady);
+		OverlRd.hEvent = ReadReady;
+
+		fSuccess = ReadFile(
+			hPipe,
+			&Pedido,
+			msg_sz,
+			&cbBytesRead,
+			&OverlRd);
+
+		WaitForSingleObject(ReadReady, INFINITE);
+
+		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
+
+		if (cbBytesRead < msg_sz) {
+			_tprintf(TEXT("\nReadFile não leu os dados todos. Erro = %d"), GetLastError());
+
+			if (!fSuccess || cbBytesRead < msg_sz) {
+				_tprintf(TEXT("\nServidor: Recebi(?) de: [%d] msg: [%s]"), Pedido.pid, Pedido.msg);
+				// _tcspy(Resposta.msg, s);
+				//_tcscat(Resposta.msg, Pedido.msg);
+				strcat_s(Resposta.msg, Pedido.msg);
+				numresp = Broadcast(Resposta);
+				_tprintf(TEXT("\nServidor: %d respostas enviadas"), numresp);
+			}
+
+			rmClient(hNamedPipe);
+
+			FlushFileBuffers(hNamedPipe);
+			DisconnectNamedPipe(hNamedPipe);
+			CloseHandle(hNamedPipe);
+
+			_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
+			return 1;
 
 		}
 
 	}
+
+}
+
