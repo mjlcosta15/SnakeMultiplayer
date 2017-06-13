@@ -126,6 +126,30 @@ int Client::start() {
 	//InitializeOverlappedStructure();
 	//Wait();
 
+	//***********Pipe Remoto************
+
+	HANDLE hUserToken = NULL;
+	BOOL log;
+	int ret;
+
+	TCHAR username[20],	// username da máquina destino
+		pass[20],			// password desse utilizador (na máquina destino)
+		dominio[20];		// pode ser o IP da máquina
+
+
+	_tcscpy(dominio, TEXT("192.168.1.101"));
+
+	_tcscpy(lpszPipename, TEXT("\\\\"));
+	_tcscat(lpszPipename, dominio);
+	_tcscat(lpszPipename, TEXT("\\pipe\\pipeexemplo"));
+
+	log = LogonUser(username, dominio, pass,
+		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
+		LOGON32_PROVIDER_DEFAULT,		// logon provider
+		&hUserToken);
+
+	log = ImpersonateLoggedOnUser(hUserToken);
+
 	while (1) {
 
 		hPipe = CreateFile(
