@@ -126,6 +126,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	// 6. Fim do programa
 	// ============================================================================
 	return((int)lpMsg.wParam);		// Retorna-se sempre o parâmetro "wParam" da
-								// estrutura "lpMsg"
+									// estrutura "lpMsg"
 
 }

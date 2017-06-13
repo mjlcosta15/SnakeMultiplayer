@@ -22,7 +22,7 @@ SNAKE_MULTIPLAYER_API Message * ReadFromSharedMemoryBuffer(void)
 		return nullptr;
 	}
 
-	cout << "estou à espera de eventos" << endl;
+	//cout << "estou à espera de eventos" << endl;
 	WaitForSingleObject(hEvent, INFINITE);
 
 	msg = (Message *)MapViewOfFile(hMapFile, // handle to map object
@@ -33,8 +33,8 @@ SNAKE_MULTIPLAYER_API Message * ReadFromSharedMemoryBuffer(void)
 
 	if (msg == NULL)
 	{
-		_tprintf(TEXT("Could not map view of file (%d).\n"),
-			GetLastError());
+		//_tprintf(TEXT("Could not map view of file (%d).\n"),
+		//	GetLastError());
 
 		CloseHandle(hMapFile);
 		return nullptr;
@@ -99,8 +99,8 @@ SNAKE_MULTIPLAYER_API bool WriteToSharedMemoryBuffer(Message msg)
 
 	if (ptrmsg == NULL)
 	{
-		_tprintf(TEXT("Could not map view of file (%d).\n"),
-			GetLastError());
+		//_tprintf(TEXT("Could not map view of file (%d).\n"),
+		//	GetLastError());
 
 		CloseHandle(hMapFile);
 		return false;

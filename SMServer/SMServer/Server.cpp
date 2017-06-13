@@ -4,6 +4,10 @@
 Game game;
 SharedMemoryHelper smHelper;
 HANDLE hThreadSharedMemory;
+HANDLE hThreadSharedMemoryReader;
+DWORD dwThreadSMReader = 0;
+HANDLE hThreadSharedMemoryWriter;
+DWORD dwThreadSMWriter = 0;
 
 bool threadSharedMemFlag;
 bool threadReadFromSMFlag = false;
@@ -46,14 +50,14 @@ DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
 	}
 	ptr = (Message * (*)(void)) GetProcAddress(hDLL, "ReadFromSharedMemoryBuffer");
 	if (ptr == NULL) {
-		tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
+		//tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
 		return -1;
 	}
 	
 	while (1) {
 		Message * msg = ptr();
 		if(msg != nullptr)
-			tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
+			//tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
 
 		if (threadReadFromSMFlag) {
 			return 1;
@@ -82,10 +86,10 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 	while (1) {
 
 		if (ptr(game.exportInfoToMessage())) {
-			tcout << TEXT("ENviado com sucesso") << endl;
+			//tcout << TEXT("ENviado com sucesso") << endl;
 		}
 		else {
-			tcout << TEXT("Erro ao enviar") << endl;
+			//tcout << TEXT("Erro ao enviar") << endl;
 		}
 
 		if (threadWriteFromSMFlag) {
@@ -104,17 +108,17 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 		NULL,
 		0,
 		readFromSharedMemory,
-		(LPVOID)hNamedPipe,
+		(LPVOID)hThreadSharedMemoryReader,
 		0,
-		&dwThreadId);
+		&dwThreadSMReader);
 
 	CreateThread(
 		NULL,
 		0,
 		WriteForSharedMemory,
-		(LPVOID)hNamedPipe,
+		(LPVOID)hThreadSharedMemoryWriter,
 		0,
-		&dwThreadId);
+		&dwThreadSMWriter);
 
 	while (server->getSharedMemFlag()) {
 		//Ler da memoria partilhada e imprimir no ecra

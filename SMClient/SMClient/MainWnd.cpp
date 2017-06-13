@@ -4,8 +4,133 @@
 bool WWindow::started = false;
 tstring WWindow::AppName;
 HINSTANCE WWindow::hInstance = NULL;
+int idx_row = 0;
+Message msg;
 
 Client client;
+HANDLE hThreadClient;
+DWORD dwThreadClient;
+
+
+HANDLE hThreadSharedMemory;
+HANDLE hThreadSharedMemoryReader;
+DWORD dwThreadSMReader = 0;
+HANDLE hThreadSharedMemoryWriter;
+DWORD dwThreadSMWriter = 0;
+
+bool threadSharedMemFlag = true;
+bool threadReadFromSMFlag = false;
+bool threadWriteFromSMFlag = false;
+DWORD smThreadID;
+
+//------------Threads Shared Memory-----------------------------------------
+DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
+
+	HMODULE hDLL = LoadLibrary(TEXT("SM_DLL.dll"));
+	Message * (*ptr)(void);
+
+	if (hDLL == NULL) {
+		cout << "não Há dll" << endl;
+	}
+	ptr = (Message * (*)(void)) GetProcAddress(hDLL, "ReadFromSharedMemoryBuffer");
+	if (ptr == NULL) {
+		//tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
+		return -1;
+	}
+
+	while (1) {
+		Message * msg = ptr();
+		if (msg != nullptr)
+			//tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
+
+			if (threadReadFromSMFlag) {
+				return 1;
+			}
+
+	}
+
+	return 1;
+}
+
+DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
+
+
+	HMODULE hDLL = LoadLibrary(TEXT("SM_DLL.dll"));
+	bool * (*ptr)(Message);
+
+	if (hDLL == NULL) {
+		cout << "não Há dll" << endl;
+	}
+	ptr = (bool * (*)(Message)) GetProcAddress(hDLL, "WriteToSharedMemoryBuffer");
+	if (ptr == NULL) {
+		tcout << TEXT("ptr não tem o metodo WriteToSharedMemoryBuffer") << endl;
+		return -1;
+	}
+
+	while (1) {
+
+		if (ptr(msg)) {
+			//tcout << TEXT("ENviado com sucesso") << endl;
+		}
+		else {
+			//tcout << TEXT("Erro ao enviar") << endl;
+		}
+
+		if (threadWriteFromSMFlag) {
+			return 1;
+		}
+
+	}
+
+	return 1;
+}
+DWORD WINAPI ThreadSharedMemoryReader(LPVOID lParam) {
+
+	CreateThread(
+		NULL,
+		0,
+		readFromSharedMemory,
+		(LPVOID)hThreadSharedMemoryReader,
+		0,
+		&dwThreadSMReader);
+
+	CreateThread(
+		NULL,
+		0,
+		WriteForSharedMemory,
+		(LPVOID)hThreadSharedMemoryWriter,
+		0,
+		&dwThreadSMWriter);
+
+	while (threadSharedMemFlag) {
+		//Ler da memoria partilhada e imprimir no ecra
+
+	}
+
+	threadReadFromSMFlag = true;
+	threadSharedMemFlag = true;
+
+	tcout << "ThreadSharedMemoryReader Closed" << endl;
+	return 0;
+}
+
+//------------Threads Shared Memory END-----------------------------------------
+
+
+
+
+//------------Thread Client-----------------------------------------------------
+
+DWORD WINAPI ThreadClient(LPVOID lParam) {
+
+	client.start();
+	return 0;
+}
+
+
+//------------Thread Client END-------------------------------------------------
+
+
 
 //---------------------------------------------------------------------------
 WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
@@ -94,8 +219,6 @@ WWindow::operator HWND()
 void WWindow::StartUp(void) {
 	hInstance = GetModuleHandle(AppName.c_str());
 
-	client.start();
-
 	if (Register())
 		started = true;
 
@@ -112,25 +235,45 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	{
 	case WM_CLOSE:
 		PostQuitMessage(0);
+		threadSharedMemFlag = false;
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 
-		//Menu		
-		case ID_NOVOJOGO_CRIARJOGO:
-			DialogBox(NULL, MAKEINTRESOURCE(IDD_DIALOG_CREATE_GAME), hWnd, (DLGPROC)TreatDialogCreateGame);
+			//Menu		
+		case ID_JOGO_LIGARREMOTAMENTE:
+			CreateThread(
+				NULL,
+				0,
+				ThreadClient,
+				(LPVOID)hThreadClient,
+				0,
+				&dwThreadClient);
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_LIGAR_SERVIDOR), hWnd, (DLGPROC)TreatDialogConnectToServer);
+			break;
+		case ID_JOGO_LIGARLOCALMENTE:
+			CreateThread(
+				NULL,
+				0,
+				ThreadSharedMemoryReader,
+				(LPVOID)hThreadSharedMemory,
+				0,
+				&smThreadID);
+			
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_LIGAR_SERVIDOR), hWnd, (DLGPROC)TreatDialogConnectToServer);
+			//threads da dll
+			break;
+		case ID_EDITAR_EDITARSKINS:
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_EDITAR_IMAGENS), hWnd, (DLGPROC)TreatDialogEditSkins);
 			break;
 		case ID_JOGO_SAIR:
 			PostQuitMessage(0);
-			break;
-		case ID_NOVOJOGO_PROCURARJOGO:
-			DialogBox(NULL, MAKEINTRESOURCE(IDD_DIALOG_JOIN), hWnd, (DLGPROC)TreatDialogJoinGame);
 			break;
 		case ID_SOBRE:
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, (DLGPROC)TreatDialogJoinGame);
 			break;
 
-		//Keyboard
+			//Keyboard
 		case WM_KEYDOWN:
 			if (wParam == VK_LEFT)
 				direction = GOING_LEFT;
@@ -140,7 +283,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 				direction = GOING_UP;
 			if (wParam == VK_DOWN)
 				direction = GOING_DOWN;
-			
+
 			//enviar a direção
 			break;
 
@@ -176,7 +319,7 @@ LRESULT CALLBACK WWindow::TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wP
 		switch (LOWORD(wParam)) {
 		case ID_DIALOG_CREATE_BUTTON:
 			GetWindowText(GetDlgItem(hWnd, IDC_EDIT_PLAYER_NAME), playerName, 256);
-			numPlayers = GetDlgItemInt(hWnd, IDC_EDIT_NUM_PLAYERS , NULL, FALSE);
+			numPlayers = GetDlgItemInt(hWnd, IDC_EDIT_NUM_PLAYERS, NULL, FALSE);
 			if (numPlayers < 0 || numPlayers > 10) {
 				MessageBox(hWnd, TEXT("Numero de Jogadores errado [1,10]"), TEXT("Erro"), MB_ICONERROR);
 				return FALSE;
@@ -239,6 +382,171 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 			return TRUE;
 		case ID_DLG_JOIN_CANCEL:
 			EndDialog(hWnd, TRUE);
+			return TRUE;
+		default:
+			return FALSE;
+		}
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+
+LRESULT CALLBACK WWindow::TreatDialogConnectToServer(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
+	switch (messg) {
+	case WM_CLOSE:
+		EndDialog(hWnd, 0);
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case ID_CRIAR_JOGO:
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_DIALOG_CREATE_GAME), hWnd, (DLGPROC)TreatDialogCreateGame);
+			return TRUE;
+		case ID_JUNTAR_AO_JOGO:
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_DIALOG_JOIN), hWnd, (DLGPROC)TreatDialogJoinGame);
+			return TRUE;
+		default:
+			return FALSE;
+		}
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+LRESULT WWindow::TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
+{
+	HWND hCombo = GetDlgItem(hWnd, IDC_COMBO1);
+	TCHAR skins[14][20] = {
+		TEXT("Cobra"),
+		TEXT("Cobra com Gelo"),
+		TEXT("Cobra com Cola"),
+		TEXT("Cobra com Vodka"),
+		TEXT("Cola"),
+		TEXT("Cola Especial"),
+		TEXT("Comida"),
+		TEXT("Gelo"),
+		TEXT("Granada"),
+		TEXT("Oleo"),
+		TEXT("Oleo Especial"),
+		TEXT("Vodka"),
+		TEXT("Vodka Especial"),
+		TEXT("Terreno")
+	};
+
+	TCHAR A[16];
+	int  k = 0;
+	TCHAR cmd[256] = "mspaint.exe ..\\\\";
+	switch (messg) {
+	case WM_INITDIALOG:
+		// preenche a combobox.
+		memset(&A, 0, sizeof(A));
+		for (k = 0; k <= 13; k += 1) {
+			strcpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)skins[k]);
+			SendMessage(hCombo, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)A);
+		}
+		SendMessage(hCombo, CB_SETCURSEL, (WPARAM)2, (LPARAM)0);
+		break;
+	case WM_CLOSE:
+		EndDialog(hWnd, 0);
+		return TRUE;
+
+	case WM_COMMAND:
+		
+
+		switch (LOWORD(wParam)) {
+		case IDC_COMBO1:
+			if (HIWORD(wParam) == CBN_SELCHANGE) {
+				idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
+			}
+			return TRUE;
+
+		case ID_ESCOLHA_SKIN:
+			STARTUPINFO si;
+			PROCESS_INFORMATION pi;
+
+			ZeroMemory(&si, sizeof(si));
+			si.cb = sizeof(si);
+			ZeroMemory(&pi, sizeof(pi));
+			
+			//idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
+			//SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
+
+			switch (idx_row) {
+			case 0:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "snake.bmp");
+				break;
+			case 1:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "snake_ice.bmp");
+				break;
+			case 2:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "snake_glue.bmp");
+				break;
+			case 3:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "snake_vodka.bmp");
+				break;
+			case 4:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "glue.bmp");
+				break;
+			case 5:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "o_glue.bmp");
+				break;
+			case 6:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "food.bmp");
+				break;
+			case 7:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "ice.bmp");
+				break;
+			case 8:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "granade.bmp");
+				break;
+			case 9:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "oil.bmp");
+				break;
+			case 10:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "o_oil.bmp");
+				break;
+			case 11:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "vodka.bmp");
+				break;
+			case 12:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "o_vodka.bmp");
+				break;
+			case 13:
+				strcat_s(cmd, sizeof(cmd) / sizeof(TCHAR), "field.bmp");
+				break;
+			default:
+				break;
+			}
+
+			// Start the child process. 
+			if (!CreateProcess(
+				NULL,   // No module name (use command line)
+				cmd,        // Command line
+				NULL,           // Process handle not inheritable
+				NULL,           // Thread handle not inheritable
+				FALSE,          // Set handle inheritance to FALSE
+				0,              // No creation flags
+				NULL,           // Use parent's environment block
+				NULL,           // Use parent's starting directory 
+				&si,            // Pointer to STARTUPINFO structure
+				&pi)           // Pointer to PROCESS_INFORMATION structure
+				)
+			{
+				printf("CreateProcess failed (%d).\n", GetLastError());
+				return FALSE;
+			}
+
+			// Wait until child process exits.
+			WaitForSingleObject(pi.hProcess, INFINITE);
+
+			// Close process and thread handles. 
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+
+			EndDialog(hWnd, 0);
+
 			return TRUE;
 		default:
 			return FALSE;
