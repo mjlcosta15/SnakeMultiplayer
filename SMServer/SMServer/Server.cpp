@@ -1,5 +1,5 @@
-
 #include "Server.h"
+
 
 Game game;
 SharedMemoryHelper smHelper;
@@ -35,23 +35,6 @@ HANDLE hThread;
 
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
-
-SECURITY_ATTRIBUTES sa; // atributos para o pipe remoto
-TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
-TEXT("A;OICI;GA;;;BG")		// A -> Allow Generic Access a built-in guests (D -> Deny)
-TEXT("(A;OICI;GA;;;AN)")	// Allow access a Anonymous logon
-TEXT("(A;OICI;GA;;;AU)")	// Allow Authenticated Users R/W/X (Generic Access)
-TEXT("(A;OICI;GA;;;BA)");	// Allow access a Built-in Administrator
-
-sa.nLength = sizeof(SECURITY_ATRIBUTES);
-sa.bInheritHandle = FALSE;
-
-ConvertStringSecurityDescriptorTorSecurityDescriptor(
-	szSD,
-	SDDL_REVISION_1,
-	&(pSA->lpSecurityDescriptor),
-	NULL);
-
 
 
 DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
@@ -114,6 +97,7 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 
 	return 1;
 }
+
 unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 {
 	Server * server = (Server *)p;
@@ -145,7 +129,6 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 	tcout << "ThreadSharedMemoryReader Closed" << endl;
 	return 0;
 }
-
 
 Server::Server()
 {
@@ -184,7 +167,6 @@ Server::~Server()
 
 void Server::startServer()
 {
-
 
 	if (!smHelper.initSharedMemory()) {
 		finishServer();
@@ -413,6 +395,53 @@ bool Server::getSharedMemFlag() const {
 
 int Server::waitConnection()
 {
+
+	
+
+	/*************Esta parte é nova***************/
+
+	TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
+		TEXT("A;OICI;GA;;;BG")		// A -> Allow Generic Access a built-in guests (D -> Deny)
+		TEXT("(A;OICI;GA;;;AN)")	// Allow access a Anonymous logon
+		TEXT("(A;OICI;GA;;;AU)")	// Allow Authenticated Users R/W/X (Generic Access)
+		TEXT("(A;OICI;GA;;;BA)");	// Allow access a Built-in Administrator
+
+	SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
+	PSID everyone_sid = NULL;
+	AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &everyone_sid);
+
+	EXPLICIT_ACCESS ea;
+	ZeroMemory(&ea, sizeof(EXPLICIT_ACCESS));
+	ea.grfAccessPermissions = SPECIFIC_RIGHTS_ALL | STANDARD_RIGHTS_ALL;
+	ea.grfAccessMode = SET_ACCESS;
+	ea.grfInheritance = NO_INHERITANCE;
+	ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+	ea.Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+	//ea.Trustee.ptstrName = (LPWSTR)everyone_sid;
+
+	PACL acl = NULL;
+	SetEntriesInAcl(1, &ea, NULL, &acl);
+
+	PSECURITY_DESCRIPTOR sd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR,
+		SECURITY_DESCRIPTOR_MIN_LENGTH);
+	InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION);
+	SetSecurityDescriptorDacl(sd, TRUE, acl, FALSE);
+
+	SECURITY_ATTRIBUTES sa; // atributos para o pipe remoto
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.lpSecurityDescriptor = sd;
+	sa.bInheritHandle = FALSE;
+
+
+	ConvertStringSecurityDescriptorToSecurityDescriptor(
+		szSD,
+		SDDL_REVISION_1,
+		//&(pSA->lpSecurityDescriptor),
+		&sa.lpSecurityDescriptor, // isto nao corresponde com o que está nos slides
+		NULL);
+
+	/**********************************************/
+
 	while (1) {
 
 		// Pipe Local
@@ -430,7 +459,7 @@ int Server::waitConnection()
 
 		// Pipe Remoto
 
-		hNamedPipe = CreateNamedPipe(
+hNamedPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
 			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |

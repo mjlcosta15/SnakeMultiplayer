@@ -3,12 +3,25 @@
 #define SERVER_H
 #define _WIN32_WINNT 0x0500 // necessário para o pipe remoto
 
-#include <windows.h>
-#include <sddl.h>
-
 #include "SharedMemoryHelper.h"
 #include "MainHeader.h"
 #include "Game.h"
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iomanip>
+
+#include <windows.h>
+#include <tchar.h>
+#include <fcntl.h>
+#include <io.h>
+#include <time.h>
+
+#include <AclAPI.h>
+
+#include <sddl.h>
 
 #define BUFSIZE 2048
 
