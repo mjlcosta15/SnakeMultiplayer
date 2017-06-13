@@ -23,6 +23,8 @@ class WWindow
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TreatDialogConnectToServer(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static tstring AppName;
 	static bool started;
 	static HINSTANCE hInstance;   

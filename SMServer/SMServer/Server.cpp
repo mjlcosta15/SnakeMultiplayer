@@ -4,6 +4,10 @@
 Game game;
 SharedMemoryHelper smHelper;
 HANDLE hThreadSharedMemory;
+HANDLE hThreadSharedMemoryReader;
+DWORD dwThreadSMReader = 0;
+HANDLE hThreadSharedMemoryWriter;
+DWORD dwThreadSMWriter = 0;
 
 bool threadSharedMemFlag;
 bool threadReadFromSMFlag = false;
@@ -23,8 +27,6 @@ LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 
-
-
 HANDLE WriteReady;
 
 static HANDLE clients[MAX_PLAYERS];
@@ -33,6 +35,22 @@ HANDLE hThread;
 
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
+
+SECURITY_ATTRIBUTES sa; // atributos para o pipe remoto
+TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
+TEXT("A;OICI;GA;;;BG")		// A -> Allow Generic Access a built-in guests (D -> Deny)
+TEXT("(A;OICI;GA;;;AN)")	// Allow access a Anonymous logon
+TEXT("(A;OICI;GA;;;AU)")	// Allow Authenticated Users R/W/X (Generic Access)
+TEXT("(A;OICI;GA;;;BA)");	// Allow access a Built-in Administrator
+
+sa.nLength = sizeof(SECURITY_ATRIBUTES);
+sa.bInheritHandle = FALSE;
+
+ConvertStringSecurityDescriptorTorSecurityDescriptor(
+	szSD,
+	SDDL_REVISION_1,
+	&(pSA->lpSecurityDescriptor),
+	NULL);
 
 
 
@@ -46,14 +64,14 @@ DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
 	}
 	ptr = (Message * (*)(void)) GetProcAddress(hDLL, "ReadFromSharedMemoryBuffer");
 	if (ptr == NULL) {
-		tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
+		//tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
 		return -1;
 	}
 	
 	while (1) {
 		Message * msg = ptr();
 		if(msg != nullptr)
-			tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
+			//tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
 
 		if (threadReadFromSMFlag) {
 			return 1;
@@ -82,10 +100,10 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 	while (1) {
 
 		if (ptr(game.exportInfoToMessage())) {
-			tcout << TEXT("ENviado com sucesso") << endl;
+			//tcout << TEXT("ENviado com sucesso") << endl;
 		}
 		else {
-			tcout << TEXT("Erro ao enviar") << endl;
+			//tcout << TEXT("Erro ao enviar") << endl;
 		}
 
 		if (threadWriteFromSMFlag) {
@@ -104,17 +122,17 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 		NULL,
 		0,
 		readFromSharedMemory,
-		(LPVOID)hNamedPipe,
+		(LPVOID)hThreadSharedMemoryReader,
 		0,
-		&dwThreadId);
+		&dwThreadSMReader);
 
 	CreateThread(
 		NULL,
 		0,
 		WriteForSharedMemory,
-		(LPVOID)hNamedPipe,
+		(LPVOID)hThreadSharedMemoryWriter,
 		0,
-		&dwThreadId);
+		&dwThreadSMWriter);
 
 	while (server->getSharedMemFlag()) {
 		//Ler da memoria partilhada e imprimir no ecra
@@ -397,6 +415,21 @@ int Server::waitConnection()
 {
 	while (1) {
 
+		// Pipe Local
+
+		/*hNamedPipe = CreateNamedPipe(
+			lpszPipename, // nome do pipe
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+			PIPE_WAIT,
+			PIPE_UNLIMITED_INSTANCES,
+			BUFSIZE,
+			BUFSIZE,
+			5000,
+			NULL);*/
+
+		// Pipe Remoto
+
 		hNamedPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
@@ -406,7 +439,7 @@ int Server::waitConnection()
 			BUFSIZE,
 			BUFSIZE,
 			5000,
-			NULL);
+			&sa); // este argumento passa de 'NULL' para -> &sa que é um ponteiro para a estrutura security attributes
 
 		if (hNamedPipe == INVALID_HANDLE_VALUE) {
 			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());

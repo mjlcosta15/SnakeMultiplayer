@@ -30,6 +30,27 @@ DWORD dwThreadId = 0;
 int DeveContinuar = 1;
 int ReaderAlive = 0;
 
+//Pipe Remoto
+
+HANDLE hUserToken = NULL;
+BOOL log;
+int ret;
+
+TCHAR username[20],	// username da máquina destino
+pass[20],			// password desse utilizador (na máquina destino)
+dominio[20];		// pode ser o IP da máquina
+
+_tcscpy(lpszPipename, TEXT("\\\\"));
+_tcscat(lpszPipename, dominio);
+_tcscat(lpszPipename, TEXT("\\pipe\\pipeexemplo"));
+
+log = LogonUser(username, dominio, pass,
+	LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
+	LOGON32_PROVIDER_DEFAULT,		// logon provider
+	&hUserToken);
+
+log = ImpersonateLoggedOnUser(hUserToken);
+
 DWORD WINAPI ThreadClienteReader(LPVOID lpvParam) {
 	Message FromServer;
 
