@@ -5,31 +5,23 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #ifdef SM_DLL_EXPORTS
- #define SNAKE_MULTIPLAYER_API __declspec(dllexport)
+#define SNAKE_MULTIPLAYER_API __declspec(dllexport)
 #else
 #define SNAKE_MULTIPLAYER_API __declspec(dllimport)
 #endif
 
-
 #include "MainHeader.h"
 
-class CreateDLL
-{
-	Message * msg;
-	HANDLE hMapFile;
-public:
 
-	CreateDLL();
-	~CreateDLL();
+extern "C" {
 
-	SNAKE_MULTIPLAYER_API Message * ReadFromSharedMemoryBuffer();
+	SNAKE_MULTIPLAYER_API  Message * ReadFromSharedMemoryBuffer(void);
 
 	SNAKE_MULTIPLAYER_API bool WriteToSharedMemoryBuffer(Message msg);
 
-};
+	extern SNAKE_MULTIPLAYER_API HANDLE hMapFile;
+	extern SNAKE_MULTIPLAYER_API HANDLE hMutex;
+	extern SNAKE_MULTIPLAYER_API HANDLE hEvent;
 
-SNAKE_MULTIPLAYER_API HANDLE hMutex;
-SNAKE_MULTIPLAYER_API HANDLE hEvent;
-
-
+}
 #endif //__CREATEDLL_H__

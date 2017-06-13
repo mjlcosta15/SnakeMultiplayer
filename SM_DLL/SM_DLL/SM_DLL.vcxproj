@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CreateDLL.h" />
+    <ClInclude Include="MainHeader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CreateDLL.cpp" />

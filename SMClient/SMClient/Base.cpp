@@ -59,8 +59,8 @@ TCHAR *szProgName = TEXT("Snake Multiplayer");
 //   nCmdShow:  Parâmetro que especifica o modo de exibição da janela (usado em  
 //				ShowWindow()
 
-int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, 
-				   LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
+	LPSTR lpCmdLine, int nCmdShow) {
 	MSG lpMsg;			// MSG é uma estrutura definida no Windows para as mensagens
 
 // ============================================================================
@@ -68,36 +68,36 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 //	WNDCLASSEX no Windows
 // ============================================================================
 	WWindow Wnd(szProgName, TEXT("Snake Multiplayer"), (HWND)HWND_DESKTOP);
-// ============================================================================
-// 4. Mostrar a janela
-// ============================================================================
+	// ============================================================================
+	// 4. Mostrar a janela
+	// ============================================================================
 	Wnd.Show();
-// ============================================================================
-// 5. Loop de Mensagens
-// ============================================================================
-// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa
-// fila de espera até que GetMessage(...) possa ler "a mensagem seguinte"	
+	// ============================================================================
+	// 5. Loop de Mensagens
+	// ============================================================================
+	// O Windows envia mensagens às janelas (programas). Estas mensagens ficam numa
+	// fila de espera até que GetMessage(...) possa ler "a mensagem seguinte"	
 
-// Parâmetros de "getMessage":
-//  1)	"&lpMsg"=Endereço de uma estrutura do tipo MSG ("MSG lpMsg" ja foi 
-//		declarada no início de WinMain()):
-/*			HWND hwnd		handler da janela a que se destina a mensagem
-			UINT message	Identificador da mensagem
-			WPARAM wParam	Parâmetro, p.e. código da tecla premida
-			LPARAM lParam	Parâmetro, p.e. se ALT também estava premida
-			DWORD time		Hora a que a mensagem foi enviada pelo Windows
-			POINT pt		Localização do mouse (x, y) 
-	2)   handle da window para a qual se pretendem receber mensagens
-		 (=NULL se se pretendem receber as mensagens para todas as janelas 
-		 pertencentes ao thread actual)
-	3)	 Código limite inferior das mensganes que se pretendem receber
-	4)   Código limite superior das mensagens que se pretendem receber
-*/
+	// Parâmetros de "getMessage":
+	//  1)	"&lpMsg"=Endereço de uma estrutura do tipo MSG ("MSG lpMsg" ja foi 
+	//		declarada no início de WinMain()):
+	/*			HWND hwnd		handler da janela a que se destina a mensagem
+				UINT message	Identificador da mensagem
+				WPARAM wParam	Parâmetro, p.e. código da tecla premida
+				LPARAM lParam	Parâmetro, p.e. se ALT também estava premida
+				DWORD time		Hora a que a mensagem foi enviada pelo Windows
+				POINT pt		Localização do mouse (x, y)
+		2)   handle da window para a qual se pretendem receber mensagens
+			 (=NULL se se pretendem receber as mensagens para todas as janelas
+			 pertencentes ao thread actual)
+		3)	 Código limite inferior das mensganes que se pretendem receber
+		4)   Código limite superior das mensagens que se pretendem receber
+	*/
 
-// NOTA: GetMessage() devolve 0 quando for recebida a mensagem de fecho da janela,
-// 	     terminando então o loop de recepção de mensagens, e o programa 
+	// NOTA: GetMessage() devolve 0 quando for recebida a mensagem de fecho da janela,
+	// 	     terminando então o loop de recepção de mensagens, e o programa 
 
-	while (GetMessage(&lpMsg,NULL,0,0)) {	
+	while (GetMessage(&lpMsg, NULL, 0, 0)) {
 		TranslateMessage(&lpMsg);			// Pré-processamento da mensagem
 											// p.e. obter código ASCII da tecla
 											// premida
@@ -111,23 +111,21 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	//É mais SEGURO o seguinte ciclo de recepção de mensagens, para saber se houve um erro
 	BOOL bRet;
 	while( (bRet = GetMessage( &lpMsg, NULL, 0, 0 )) != 0)
-	{ 
-    if (bRet == -1)
-    {
-        // handle the error and possibly exit
-    }
-    else
-    {
-        TranslateMessage(&lpMsg); 
-        DispatchMessage(&lpMsg); 
-    }
+	{
+	if (bRet == -1)
+	{
+		// handle the error and possibly exit
+	}
+	else
+	{
+		TranslateMessage(&lpMsg);
+		DispatchMessage(&lpMsg);
+	}
 	}*/
-// ============================================================================
-// 6. Fim do programa
-// ============================================================================
+	// ============================================================================
+	// 6. Fim do programa
+	// ============================================================================
 	return((int)lpMsg.wParam);		// Retorna-se sempre o parâmetro "wParam" da
 								// estrutura "lpMsg"
 
 }
-
-

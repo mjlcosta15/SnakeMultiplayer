@@ -161,6 +161,23 @@
   <ItemGroup>
     <ResourceCompile Include="SM_Client.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="field.bmp" />
+    <Image Include="food.bmp" />
+    <Image Include="glue.bmp" />
+    <Image Include="granade.bmp" />
+    <Image Include="ice.bmp" />
+    <Image Include="icon.ico" />
+    <Image Include="oil.bmp" />
+    <Image Include="o_glue.bmp" />
+    <Image Include="o_oil.bmp" />
+    <Image Include="o_vodka.bmp" />
+    <Image Include="snake.bmp" />
+    <Image Include="snake_glue.bmp" />
+    <Image Include="snake_ice.bmp" />
+    <Image Include="snake_vodka.bmp" />
+    <Image Include="vodka.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

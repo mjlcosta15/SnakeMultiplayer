@@ -53,4 +53,51 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="field.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="food.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="glue.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="granade.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ice.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="o_glue.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="o_oil.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="o_vodka.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="oil.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="snake.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="snake_glue.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="snake_ice.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="snake_vodka.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="vodka.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

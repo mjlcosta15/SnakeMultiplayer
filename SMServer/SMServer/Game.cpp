@@ -41,7 +41,7 @@ void Game::addPlayer(Player *newPlayer)
 			playersInGame++;
 		}
 	}
-		
+
 }
 
 void Game::addPlayer(int pid, string name)
@@ -254,37 +254,39 @@ Message Game::exportInfoToMessage()
 	msg.map.actualX = mapWidth;
 	msg.map.actualY = mapHeight;
 
-	//fill the map
-	for (int i = 0; i < MAX_TAM_MAP; i++) {
-		for (int j = 0; j < MAX_TAM_MAP; j++) {
-			if (i < msg.map.actualX && j < msg.map.actualY) {
-				msg.map.map[i][j] = map.at(i).at(j).getCharId();
-			}
-			else
-				msg.map.map[i][j] = '-';
-
-		}
-		
-	}
-	for (auto it = players.begin(); it != players.end(); it++) {
-		vector<Block> temp = (*it)->getSnake();
-		for (auto its = temp.begin(); its != temp.end(); its++)
-			msg.map.map[its->getPosX()][its->getPosY()] = its->getCharId();
-	}
-
-	for (int i = 0; i < mapWidth; i++) {
-		for (int j = 0; j < mapHeight; j++) {
-			cout << " " << msg.map.map[i][j] << " ";
-		}
-		if (i < mapHeight)
-			cout << endl;
-	}
-
-	//fill the scores
-	for (auto it = players.begin(); it != players.end(); it++)
-		msg.scores[distance(players.begin(), it)] = (*it)->getPoints();
-	
 	msg.numOfPlayers = players.size();
+
+	//fill the map
+	if (gamePhase != INITIAL_PHASE) {
+		for (int i = 0; i < MAX_TAM_MAP; i++) {
+			for (int j = 0; j < MAX_TAM_MAP; j++) {
+				if (i < msg.map.actualX && j < msg.map.actualY) {
+					msg.map.map[i][j] = map.at(i).at(j).getCharId();
+				}
+				else
+					msg.map.map[i][j] = '-';
+
+			}
+
+		}
+		for (auto it = players.begin(); it != players.end(); it++) {
+			vector<Block> temp = (*it)->getSnake();
+			for (auto its = temp.begin(); its != temp.end(); its++)
+				msg.map.map[its->getPosX()][its->getPosY()] = its->getCharId();
+		}
+
+		for (int i = 0; i < mapWidth; i++) {
+			for (int j = 0; j < mapHeight; j++) {
+				cout << " " << msg.map.map[i][j] << " ";
+			}
+			if (i < mapHeight)
+				cout << endl;
+		}
+
+		//fill the scoresx
+		for (auto it = players.begin(); it != players.end(); it++)
+			msg.scores[distance(players.begin(), it)] = (*it)->getPoints();
+	}
 
 	return msg;
 }
