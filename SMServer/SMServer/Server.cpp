@@ -27,8 +27,6 @@ LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 
-
-
 HANDLE WriteReady;
 
 static HANDLE clients[MAX_PLAYERS];
@@ -37,6 +35,22 @@ HANDLE hThread;
 
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
+
+SECURITY_ATTRIBUTES sa; // atributos para o pipe remoto
+TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
+TEXT("A;OICI;GA;;;BG")		// A -> Allow Generic Access a built-in guests (D -> Deny)
+TEXT("(A;OICI;GA;;;AN)")	// Allow access a Anonymous logon
+TEXT("(A;OICI;GA;;;AU)")	// Allow Authenticated Users R/W/X (Generic Access)
+TEXT("(A;OICI;GA;;;BA)");	// Allow access a Built-in Administrator
+
+sa.nLength = sizeof(SECURITY_ATRIBUTES);
+sa.bInheritHandle = FALSE;
+
+ConvertStringSecurityDescriptorTorSecurityDescriptor(
+	szSD,
+	SDDL_REVISION_1,
+	&(pSA->lpSecurityDescriptor),
+	NULL);
 
 
 
@@ -401,6 +415,21 @@ int Server::waitConnection()
 {
 	while (1) {
 
+		// Pipe Local
+
+		/*hNamedPipe = CreateNamedPipe(
+			lpszPipename, // nome do pipe
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+			PIPE_WAIT,
+			PIPE_UNLIMITED_INSTANCES,
+			BUFSIZE,
+			BUFSIZE,
+			5000,
+			NULL);*/
+
+		// Pipe Remoto
+
 		hNamedPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
@@ -410,7 +439,7 @@ int Server::waitConnection()
 			BUFSIZE,
 			BUFSIZE,
 			5000,
-			NULL);
+			&sa); // este argumento passa de 'NULL' para -> &sa que é um ponteiro para a estrutura security attributes
 
 		if (hNamedPipe == INVALID_HANDLE_VALUE) {
 			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());

@@ -1,6 +1,10 @@
 #pragma once
 #ifndef SERVER_H
 #define SERVER_H
+#define _WIN32_WINNT 0x0500 // necessário para o pipe remoto
+
+#include <windows.h>
+#include <sddl.h>
 
 #include "SharedMemoryHelper.h"
 #include "MainHeader.h"
