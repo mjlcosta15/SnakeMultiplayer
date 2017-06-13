@@ -13,7 +13,7 @@ SharedMemoryHelper::~SharedMemoryHelper()
 
 bool SharedMemoryHelper::initSharedMemory()
 {
-	volatile LPCSTR pBuf;
+	volatile LPCSTR pBuf; 
 	hMapFile = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -44,7 +44,6 @@ bool SharedMemoryHelper::initSharedMemory()
 bool SharedMemoryHelper::finishSharedMemory()
 {
 	_tprintf(TEXT("Unmaping Shared memory\n"));
-	UnmapViewOfFile(hMapFile);
 	return UnmapViewOfFile(hMapFile);
 }
 

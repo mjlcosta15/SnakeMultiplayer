@@ -12,24 +12,33 @@ using namespace std;
 #define tstring string
 #endif
 
+#define GOING_UP 1
+#define GOING_DOWN 2
+#define GOING_LEFT 3
+#define GOING_RIGHT 4 
+
 //---------------------------------------------------------------------------
 class WWindow
 {
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TreatDialogConnectToServer(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static tstring AppName;
 	static bool started;
-	static HINSTANCE hInstance;
+	static HINSTANCE hInstance;   
 public:
 	// Utilizaremos o construtor para criar e inicializar
 	WWindow(LPCTSTR clsname,
 		LPCTSTR wndname,
 		HWND parent = NULL,
-		DWORD dStyle = WS_OVERLAPPEDWINDOW | WS_VSCROLL | WS_HSCROLL,
+		DWORD dStyle = WS_OVERLAPPEDWINDOW,
 		DWORD dXStyle = 0L,
-		int x = CW_USEDEFAULT,
-		int y = CW_USEDEFAULT,
-		int width = CW_USEDEFAULT,
-		int height = CW_USEDEFAULT);
+		int x = 0,
+		int y = 0,
+		int width = (int)GetSystemMetrics(SM_CXSCREEN),
+		int height = (int)GetSystemMetrics(SM_CYSCREEN));
 
 	// Registo da estrutura (WNDCLASSEX) da janela
 	bool Register();

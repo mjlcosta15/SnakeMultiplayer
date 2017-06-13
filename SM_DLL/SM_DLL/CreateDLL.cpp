@@ -1,17 +1,15 @@
 #include "CreateDLL.h"
 
+HANDLE hMutex = NULL;
+HANDLE hEvent = NULL;
+HANDLE hMapFile = NULL;
+
 static const TCHAR szName[] = TEXT("SnakeMultiplayerSharedMem");
 
-CreateDLL::CreateDLL()
-{
-}
 
-CreateDLL::~CreateDLL()
+SNAKE_MULTIPLAYER_API Message * ReadFromSharedMemoryBuffer(void)
 {
-}
-
-SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
-{
+	Message * msg;
 	hMapFile = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,   // read/write access
 		FALSE,                 // do not inherit the name
@@ -24,6 +22,7 @@ SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 		return nullptr;
 	}
 
+	//cout << "estou à espera de eventos" << endl;
 	WaitForSingleObject(hEvent, INFINITE);
 
 	msg = (Message *)MapViewOfFile(hMapFile, // handle to map object
@@ -34,8 +33,8 @@ SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 
 	if (msg == NULL)
 	{
-		_tprintf(TEXT("Could not map view of file (%d).\n"),
-			GetLastError());
+		//_tprintf(TEXT("Could not map view of file (%d).\n"),
+		//	GetLastError());
 
 		CloseHandle(hMapFile);
 		return nullptr;
@@ -49,9 +48,9 @@ SNAKE_MULTIPLAYER_API Message * CreateDLL::ReadFromSharedMemoryBuffer()
 	return msg;
 }
 
-SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
+SNAKE_MULTIPLAYER_API bool WriteToSharedMemoryBuffer(Message msg)
 {
-
+	Message * ptrmsg;
 	if (hEvent == NULL) {
 		hEvent = CreateEvent(
 			NULL,               // default security attributes
@@ -92,31 +91,34 @@ SNAKE_MULTIPLAYER_API bool CreateDLL::WriteToSharedMemoryBuffer(Message msg)
 		return false;
 	}
 
-	this->msg = (Message *)MapViewOfFile(hMapFile, // handle to map object
+	ptrmsg = (Message *)MapViewOfFile(hMapFile, // handle to map object
 		FILE_MAP_ALL_ACCESS,  // read/write permission
 		0,
 		0,
 		sizeof(Message));
 
-	if (this->msg == NULL)
+	if (ptrmsg == NULL)
 	{
-		_tprintf(TEXT("Could not map view of file (%d).\n"),
-			GetLastError());
+		//_tprintf(TEXT("Could not map view of file (%d).\n"),
+		//	GetLastError());
 
 		CloseHandle(hMapFile);
 		return false;
 	}
 
+
 	WaitForSingleObject(hMutex, INFINITE);
 
-	CopyMemory(this->msg, &msg, sizeof(Message));
+	CopyMemory(ptrmsg, &msg, sizeof(Message));
 
 	ReleaseMutex(hMutex);
 
 	SetEvent(hEvent);
 
-	UnmapViewOfFile(this->msg);
+	UnmapViewOfFile(ptrmsg);
 
 	CloseHandle(hMapFile);
 	return true;
 }
+
+
