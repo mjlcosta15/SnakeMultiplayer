@@ -138,6 +138,8 @@ int Client::start() {
 
 
 	_tcscpy(dominio, TEXT("192.168.1.101"));
+	_tcscpy(username, TEXT("diogomiguel"));
+	_tcscpy(pass, TEXT("q1w2e3r4"));
 
 	_tcscpy(lpszPipename, TEXT("\\\\"));
 	_tcscat(lpszPipename, dominio);
