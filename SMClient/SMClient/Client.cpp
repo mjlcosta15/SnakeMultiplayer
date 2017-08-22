@@ -110,10 +110,8 @@ Client::~Client()
 
 int Client::start() {
 
-	
 	DWORD cbWritten, dwMode;
 	
-
 	//Message msg;
 	Message MsgToSend;
 
