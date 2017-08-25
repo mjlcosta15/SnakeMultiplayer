@@ -1,20 +1,24 @@
 #include "Server.h"
 
-
+// Auxiliary Classes
 Game game;
 SharedMemoryHelper smHelper;
+
+// Shared Memory Handles
 HANDLE hThreadSharedMemory;
 HANDLE hThreadSharedMemoryReader;
 DWORD dwThreadSMReader = 0;
 HANDLE hThreadSharedMemoryWriter;
 DWORD dwThreadSMWriter = 0;
 
+// Shared Memory Threads
 bool threadSharedMemFlag;
 bool threadReadFromSMFlag = false;
 bool threadWriteFromSMFlag = false;
 unsigned int smThreadID;
 
-HANDLE hNamedPipe;
+// Server Pipe
+HANDLE serverPipe; 
 
 LPCTSTR lpName;
 DWORD dwOpenMode;
@@ -29,12 +33,48 @@ LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 
 HANDLE WriteReady;
 
-static HANDLE clients[MAX_PLAYERS];
+// Client's Array HANDLES
+HANDLE clients[MAX_PLAYERS];
 
 HANDLE hThread;
 
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
+
+// Constructor
+Server::Server()
+{
+	game = Game();
+
+	// Create Pipe
+
+	lpName = TEXT("\\\\.\\pipe\\exemplo");
+	dwOpenMode = PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED;
+	dwPipeMode = PIPE_TYPE_MESSAGE;
+	nMaxInstances = PIPE_UNLIMITED_INSTANCES;
+	nOutBufferSize = BUFSIZE;
+	nDefaultTimeOut = 5000;
+	lpSecurityAttributes = NULL;
+
+	// Connect Pipe
+
+	serverPipe = Create();
+
+	WriteReady = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	if (WriteReady == NULL) {
+		_tprintf(TEXT("\nServidor: nao foi possivel criar o write"));
+		exit(1);
+	}
+
+	initializeClients();
+
+}
+
+
+Server::~Server()
+{
+}
 
 
 DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
@@ -130,40 +170,6 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 	return 0;
 }
 
-Server::Server()
-{
-	game = Game();
-
-	// Create Pipe
-
-	lpName = TEXT("\\\\.\\pipe\\exemplo");	//tem de ser alterado
-	dwOpenMode = PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED;	// está correto
-	dwPipeMode = PIPE_TYPE_MESSAGE;
-	nMaxInstances = PIPE_UNLIMITED_INSTANCES;
-	nOutBufferSize = BUFSIZE;
-	nDefaultTimeOut = 5000;
-	lpSecurityAttributes = NULL;
-
-	// Connect Pipe
-
-	hNamedPipe = Create();
-
-	WriteReady = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-	if (WriteReady == NULL) {
-		_tprintf(TEXT("\nServidor: nao foi possivel criar o write"));
-		exit(1);
-	}
-
-	initializeClients();
-
-}
-
-
-Server::~Server()
-{
-}
-
 
 void Server::startServer()
 {
@@ -171,6 +177,7 @@ void Server::startServer()
 	if (!smHelper.initSharedMemory()) {
 		finishServer();
 	}
+
 	//lançar a thread the leitura
 	threadSharedMemFlag = true;
 	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
@@ -442,11 +449,13 @@ int Server::waitConnection()
 
 	/**********************************************/
 
+	// Enter the cicle
+
 	while (1) {
 
 		// Pipe Local
 
-		/*hNamedPipe = CreateNamedPipe(
+		serverPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
 			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
@@ -455,11 +464,12 @@ int Server::waitConnection()
 			BUFSIZE,
 			BUFSIZE,
 			5000,
-			NULL);*/
+			NULL);
 
 		// Pipe Remoto
 
-hNamedPipe = CreateNamedPipe(
+		/*
+serverPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
 			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
@@ -468,16 +478,16 @@ hNamedPipe = CreateNamedPipe(
 			BUFSIZE,
 			BUFSIZE,
 			5000,
-			&sa); // este argumento passa de 'NULL' para -> &sa que é um ponteiro para a estrutura security attributes
+			&sa);*/ // este argumento passa de 'NULL' para -> &sa que é um ponteiro para a estrutura security attributes
 
-		if (hNamedPipe == INVALID_HANDLE_VALUE) {
+		if (serverPipe == INVALID_HANDLE_VALUE) {
 			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
 			return -1;
 		}
 
 		_tprintf(TEXT("\nServidor a aguardar que um cliente se ligue"));
 
-		fConnected = ConnectNamedPipe(hNamedPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+		fConnected = ConnectNamedPipe(serverPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
 
 		if (fConnected) {
 
@@ -485,7 +495,7 @@ hNamedPipe = CreateNamedPipe(
 				NULL,
 				0,
 				InstanceThread,
-				(LPVOID)hNamedPipe,
+				(LPVOID)serverPipe,
 				0,
 				&dwThreadId);
 
@@ -499,7 +509,7 @@ hNamedPipe = CreateNamedPipe(
 
 		}
 		else
-			CloseHandle(hNamedPipe);
+			CloseHandle(serverPipe);
 
 	}
 	return 0;
@@ -519,11 +529,11 @@ HANDLE Server::Create() {
 }
 
 BOOL Server::Connect() {
-	return ConnectNamedPipe(hNamedPipe, NULL);
+	return ConnectNamedPipe(serverPipe, NULL);
 }
 
 BOOL Server::Disconnect() {
-	return DisconnectNamedPipe(hNamedPipe);
+	return DisconnectNamedPipe(serverPipe);
 }
 
 int Server::Write(HANDLE hPipe, Message msg) {
@@ -555,6 +565,7 @@ int Server::Write(HANDLE hPipe, Message msg) {
 
 }
 
+// Recebe o HANDLE e adiciona o cliente à lista de clientes
 void Server::addClient(HANDLE cli) {
 
 	int i;
@@ -572,7 +583,7 @@ void Server::rmClient(HANDLE cli) {
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++) {
 		if (clients[i] == cli) {
-			clients[i] = NULL; // O close HANDLE é feito na thread desse cliente
+			clients[i] = NULL;
 			return;
 			;
 		}
@@ -607,7 +618,7 @@ void Server::initializeClients()
 
 void Server::setHNamedPipe(HANDLE namedPipe) {
 
-	hNamedPipe = namedPipe;
+	serverPipe = namedPipe;
 
 }
 
@@ -678,11 +689,11 @@ DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
 				_tprintf(TEXT("\nServidor: %d respostas enviadas"), numresp);
 			}
 
-			rmClient(hNamedPipe);
+			rmClient(serverPipe);
 
-			FlushFileBuffers(hNamedPipe);
-			DisconnectNamedPipe(hNamedPipe);
-			CloseHandle(hNamedPipe);
+			FlushFileBuffers(serverPipe);
+			DisconnectNamedPipe(serverPipe);
+			CloseHandle(serverPipe);
 
 			_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
 			return 1;

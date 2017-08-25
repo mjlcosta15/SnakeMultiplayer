@@ -4,7 +4,7 @@ LPCTSTR lpFileName;
 DWORD dwDesiredAccess;
 DWORD dwShareMode;
 LPSECURITY_ATTRIBUTES lpSecurityAttributes;
-DWORD dwCreaationDisposition;
+DWORD dwCreationDisposition;
 DWORD dwFlaghsAndAttributes;
 HANDLE hTemplateFile;
 
@@ -135,8 +135,8 @@ int Client::start() {
 		dominio[20];		// pode ser o IP da máquina
 
 
-	_tcscpy(dominio, TEXT("192.168.1.101"));
-	_tcscpy(username, TEXT("diogomiguel"));
+	_tcscpy(dominio, TEXT("192.168.1.82"));
+	_tcscpy(username, TEXT("diogosantos"));
 	_tcscpy(pass, TEXT("q1w2e3r4"));
 
 	_tcscpy(lpszPipename, TEXT("\\\\"));
