@@ -84,6 +84,7 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 
 	return 1;
 }
+
 DWORD WINAPI ThreadSharedMemoryReader(LPVOID lParam) {
 
 	CreateThread(
