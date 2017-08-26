@@ -49,11 +49,13 @@ public:
 
 
 	//Function that validates the command inputed
-	bool commandParser(vector<string> command);
+	static bool commandParser(vector<string> command);
 	//Function that process the requested command
-	void treatCommand(vector<string> command, Message msg);
+	static void treatCommand(vector<string> command, Message msg);
 	//Function to convert all string characters into upper case version
-	string commandToUpperCase(string command);
+	static string commandToUpperCase(string command);
+
+	static vector<string> getCommand(char* buffer);
 
 	bool getSharedMemFlag() const;
 
@@ -95,7 +97,7 @@ public:
 
 	HANDLE getHNamedPipe();
 
-	static DWORD WINAPI InstanceThread(LPVOID lpvParam);
+	static DWORD WINAPI ThreadProcClient(LPVOID lpvParam);
 };
 
 #endif // !SERVER_H

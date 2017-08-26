@@ -217,7 +217,6 @@ void Game::updateMap()
 			cout << "[" << (*it)->getName() << "] Vou mexer-me com velocidade " << tick << endl;
 			(*it)->moveSnake();
 			(*it)->effectAfterMovement();
-			exportInfoToMessage();
 		}
 
 	}
