@@ -71,11 +71,9 @@ Server::Server()
 
 }
 
-
 Server::~Server()
 {
 }
-
 
 DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
 
@@ -170,7 +168,6 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 	return 0;
 }
 
-
 void Server::startServer()
 {
 
@@ -252,7 +249,6 @@ void Server::startGame()
 	game.setInProgressPhase();
 	game.initMap();
 }
-
 
 bool Server::commandParser(vector<string> command)
 {
@@ -357,7 +353,6 @@ bool Server::commandParser(vector<string> command)
 	return false;
 }
 
-
 void Server::treatCommand(vector<string> command, Message msg)
 {
 	if (command[0] == "START") {
@@ -403,9 +398,7 @@ bool Server::getSharedMemFlag() const {
 int Server::waitConnection()
 {
 
-	
-
-	/*************Esta parte é nova***************/
+	// Remote pipe atributes ->
 
 	TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
 		TEXT("A;OICI;GA;;;BG")		// A -> Allow Generic Access a built-in guests (D -> Deny)
@@ -429,11 +422,13 @@ int Server::waitConnection()
 	PACL acl = NULL;
 	SetEntriesInAcl(1, &ea, NULL, &acl);
 
+	// Security Descriptor
 	PSECURITY_DESCRIPTOR sd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR,
 		SECURITY_DESCRIPTOR_MIN_LENGTH);
 	InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION);
 	SetSecurityDescriptorDacl(sd, TRUE, acl, FALSE);
 
+	// Security Attributes
 	SECURITY_ATTRIBUTES sa; // atributos para o pipe remoto
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.lpSecurityDescriptor = sd;
@@ -447,15 +442,14 @@ int Server::waitConnection()
 		&sa.lpSecurityDescriptor, // isto nao corresponde com o que está nos slides
 		NULL);
 
-	/**********************************************/
+	// <- Remote pipe atributes
 
-	// Enter the cicle
+	// Enter the cicle(Main Thread)
 
 	while (1) {
 
-		// Pipe Local
 
-		serverPipe = CreateNamedPipe(
+	serverPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
 			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
@@ -464,21 +458,7 @@ int Server::waitConnection()
 			BUFSIZE,
 			BUFSIZE,
 			5000,
-			NULL);
-
-		// Pipe Remoto
-
-		/*
-serverPipe = CreateNamedPipe(
-			lpszPipename, // nome do pipe
-			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
-			PIPE_WAIT,
-			PIPE_UNLIMITED_INSTANCES,
-			BUFSIZE,
-			BUFSIZE,
-			5000,
-			&sa);*/ // este argumento passa de 'NULL' para -> &sa que é um ponteiro para a estrutura security attributes
+			&sa); // Use NULL to make the pipe local - Use a reference to make a network pipe(&sa is a pointer to a security attribute)	
 
 		if (serverPipe == INVALID_HANDLE_VALUE) {
 			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
@@ -494,7 +474,7 @@ serverPipe = CreateNamedPipe(
 			hThread = CreateThread(
 				NULL,
 				0,
-				InstanceThread,
+				ThreadProcClient,
 				(LPVOID)serverPipe,
 				0,
 				&dwThreadId);
@@ -592,9 +572,9 @@ void Server::rmClient(HANDLE cli) {
 
 int Server::Broadcast(Message msg) {
 
-	int i, numwrites = 0;
+	int numwrites = 0;
 
-	for (i = 0; i < MAX_PLAYERS; i++) {
+	for (int i = 0; i < MAX_PLAYERS; i++) {
 		if (clients[i] != 0)
 			numwrites += Write(clients[i], msg);
 	}
@@ -611,9 +591,9 @@ void Server::setfConnected(BOOL flag) {
 
 void Server::initializeClients()
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-		clients[i] = NULL;
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+		clients[i] = INVALID_HANDLE_VALUE;
 }
 
 void Server::setHNamedPipe(HANDLE namedPipe) {
@@ -627,7 +607,7 @@ HANDLE Server::getHNamedPipe()
 	return HANDLE();
 }
 
-DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
+DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 {
 	Message Pedido, Resposta;
 	DWORD cbBytesRead = 0, cbReplyBytes = 0;
@@ -637,10 +617,6 @@ DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
 
 	HANDLE ReadReady;
 	OVERLAPPED OverlRd = { 0 };
-
-	//_tcscpy(to_string(Resposta.pid), TEXT("SRV"))
-
-	cout << "ola mundo" << endl;
 
 	if (hPipe == NULL) {
 		_tprintf(TEXT("\nErro - o handle enviado no param da thread é nulo"));
@@ -684,7 +660,7 @@ DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
 				_tprintf(TEXT("\nServidor: Recebi(?) de: [%d] msg: [%s]"), Pedido.pid, Pedido.msg);
 				// _tcspy(Resposta.msg, s);
 				//_tcscat(Resposta.msg, Pedido.msg);
-				strcat_s(Resposta.msg, Pedido.msg);
+				strcpy(Resposta.msg, Pedido.msg);
 				numresp = Broadcast(Resposta);
 				_tprintf(TEXT("\nServidor: %d respostas enviadas"), numresp);
 			}
