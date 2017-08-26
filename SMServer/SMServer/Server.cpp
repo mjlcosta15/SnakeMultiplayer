@@ -1,4 +1,5 @@
 #include "Server.h"
+#define msg_sz sizeof(Message)
 
 // Auxiliary Classes
 Game game;
@@ -18,7 +19,7 @@ bool threadWriteFromSMFlag = false;
 unsigned int smThreadID;
 
 // Server Pipe
-HANDLE serverPipe; 
+HANDLE serverPipe;
 
 LPCTSTR lpName;
 DWORD dwOpenMode;
@@ -35,6 +36,7 @@ HANDLE WriteReady;
 
 // Client's Array HANDLES
 HANDLE clients[MAX_PLAYERS];
+int numPlayersConnected = 0;
 
 HANDLE hThread;
 
@@ -71,11 +73,9 @@ Server::Server()
 
 }
 
-
 Server::~Server()
 {
 }
-
 
 DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
 
@@ -90,18 +90,18 @@ DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
 		//tcout << TEXT("ptr não tem o metodo ReadFromSharedMemoryBuffer") << endl;
 		return -1;
 	}
-	
+
 	while (1) {
 		Message * msg = ptr();
-		if(msg != nullptr)
+		if (msg != nullptr)
 			//tcout << TEXT(msg->msg) << TEXT(msg->pid) << endl;
 
-		if (threadReadFromSMFlag) {
-			return 1;
-		}
-		
+			if (threadReadFromSMFlag) {
+				return 1;
+			}
+
 	}
-	
+
 	return 1;
 }
 
@@ -162,14 +162,13 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 		//Ler da memoria partilhada e imprimir no ecra
 
 	}
-	
+
 	threadReadFromSMFlag = true;
 	threadSharedMemFlag = true;
 
 	tcout << "ThreadSharedMemoryReader Closed" << endl;
 	return 0;
 }
-
 
 void Server::startServer()
 {
@@ -183,9 +182,7 @@ void Server::startServer()
 	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
 	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
-	waitConnection();
-
-	//serverMainLoop();
+	serverMainLoop();
 }
 
 void Server::serverMainLoop()
@@ -197,36 +194,27 @@ void Server::serverMainLoop()
 	do {
 
 		//Initial Phase
-		if (game.getGamePhase() == INITIAL_PHASE)
+		if (game.getGamePhase() == INITIAL_PHASE) {
+			_tprintf(TEXT("\nFase inicial iniciada"));
 			initialPhaseLoop();
+		}
 		//Game Phase
 		if (game.getGamePhase() == IN_PROGRESS_PHASE) {
+			_tprintf(TEXT("\nFase de jogo iniciada"));
 			//fechar thread de aceitar clientes
 			GamePhaseLoop();
 		}
 
 
 	} while (game.getGamePhase() == FINISH_PHASE);
+	_tprintf(TEXT("\nFase inicial iniciada"));
 	//Finish Phase
 	finishServer();
 }
 
 void Server::initialPhaseLoop()
 {
-	tcout << "Initial Phase Loop started" << endl;
-
-	do {
-
-		game.setMapHeight(10);
-		game.setMapWidth(10);
-		game.setNumSnakesAI(3);
-		game.setNumberOfObjects(3);
-		game.setSnakeSize(3);
-		game.addPlayer(1, "jorge");
-		game.initMap();
-		//		game.setInProgressPhase();
-
-	} while (game.getGamePhase() == INITIAL_PHASE);
+	waitConnection();
 }
 
 void Server::GamePhaseLoop()
@@ -234,6 +222,7 @@ void Server::GamePhaseLoop()
 	tcout << "Game Phase Loop started" << endl;
 	do {
 		game.updateMap();
+		Broadcast(game.exportInfoToMessage());
 		Sleep(33); //Fazer 30 atualizações por segundo (30 FPS oh yeah)
 	} while (game.getGamePhase() == IN_PROGRESS_PHASE);
 }
@@ -253,15 +242,14 @@ void Server::startGame()
 	game.initMap();
 }
 
-
 bool Server::commandParser(vector<string> command)
 {
-	if (!command.size())
+	if (command.size() <= 0)
 		return false;
 
 	//START
 	if (command[0] == "START") {
-		if (!game.getGamePhase() == INITIAL_PHASE) {
+		if (game.getGamePhase() == INITIAL_PHASE) {
 			return true;
 		}
 		return false;
@@ -357,7 +345,6 @@ bool Server::commandParser(vector<string> command)
 	return false;
 }
 
-
 void Server::treatCommand(vector<string> command, Message msg)
 {
 	if (command[0] == "START") {
@@ -384,6 +371,20 @@ void Server::treatCommand(vector<string> command, Message msg)
 
 }
 
+vector<string> Server::getCommand(char* buffer)
+{
+
+	string commandString = buffer;
+	commandString = commandToUpperCase(commandString);
+	//Vectorize command
+	vector <string> comand;
+	string temp;
+	stringstream ss(commandString);
+	while (ss >> temp)
+		comand.push_back(temp);
+
+	return comand;
+}
 
 string Server::commandToUpperCase(string command)
 {
@@ -402,11 +403,7 @@ bool Server::getSharedMemFlag() const {
 
 int Server::waitConnection()
 {
-
-	
-
-	/*************Esta parte é nova***************/
-
+	// Remote pipe atributes ->
 	TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
 		TEXT("A;OICI;GA;;;BG")		// A -> Allow Generic Access a built-in guests (D -> Deny)
 		TEXT("(A;OICI;GA;;;AN)")	// Allow access a Anonymous logon
@@ -429,11 +426,13 @@ int Server::waitConnection()
 	PACL acl = NULL;
 	SetEntriesInAcl(1, &ea, NULL, &acl);
 
+	// Security Descriptor
 	PSECURITY_DESCRIPTOR sd = (PSECURITY_DESCRIPTOR)LocalAlloc(LPTR,
 		SECURITY_DESCRIPTOR_MIN_LENGTH);
 	InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION);
 	SetSecurityDescriptorDacl(sd, TRUE, acl, FALSE);
 
+	// Security Attributes
 	SECURITY_ATTRIBUTES sa; // atributos para o pipe remoto
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.lpSecurityDescriptor = sd;
@@ -447,13 +446,21 @@ int Server::waitConnection()
 		&sa.lpSecurityDescriptor, // isto nao corresponde com o que está nos slides
 		NULL);
 
-	/**********************************************/
+	// <- Remote pipe atributes
 
-	// Enter the cicle
+	// Enter the cicle(Main Thread)
+	_tprintf(TEXT("\nServidor a aceitar clientes"));
 
+	
 	while (1) {
 
-		// Pipe Local
+		if (numPlayersConnected >= MAX_PLAYERS) {
+			break;
+		}
+
+		if (game.getGamePhase() != INITIAL_PHASE) {
+			break;
+		}
 
 		serverPipe = CreateNamedPipe(
 			lpszPipename, // nome do pipe
@@ -464,40 +471,29 @@ int Server::waitConnection()
 			BUFSIZE,
 			BUFSIZE,
 			5000,
-			NULL);
-
-		// Pipe Remoto
-
-		/*
-serverPipe = CreateNamedPipe(
-			lpszPipename, // nome do pipe
-			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
-			PIPE_WAIT,
-			PIPE_UNLIMITED_INSTANCES,
-			BUFSIZE,
-			BUFSIZE,
-			5000,
-			&sa);*/ // este argumento passa de 'NULL' para -> &sa que é um ponteiro para a estrutura security attributes
+			&sa); // Use NULL to make the pipe local - Use a reference to make a network pipe(&sa is a pointer to a security attribute)	
 
 		if (serverPipe == INVALID_HANDLE_VALUE) {
 			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
 			return -1;
 		}
 
-		_tprintf(TEXT("\nServidor a aguardar que um cliente se ligue"));
 
 		fConnected = ConnectNamedPipe(serverPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
 
 		if (fConnected) {
 
+			_tprintf(TEXT("\n%d Jogadores no servidor"), numPlayersConnected);
+
 			hThread = CreateThread(
 				NULL,
 				0,
-				InstanceThread,
+				ThreadProcClient,
 				(LPVOID)serverPipe,
 				0,
 				&dwThreadId);
+
+			addClient(hThread);
 
 			if (hThread == NULL) {
 				_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
@@ -568,10 +564,10 @@ int Server::Write(HANDLE hPipe, Message msg) {
 // Recebe o HANDLE e adiciona o cliente à lista de clientes
 void Server::addClient(HANDLE cli) {
 
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++) {
-		if (clients[i] == NULL) {
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == INVALID_HANDLE_VALUE) {
 			clients[i] = cli;
+			numPlayersConnected++;
 			return;
 		}
 	}
@@ -583,7 +579,8 @@ void Server::rmClient(HANDLE cli) {
 	int i;
 	for (i = 0; i < MAX_PLAYERS; i++) {
 		if (clients[i] == cli) {
-			clients[i] = NULL;
+			clients[i] = INVALID_HANDLE_VALUE;
+			numPlayersConnected--;
 			return;
 			;
 		}
@@ -592,11 +589,9 @@ void Server::rmClient(HANDLE cli) {
 
 int Server::Broadcast(Message msg) {
 
-	int i, numwrites = 0;
-
-	for (i = 0; i < MAX_PLAYERS; i++) {
+	for (int i = 0; i < MAX_PLAYERS; i++) {
 		if (clients[i] != 0)
-			numwrites += Write(clients[i], msg);
+			Write(clients[i], msg);
 	}
 
 	return 0;
@@ -611,9 +606,8 @@ void Server::setfConnected(BOOL flag) {
 
 void Server::initializeClients()
 {
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++)
-		clients[i] = NULL;
+	for (int i = 0; i < MAX_PLAYERS; i++)
+		clients[i] = INVALID_HANDLE_VALUE;
 }
 
 void Server::setHNamedPipe(HANDLE namedPipe) {
@@ -627,9 +621,10 @@ HANDLE Server::getHNamedPipe()
 	return HANDLE();
 }
 
-DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
+DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 {
-	Message Pedido, Resposta;
+
+	Message clientRequest, Resposta;
 	DWORD cbBytesRead = 0, cbReplyBytes = 0;
 	int numresp = 0;
 	BOOL fSuccess = FALSE;
@@ -637,10 +632,6 @@ DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
 
 	HANDLE ReadReady;
 	OVERLAPPED OverlRd = { 0 };
-
-	//_tcscpy(to_string(Resposta.pid), TEXT("SRV"))
-
-	cout << "ola mundo" << endl;
 
 	if (hPipe == NULL) {
 		_tprintf(TEXT("\nErro - o handle enviado no param da thread é nulo"));
@@ -658,7 +649,6 @@ DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
 		return 1;
 	}
 
-	addClient(hPipe); // Regista cliente
 
 	while (1) {
 
@@ -668,39 +658,40 @@ DWORD WINAPI Server::InstanceThread(LPVOID lpvParam)
 
 		fSuccess = ReadFile(
 			hPipe,
-			&Pedido,
+			&clientRequest,
 			msg_sz,
 			&cbBytesRead,
 			&OverlRd);
+
+		
 
 		WaitForSingleObject(ReadReady, INFINITE);
 
 		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
 
+
 		if (cbBytesRead < msg_sz) {
-			_tprintf(TEXT("\nReadFile não leu os dados todos. Erro = %d"), GetLastError());
+			//nao leu tudo do readFile
+			_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
+			break;
+		} else {
+			vector<string> command = getCommand(clientRequest.msg);
 
-			if (!fSuccess || cbBytesRead < msg_sz) {
-				_tprintf(TEXT("\nServidor: Recebi(?) de: [%d] msg: [%s]"), Pedido.pid, Pedido.msg);
-				// _tcspy(Resposta.msg, s);
-				//_tcscat(Resposta.msg, Pedido.msg);
-				strcat_s(Resposta.msg, Pedido.msg);
-				numresp = Broadcast(Resposta);
-				_tprintf(TEXT("\nServidor: %d respostas enviadas"), numresp);
+			if (commandParser(command)) {
+				treatCommand(command, clientRequest);
 			}
-
-			rmClient(serverPipe);
-
-			FlushFileBuffers(serverPipe);
-			DisconnectNamedPipe(serverPipe);
-			CloseHandle(serverPipe);
-
-			_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
-			return 1;
-
+			else {
+				//tratar se nao for reconhecido o comando
+			}
 		}
+	}//end while
 
-	}
+	rmClient(hPipe);
+	FlushFileBuffers(hPipe);
+	DisconnectNamedPipe(hPipe);
+	CloseHandle(hPipe);
+	_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
+	return 1;
 
 }
 
