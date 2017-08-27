@@ -1,5 +1,5 @@
 #include "Client.h"
-
+#define msg_sz sizeof(Message)
 LPCTSTR lpFileName;
 DWORD dwDesiredAccess;
 DWORD dwShareMode;
@@ -15,16 +15,15 @@ HANDLE readReady;
 OVERLAPPED OverlRd;
 
 HANDLE hPipe;
-BOOL fSuccess = false;
+
 
 //Message msg;
 LPDWORD cbBytesRead;
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 
-HANDLE hThread;
 
 
-DWORD dwThreadId = 0;
+
 
 
 int DeveContinuar = 1;
