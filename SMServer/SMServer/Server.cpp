@@ -303,6 +303,7 @@ bool Server::commandParser(vector<string> command)
 		}
 		return false;
 	}//JOIN <username>
+	//JOIN <playerName>
 	else if (command[0] == "JOIN") {
 		if (game.getGamePhase() == INITIAL_PHASE) {
 			if (command.size() == 2)
