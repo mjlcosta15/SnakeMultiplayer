@@ -226,7 +226,7 @@ DWORD WINAPI ThreadClientWriter(LPVOID lpvParam) {
 
 	_tprintf(TEXT("\nligação estabelecida. \"exit\" para sair"));
 
-	while (1) {
+	while (DeveContinuar) {
 
 		WaitForSingleObject(eWriteToServer, INFINITE);
 
@@ -250,7 +250,7 @@ DWORD WINAPI ThreadClientWriter(LPVOID lpvParam) {
 			_tprintf(TEXT("\nWriteFile TALVEZ falhou. Erro = %d"), GetLastError());
 
 		_tprintf(TEXT("\nMessagem enviada"));
-
+		ResetEvent(eWriteToServer);
 	}
 	_tprintf(TEXT("\nEncerrar a thread ouvinte"));
 
@@ -279,13 +279,13 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		dominio[20];		// pode ser o IP da máquina
 
 
-	_tcscpy(dominio, TEXT("192.168.1.82"));
-	_tcscpy(username, TEXT("diogosantos"));
-	_tcscpy(pass, TEXT("q1w2e3r4"));
+	_tcscpy(dominio, TEXT("192.168.1.121"));
+	_tcscpy(username, TEXT("mcost"));
+	_tcscpy(pass, TEXT("b432A09b1F"));
 
 	//_tcscpy(lpszPipename, TEXT("\\\\"));
 	//_tcscat(lpszPipename, dominio);
-	lpszPipename = TEXT("\\\\192.168.1.82\\pipe\\pipeexemplo");
+	lpszPipename = TEXT("\\\\192.168.1.121\\pipe\\pipeexemplo");
 
 	log = LogonUser(username, dominio, pass,
 		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
@@ -436,6 +436,19 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 	}
 	//Armazenar o ponteiro this na zona cbClsExtra da estrutura WNDCLASSEX
 	SetWindowLongPtr(_hwnd, 0, (long) this);
+
+	eWriteToServer = CreateEvent(
+		NULL,               // default security attributes
+		TRUE,               // manual-reset event
+		FALSE,              // initial state is nonsignaled
+		TEXT("WriteToServerEvent")  // object name
+	);
+
+	if (eWriteToServer == NULL)
+	{
+		printf("CreateEvent failed (%d)\n", GetLastError());
+		return;
+	}
 }
 //---------------------------------------------------------------------------
 bool WWindow::Register() {
@@ -641,7 +654,7 @@ LRESULT CALLBACK WWindow::TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wP
 
 			//Enviar o comando aqui
 
-			sprintf(msg.msg, "setdirection %d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
+			sprintf(msg.msg, "CREATEGAME %d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
 			SetEvent(eWriteToServer);
 
 			return TRUE;
