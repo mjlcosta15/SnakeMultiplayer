@@ -37,8 +37,11 @@ public:
 		DWORD dXStyle = 0L,
 		int x = 0,
 		int y = 0,
-		int width = (int)GetSystemMetrics(SM_CXSCREEN),
-		int height = (int)GetSystemMetrics(SM_CYSCREEN));
+		//int width = (int)GetSystemMetrics(SM_CXSCREEN),
+		//int height = (int)GetSystemMetrics(SM_CYSCREEN));
+
+		int width = 720,
+		int height = 480);
 
 	// Registo da estrutura (WNDCLASSEX) da janela
 	bool Register();

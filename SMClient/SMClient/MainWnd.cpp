@@ -133,8 +133,6 @@ DWORD WINAPI ThreadSharedMemoryReader(LPVOID lParam) {
 
 //------------Threads Client-----------------------------------------------------
 
-
-
 DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 	Message response;
 
@@ -279,13 +277,13 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		dominio[20];		// pode ser o IP da máquina
 
 
-	_tcscpy(dominio, TEXT("192.168.1.82"));
-	_tcscpy(username, TEXT("diogosantos"));
+	_tcscpy(dominio, TEXT("192.168.1.81"));
+	_tcscpy(username, TEXT("Diogo"));
 	_tcscpy(pass, TEXT("q1w2e3r4"));
 
 	//_tcscpy(lpszPipename, TEXT("\\\\"));
 	//_tcscat(lpszPipename, dominio);
-	lpszPipename = TEXT("\\\\192.168.1.82\\pipe\\pipeexemplo");
+	lpszPipename = TEXT("\\\\192.168.1.81\\pipe\\pipeexemplo");
 
 	log = LogonUser(username, dominio, pass,
 		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
