@@ -281,7 +281,7 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 
 	_tcscpy(dominio, TEXT("192.168.1.121"));
 	_tcscpy(username, TEXT("mcost"));
-	_tcscpy(pass, TEXT("b432A09b1F"));
+	_tcscpy(pass, TEXT("q1w2e3r4"));
 
 	//_tcscpy(lpszPipename, TEXT("\\\\"));
 	//_tcscat(lpszPipename, dominio);
