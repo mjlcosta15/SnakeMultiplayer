@@ -174,7 +174,7 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 			&cbBytesRead,
 			&OverlRd);
 
-		MessageBox(NULL, "Veio isto do server", response.msg, MB_OK);
+		MessageBox(NULL, response.msg, "Message from server", MB_OK);
 
 		WaitForSingleObject(ReadReady, INFINITE);
 		_tprintf(TEXT("\nRead concluido"));
