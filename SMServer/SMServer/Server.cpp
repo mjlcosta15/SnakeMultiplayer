@@ -172,6 +172,10 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 	return 0;
 }
 
+bool Server::getSharedMemFlag() const {
+	return threadSharedMemFlag;
+}
+
 // Server Phases Function
 void Server::startServer()
 {
@@ -226,7 +230,7 @@ void Server::GamePhaseLoop()
 	do {
 		game.updateMap();
 		Broadcast(game.exportInfoToMessage());
-		Sleep(33); //Fazer 30 atualizações por segundo (30 FPS oh yeah)
+		Sleep(33); //Fazer 30 atualizações por segundo (30 FPS)
 	} while (game.getGamePhase() == IN_PROGRESS_PHASE);
 }
 
@@ -244,6 +248,8 @@ void Server::startGame()
 	game.setInProgressPhase();
 	game.initMap();
 }
+
+// Support Command Functions
 
 bool Server::commandParser(vector<string> command)
 {
@@ -400,10 +406,6 @@ string Server::commandToUpperCase(string command)
 	return command;
 }
 
-bool Server::getSharedMemFlag() const {
-	return threadSharedMemFlag;
-}
-
 
 int Server::waitConnection()
 {
@@ -458,12 +460,18 @@ int Server::waitConnection()
 	
 	while (1) {
 
-		if (numPlayersConnected >= MAX_PLAYERS) {
+		if (numPlayersConnected > MAX_PLAYERS) {		
 			break;
 		}
 
 		if (game.getGamePhase() != INITIAL_PHASE) {
 			break;
+		}
+
+		if (numPlayersConnected == MAX_PLAYERS) {
+			// Exit the loby and start the game
+
+			startGame();
 		}
 
 		serverPipe = CreateNamedPipe(
@@ -515,7 +523,6 @@ int Server::waitConnection()
 	return 0;
 
 }
-
 
 HANDLE Server::Create() {
 	return CreateNamedPipe(lpName,
