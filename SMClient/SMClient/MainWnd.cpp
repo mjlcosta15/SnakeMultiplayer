@@ -1,5 +1,7 @@
 #include "MainWnd.h"
-#include "Client.h"
+#include "MainHeader.h"
+
+#define msg_sz sizeof(Message)
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -8,7 +10,10 @@ int idx_row = 0;
 Message msg;
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 HANDLE hPipe;
-Client client;
+
+HANDLE hThread;
+DWORD dwThreadId = 0;
+
 HANDLE hThreadClient;
 DWORD dwThreadClient;
 
@@ -16,6 +21,7 @@ HANDLE eWriteToServer;
 
 int DeveContinuar = 1;
 int ReaderAlive = 0;
+int WriterAlive = 0;
 
 HANDLE hThreadSharedMemory;
 HANDLE hThreadSharedMemoryReader;
@@ -127,165 +133,6 @@ DWORD WINAPI ThreadSharedMemoryReader(LPVOID lParam) {
 
 //------------Threads Client-----------------------------------------------------
 
-DWORD WINAPI ThreadConnectClient(LPVOID lpvParam() {
-	DWORD cbWritten, dwMode;
-
-	_setmode(_fileno(stdout), _O_WTEXT); // proteger com #ifdef UNICODE ... #endif
-
-	_tprintf(TEXT("Escreve nome >"));
-	//readTChars(MsgToSend.quem, QUEMSZ);
-
-	//Create(); // liga-se ao pipe
-	//InitializeOverlappedStructure();
-	//Wait();
-
-	//***********Pipe Remoto************
-
-	HANDLE hUserToken = NULL;
-	BOOL log;
-	int ret;
-
-	TCHAR username[20],	// username da máquina destino
-		pass[20],			// password desse utilizador (na máquina destino)
-		dominio[20];		// pode ser o IP da máquina
-
-
-	_tcscpy(dominio, TEXT("192.168.1.82"));
-	_tcscpy(username, TEXT("diogosantos"));
-	_tcscpy(pass, TEXT("q1w2e3r4"));
-
-	//_tcscpy(lpszPipename, TEXT("\\\\"));
-	//_tcscat(lpszPipename, dominio);
-	lpszPipename = TEXT("\\\\192.168.1.82\\pipe\\pipeexemplo");
-
-	log = LogonUser(username, dominio, pass,
-		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
-		LOGON32_PROVIDER_DEFAULT,		// logon provider
-		&hUserToken);
-
-	log = ImpersonateLoggedOnUser(hUserToken);
-
-	while (1) {
-
-		hPipe = CreateFile(
-			lpszPipename, // Nome do pipe
-			GENERIC_READ | // acesso read e write
-			GENERIC_WRITE,
-			0 | FILE_SHARE_READ | FILE_SHARE_WRITE, // sem -> com partilha
-			NULL,
-			OPEN_EXISTING,
-			0 | FILE_FLAG_OVERLAPPED,
-			NULL);
-
-		if (hPipe != INVALID_HANDLE_VALUE)
-			break;
-
-		if (GetLastError() != ERROR_PIPE_BUSY) {
-			DWORD i = GetLastError();
-			_tprintf(TEXT("\nCreate file deu erro e nao foi BUSY. Erro = %d\n"), GetLastError());
-			return -1;
-		}
-
-		// Se chegou aqui é porque todas as instªancias
-		// do pipe estão ocupadas. Remédio: aguardar que uma
-		// fique livre com um timeout
-
-		if (!WaitNamedPipe(lpszPipename, 30000)) {
-			_tprintf(TEXT("Esperei por uma instancia durante 30 segundos"));
-			return -1;
-
-		}
-
-	}
-
-	dwMode = PIPE_READMODE_MESSAGE;
-	fSuccess = SetNamedPipeHandleState(
-		hPipe,		// handle para o pipe
-		&dwMode,	// Novo modo do pipe
-		NULL,		// Nao é para mudar max. bytes
-		NULL);		// Nao e para mudar max. timeout
-
-	if (!fSuccess) {
-		_tprintf(TEXT("SetNamedPipeHandleState falhou. Erro = %d\n"), GetLastError());
-		return -1;
-	}
-
-	hThread = CreateThread(
-		NULL,
-		0,
-		ThreadClientReader,
-		(LPVOID)hPipe,
-		0,
-		&dwThreadId);
-
-	if (hThread == NULL) {
-		_tprintf(TEXT("\nErro na criação da thread. Erro = %d"), GetLastError());
-		return -1;
-	}
-
-	HANDLE WriteReady; // Handle para o evento da leitura (cada thread tem um)
-	OVERLAPPED OverlWr = { 0 };
-
-	WriteReady = CreateEvent(
-		NULL,
-		TRUE,
-		FALSE,
-		NULL);
-
-	if (WriteReady == NULL) {
-		_tprintf(TEXT("\nCliente: não foi possível criar o Evento. Mais vale parar já"));
-		return 1;
-	}
-
-	_tprintf(TEXT("\nligação estabelecida. \"exit\" para sair"));
-	MsgToSend.pid = 69;
-	MsgToSend.scores[1] = 2;
-	MsgToSend.scores[2] = 25;
-	strcpy(MsgToSend.msg, TEXT("start\n"));
-	MsgToSend.msg[_tcslen(MsgToSend.msg) - 1] = TEXT('\0');
-
-	while (1) {
-
-		ZeroMemory(&OverlWr, sizeof(OverlWr));
-		ResetEvent(WriteReady);
-		OverlWr.hEvent = WriteReady;
-
-		fSuccess = WriteFile(
-			hPipe,
-			&MsgToSend,
-			msg_sz,
-			&cbWritten,
-			&OverlWr);
-
-		WaitForSingleObject(WriteReady, INFINITE);
-		_tprintf(TEXT("\nWrite concluido"));
-
-		GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
-
-		if (cbWritten < msg_sz)
-			_tprintf(TEXT("\nWriteFile TALVEZ falhou. Erro = %d"), GetLastError());
-
-		_tprintf(TEXT("\nMessagem enviada"));
-
-	}
-	_tprintf(TEXT("\nEncerrar a thread ouvinte"));
-
-	DeveContinuar = 0;
-
-	if (ReaderAlive) {
-		WaitForSingleObject(hThread, 3000);
-		_tprintf(TEXT("\nCliente vai terminar ligação e sair"));
-
-	}
-
-	_tprintf(TEXT("\nCleinte vai terminar ligação e sair"));
-	CloseHandle(WriteReady);
-	CloseHandle(hPipe);
-	return 0;
-
-
-}
-
 DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 	Message response;
 
@@ -327,6 +174,8 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 			&cbBytesRead,
 			&OverlRd);
 
+		MessageBox(NULL, "Veio isto do server", response.msg, MB_OK);
+
 		WaitForSingleObject(ReadReady, INFINITE);
 		_tprintf(TEXT("\nRead concluido"));
 
@@ -340,6 +189,8 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
+
+		
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
 		// Esse envio e feito na thread principal
 
@@ -354,72 +205,211 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 
 }
 
-DWORD WINAPI ThreadClientWrite(LPVOID lpvParam) {
+DWORD WINAPI ThreadClientWriter(LPVOID lpvParam) {
 	Message FromServer;
-
+	DWORD cbWritten;
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
 	HANDLE hPipe = (HANDLE)lpvParam; // a informaçºao enviada é o handle
 
-	HANDLE ReadReady;
-	OVERLAPPED OverlRd = { 0 };
+	HANDLE WriteReady; // Handle para o evento da leitura (cada thread tem um)
+	OVERLAPPED OverlWr = { 0 };
 
-	if (hPipe == NULL) {
-		_tprintf(TEXT("\nThreadReader - o handle recibo no param da thread é nulo\n"));
-		return -1;
-	}
+	WriteReady = CreateEvent(
+		NULL,
+		TRUE,
+		FALSE,
+		NULL);
 
-	ReadReady = CreateEvent(
-		NULL, // default security
-		TRUE,	// reset manual, por requisito do overlapped IO
-		FALSE,	// estado inicial = not signaled
-		NULL);	// nao precisa de nome. Uso interno ao processo
-
-	if (ReadReady == NULL) {
-		_tprintf(TEXT("\nCliente: nao foi possível criar o Evento Read. Mais vale parar já"));
+	if (WriteReady == NULL) {
+		_tprintf(TEXT("\nCliente: não foi possível criar o Evento. Mais vale parar já"));
 		return 1;
 	}
 
-	// Ciclo de diálogo com o cliente
+	_tprintf(TEXT("\nligação estabelecida. \"exit\" para sair"));
 
-	while (DeveContinuar) {
+	while (1) {
 
-		ZeroMemory(&OverlRd, sizeof(OverlRd));
-		OverlRd.hEvent = eWriteToServer;
-		ResetEvent(eWriteToServer);
+		WaitForSingleObject(eWriteToServer, INFINITE);
+
+		ZeroMemory(&OverlWr, sizeof(OverlWr));
+		ResetEvent(WriteReady);
+		OverlWr.hEvent = WriteReady;
 
 		fSuccess = WriteFile(
 			hPipe,
-			&FromServer,
+			&msg,
 			msg_sz,
-			&cbBytesRead,
-			&OverlRd);
+			&cbWritten,
+			&OverlWr);
 
-		WaitForSingleObject(eWriteToServer, INFINITE);
-		_tprintf(TEXT("\nRead concluido"));
+		WaitForSingleObject(WriteReady, INFINITE);
+		_tprintf(TEXT("\nWrite concluido"));
+
+		GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
+
+		if (cbWritten < msg_sz)
+			_tprintf(TEXT("\nWriteFile TALVEZ falhou. Erro = %d"), GetLastError());
+
+		_tprintf(TEXT("\nMessagem enviada"));
+
+	}
+	_tprintf(TEXT("\nEncerrar a thread ouvinte"));
+
+	DeveContinuar = 0;
+
+	_tprintf(TEXT("\nCleinte vai terminar ligação e sair"));
+	CloseHandle(WriteReady);
+	CloseHandle(hPipe);
+
+	WriterAlive = 0;
+	_tprintf(TEXT("Thread Writer a terminar. \n"));
+	return 1;
+}
+
+DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
+	DWORD dwMode;
+	BOOL fSuccess = false;
+	DWORD cbWritten;
+
+	HANDLE hUserToken = NULL;
+	BOOL log;
+	int ret;
+
+	TCHAR username[20],	// username da máquina destino
+		pass[20],			// password desse utilizador (na máquina destino)
+		dominio[20];		// pode ser o IP da máquina
 
 
-		// Testar se correu como esperado
+	_tcscpy(dominio, TEXT("192.168.1.81"));
+	_tcscpy(username, TEXT("Diogo"));
+	_tcscpy(pass, TEXT("q1w2e3r4"));
 
-		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
+	//_tcscpy(lpszPipename, TEXT("\\\\"));
+	//_tcscat(lpszPipename, dominio);
+	lpszPipename = TEXT("\\\\192.168.1.81\\pipe\\pipeexemplo");
 
-		if (cbBytesRead < msg_sz)
-			_tprintf(TEXT("\nReadFile falhou. Erro = %d"), GetLastError());
+	log = LogonUser(username, dominio, pass,
+		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
+		LOGON32_PROVIDER_DEFAULT,		// logon provider
+		&hUserToken);
 
-		//_tprintf(TEXT("\nServidor disse: [%s]"), FromServer.msg);
+	log = ImpersonateLoggedOnUser(hUserToken);
 
-		// Isto so le servidor + processa mensagem. Nao escreve no pipe
-		// Esse envio e feito na thread principal
+	while (1) {
+
+		hPipe = CreateFile(
+			lpszPipename, // Nome do pipe remoto
+			GENERIC_READ | // acesso read e write
+			GENERIC_WRITE,
+			0 | FILE_SHARE_READ | FILE_SHARE_WRITE, // sem -> com partilha
+			NULL,
+			OPEN_EXISTING,
+			0 | FILE_FLAG_OVERLAPPED,
+			NULL);
+
+		if (hPipe != INVALID_HANDLE_VALUE)
+			break;
+
+		if (GetLastError() != ERROR_PIPE_BUSY) {
+			DWORD i = GetLastError();
+			_tprintf(TEXT("\nCreate file deu erro e nao foi BUSY. Erro = %d\n"), GetLastError());
+			return -1;
+		}
+
+		// Se chegou aqui é porque todas as instªancias
+		// do pipe estão ocupadas. Remédio: aguardar que uma
+		// fique livre com um timeout
+
+		if (!WaitNamedPipe(lpszPipename, 30000)) {
+			_tprintf(TEXT("Esperei por uma instancia durante 30 segundos"));
+			return -1;
+
+		}
 
 	}
 
-	ReaderAlive = 0;
+	dwMode = PIPE_READMODE_MESSAGE;
+	fSuccess = SetNamedPipeHandleState(
+		hPipe,		// handle para o pipe
+		&dwMode,	// Novo modo do pipe
+		NULL,		// Nao é para mudar max. bytes
+		NULL);		// Nao e para mudar max. timeout
 
-	// Esta thread nao fecha o pipe.
-	// O "resto do cliente" faz isso
-	_tprintf(TEXT("Thread Reader a terminar. \n"));
+	if (!fSuccess) {
+		_tprintf(TEXT("SetNamedPipeHandleState falhou. Erro = %d\n"), GetLastError());
+		return -1;
+	}
+
+	//Envia a primeira mensagem
+	HANDLE WriteReady; // Handle para o evento da leitura (cada thread tem um)
+	OVERLAPPED OverlWr = { 0 };
+
+	WriteReady = CreateEvent(
+		NULL,
+		TRUE,
+		FALSE,
+		NULL);
+
+	if (WriteReady == NULL) {
+		_tprintf(TEXT("\nCliente: não foi possível criar o Evento. Mais vale parar já"));
+		return 1;
+	}
+
+	_tprintf(TEXT("\nligação estabelecida. \"exit\" para sair"));
+
+	msg.pid = GetCurrentThreadId();
+
+	ZeroMemory(&OverlWr, sizeof(OverlWr));
+	ResetEvent(WriteReady);
+	OverlWr.hEvent = WriteReady;
+
+	// Escreve no pipe
+	fSuccess = WriteFile(
+		hPipe,
+		&msg,
+		msg_sz,
+		&cbWritten,
+		&OverlWr);
+
+	WaitForSingleObject(WriteReady, INFINITE);
+	_tprintf(TEXT("\nWrite concluido"));
+
+	GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
+
+	if (cbWritten < msg_sz)
+		_tprintf(TEXT("\nWriteFile TALVEZ falhou. Erro = %d"), GetLastError());
+
+	CloseHandle(WriteReady);
+
+	// Create READ Thread
+	hThread = CreateThread(
+		NULL,
+		0,
+		ThreadClientReader,
+		(LPVOID)hPipe,
+		0,
+		&dwThreadId);
+
+	if (hThread == NULL) {
+		_tprintf(TEXT("\nErro na criação da thread. Erro = %d"), GetLastError());
+		return -1;
+	}
+
+	// Create WRITE Thread
+	hThread = CreateThread(
+		NULL,
+		0,
+		ThreadClientWriter,
+		(LPVOID)hPipe,
+		0,
+		&dwThreadId);
+
+	if (hThread == NULL) {
+		_tprintf(TEXT("\nErro na criação da thread. Erro = %d"), GetLastError());
+		return -1;
+	}
 	return 1;
-
 }
 
 
@@ -529,18 +519,22 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	switch (messg)
 	{
 	case WM_CLOSE:
-		PostQuitMessage(0);
 		threadSharedMemFlag = false;
+		if (hPipe != NULL && hPipe != INVALID_HANDLE_VALUE) {
+			sprintf(msg.msg, "disconnect");
+			SetEvent(eWriteToServer);
+			DeveContinuar = 0;
+		}
+		PostQuitMessage(0);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
-
 			//Menu		
-		case ID_JOGO_LIGARREMOTAMENTE:
+		case ID_JOGO_LIGARREMOTAMENTE: // Create Instance of "ThreadConnectClient" for multiplayer game
 			CreateThread(
 				NULL,
 				0,
-				ThreadClient,
+				ThreadConnectClient,
 				(LPVOID)hThreadClient,
 				0,
 				&dwThreadClient);
@@ -554,7 +548,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 				(LPVOID)hThreadSharedMemory,
 				0,
 				&smThreadID);
-			
+
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_LIGAR_SERVIDOR), hWnd, (DLGPROC)TreatDialogConnectToServer);
 			//threads da dll
 
@@ -583,8 +577,9 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 				direction = GOING_DOWN;
 
 			//enviar a direção
+			sprintf(msg.msg, "setdirection %d", direction);
 
-
+			SetEvent(eWriteToServer);
 
 			break;
 
@@ -653,6 +648,9 @@ LRESULT CALLBACK WWindow::TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wP
 
 			//Enviar o comando aqui
 
+			sprintf(msg.msg, "setdirection %d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
+			SetEvent(eWriteToServer);
+
 			return TRUE;
 		case ID_DIALOG_CREATE_CANCEL:
 			EndDialog(hWnd, TRUE);
@@ -678,8 +676,10 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 		switch (LOWORD(wParam)) {
 		case ID_DLG_JOIN_OK:
 			GetWindowText(GetDlgItem(hWnd, ID_DLG_JOIN_PLAYER_NAME), playerName, 256);
-			//Enviar o comando aqui
-
+			
+			sprintf(msg.msg, "join %s", playerName);
+			SetEvent(eWriteToServer);
+			
 			return TRUE;
 		case ID_DLG_JOIN_CANCEL:
 			EndDialog(hWnd, TRUE);
@@ -754,7 +754,7 @@ LRESULT WWindow::TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPAR
 		return TRUE;
 
 	case WM_COMMAND:
-		
+
 
 		switch (LOWORD(wParam)) {
 		case IDC_COMBO1:
@@ -770,7 +770,7 @@ LRESULT WWindow::TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPAR
 			ZeroMemory(&si, sizeof(si));
 			si.cb = sizeof(si);
 			ZeroMemory(&pi, sizeof(pi));
-			
+
 			//idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
 			//SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
 

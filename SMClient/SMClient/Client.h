@@ -9,7 +9,7 @@
 
 #include "MainHeader.h"
 
-#define msg_sz sizeof(Message)
+
 
 
 class Client
