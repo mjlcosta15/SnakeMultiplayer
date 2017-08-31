@@ -35,7 +35,7 @@ bool threadWriteFromSMFlag = false;
 DWORD smThreadID;
 
 //------------Threads Shared Memory-----------------------------------------
-DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
+DWORD WINAPI ReadFromSharedMemory(LPVOID lParam) {
 
 	HMODULE hDLL = LoadLibrary(TEXT("SM_DLL.dll"));
 	Message * (*ptr)(void);
@@ -101,7 +101,7 @@ DWORD WINAPI ThreadSharedMemoryReader(LPVOID lParam) {
 	CreateThread(
 		NULL,
 		0,
-		readFromSharedMemory,
+		ReadFromSharedMemory,
 		(LPVOID)hThreadSharedMemoryReader,
 		0,
 		&dwThreadSMReader);
