@@ -228,7 +228,7 @@ DWORD WINAPI ThreadClientWriter(LPVOID lpvParam) {
 
 	_tprintf(TEXT("\nligação estabelecida. \"exit\" para sair"));
 
-	while (1) {
+	while (DeveContinuar) {
 
 		WaitForSingleObject(eWriteToServer, INFINITE);
 
@@ -252,6 +252,7 @@ DWORD WINAPI ThreadClientWriter(LPVOID lpvParam) {
 			_tprintf(TEXT("\nWriteFile TALVEZ falhou. Erro = %d"), GetLastError());
 
 		_tprintf(TEXT("\nMessagem enviada"));
+		ResetEvent(eWriteToServer);
 
 	}
 	_tprintf(TEXT("\nEncerrar a thread ouvinte"));
@@ -443,8 +444,22 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 	}
 	//Armazenar o ponteiro this na zona cbClsExtra da estrutura WNDCLASSEX
 	SetWindowLongPtr(_hwnd, 0, (long) this);
+
+	eWriteToServer = CreateEvent(
+		NULL,               // default security attributes
+		TRUE,               // manual-reset event
+		FALSE,              // initial state is nonsignaled
+		TEXT("WriteToServerEvent")  // object name
+	);
+
+	if (eWriteToServer == NULL)
+	{
+		printf("CreateEvent failed (%d)\n", GetLastError());
+		return;
+	}
 }
-	// FALTA AQUI CODIGO
+	
+
 
 //---------------------------------------------------------------------------
 bool WWindow::Register() {
@@ -650,7 +665,7 @@ LRESULT CALLBACK WWindow::TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wP
 
 			//Enviar o comando aqui
 
-			sprintf(msg.msg, "setdirection %d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
+			sprintf(msg.msg, "CREATEGAME %d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
 			SetEvent(eWriteToServer);
 
 			return TRUE;
