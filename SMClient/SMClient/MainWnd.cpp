@@ -444,6 +444,8 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 	//Armazenar o ponteiro this na zona cbClsExtra da estrutura WNDCLASSEX
 	SetWindowLongPtr(_hwnd, 0, (long) this);
 }
+	// FALTA AQUI CODIGO
+
 //---------------------------------------------------------------------------
 bool WWindow::Register() {
 	WNDCLASSEX _WndClsEx;
