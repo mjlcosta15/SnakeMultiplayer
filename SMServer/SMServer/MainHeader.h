@@ -8,6 +8,14 @@
 #define MAX_PLAYERS 10
 #define BUFFER_SIZE 2048
 
+#define FAIL			0
+
+// Command Parser returns
+#define START			1
+#define CREATEGAME		2
+#define JOIN			3
+#define SETDIRECTION	4
+#define DISCONNECT		5
 
 #include <Windows.h>
 #include <vector>
