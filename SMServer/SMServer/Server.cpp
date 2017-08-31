@@ -77,7 +77,9 @@ Server::~Server()
 {
 }
 
-DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
+
+// Shared Memory Functions
+DWORD WINAPI ReadFromSharedMemory(LPVOID lParam) {
 
 	HMODULE hDLL = LoadLibrary(TEXT("SM_DLL.dll"));
 	Message * (*ptr)(void);
@@ -145,7 +147,7 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 	CreateThread(
 		NULL,
 		0,
-		readFromSharedMemory,
+		ReadFromSharedMemory,
 		(LPVOID)hThreadSharedMemoryReader,
 		0,
 		&dwThreadSMReader);
@@ -170,6 +172,7 @@ unsigned int __stdcall ThreadSharedMemoryReader(void * p)
 	return 0;
 }
 
+// Server Phases Function
 void Server::startServer()
 {
 
@@ -664,12 +667,9 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 			&cbBytesRead,
 			&OverlRd);
 
-		
-
 		WaitForSingleObject(ReadReady, INFINITE);
 
 		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
-
 
 		if (cbBytesRead < msg_sz) {
 			//nao leu tudo do readFile
