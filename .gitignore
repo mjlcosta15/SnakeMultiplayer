@@ -38,3 +38,7 @@ SM_DLL/.vs/SnakeMultiplayer/v14/.suo
 *.filters
 
 *.userprefs
+
+*.lib
+
+*.dll
