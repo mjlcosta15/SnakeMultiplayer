@@ -686,12 +686,37 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 		} else {
 			vector<string> command = getCommand(clientRequest.msg);
 
-			if (commandParser(command)!=FAIL) {
+			if (commandParser(command) != FAIL) {
 				treatCommand(command, clientRequest);
 			}
 			else {
 				//tratar se nao for reconhecido o comando
 			}
+
+			switch (commandParser(command))
+			{
+			case START:
+			
+				break;
+			case CREATEGAME:
+				Write(hPipe, clientRequest);
+				break;
+			case JOIN:
+		
+				break;
+			case SETDIRECTION:
+			
+				break;
+			case DISCONNECT:
+			
+				break;
+			case FAIL:
+				break;
+			default:
+				break;
+			}
+
+			
 		}
 	}//end while
 
