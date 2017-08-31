@@ -174,6 +174,8 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 			&cbBytesRead,
 			&OverlRd);
 
+		MessageBox(NULL, "Veio isto do server", response.msg, MB_OK);
+
 		WaitForSingleObject(ReadReady, INFINITE);
 		_tprintf(TEXT("\nRead concluido"));
 
@@ -187,6 +189,8 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
+
+		
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
 		// Esse envio e feito na thread principal
 
@@ -295,7 +299,7 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 	while (1) {
 
 		hPipe = CreateFile(
-			lpszPipename, // Nome do pipe
+			lpszPipename, // Nome do pipe remoto
 			GENERIC_READ | // acesso read e write
 			GENERIC_WRITE,
 			0 | FILE_SHARE_READ | FILE_SHARE_WRITE, // sem -> com partilha
@@ -360,6 +364,7 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 	ResetEvent(WriteReady);
 	OverlWr.hEvent = WriteReady;
 
+	// Escreve no pipe
 	fSuccess = WriteFile(
 		hPipe,
 		&msg,
@@ -377,6 +382,7 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 
 	CloseHandle(WriteReady);
 
+	// Create READ Thread
 	hThread = CreateThread(
 		NULL,
 		0,
@@ -390,6 +396,7 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		return -1;
 	}
 
+	// Create WRITE Thread
 	hThread = CreateThread(
 		NULL,
 		0,
@@ -404,6 +411,8 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 	}
 	return 1;
 }
+
+
 //------------Thread Client END-------------------------------------------------
 
 
@@ -521,7 +530,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 			//Menu		
-		case ID_JOGO_LIGARREMOTAMENTE:
+		case ID_JOGO_LIGARREMOTAMENTE: // Create Instance of "ThreadConnectClient" for multiplayer game
 			CreateThread(
 				NULL,
 				0,
