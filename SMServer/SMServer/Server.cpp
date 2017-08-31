@@ -245,17 +245,17 @@ void Server::startGame()
 	game.initMap();
 }
 
-bool Server::commandParser(vector<string> command)
+int Server::commandParser(vector<string> command)
 {
 	if (command.size() <= 0)
-		return false;
+		return FAIL;
 
 	//START
 	if (command[0] == "START") {
 		if (game.getGamePhase() == INITIAL_PHASE) {
-			return true;
+			return START;
 		}
-		return false;
+		return FAIL;
 	}
 
 	//CREATEGAME <Map Width [1,80]> <Map Height [1,80]> <Nr Players [1,10]> <Snake Size [1,10]> <Nr Objects [1,10]> <Nr Snakes AI [1,10]> <Player Username>
@@ -269,7 +269,7 @@ bool Server::commandParser(vector<string> command)
 								if (stoi(command[5]) >= 1 && stoi(command[5]) <= MAX_PLAYERS) {
 									if (stoi(command[6]) >= 1 && stoi(command[6]) <= MAX_PLAYERS) {
 										if (command[7] != "") {
-											return true;
+											return CREATEGAME;
 										}
 										else {
 											cout << "COMMAND -" << command[0] << "- Error in Username" << endl;
@@ -300,53 +300,53 @@ bool Server::commandParser(vector<string> command)
 				else {
 					cout << "COMMAND -" << command[0] << "- Error in Map Width" << endl;
 				}
-				return false;
+				return FAIL;
 			}
-			return false;
+			return FAIL;
 		}
-		return false;
+		return FAIL;
 	}//JOIN <username>
 	//JOIN <playerName>
 	else if (command[0] == "JOIN") {
 		if (game.getGamePhase() == INITIAL_PHASE) {
 			if (command.size() == 2)
 				if (command[1] != "")
-					return true;
+					return JOIN;
 				else
 					cout << "COMMAND -" << command[0] << "- Error in Username" << endl;
-			return false;
+			return FAIL;
 		}
-		return false;
+		return FAIL;
 	}
 	//SETDIRECTION <Direction(1,2,3,4)>
 	else if (command[0] == "SETDIRECTION") {
 		if (command.size() == 2) {
 			if (game.getGamePhase() == IN_PROGRESS_PHASE)
 				if (stoi(command[1]) > 0 && stoi(command[1]) < GOING_RIGHT)
-					return true;
+					return SETDIRECTION;
 				else
 					cout << "COMMAND -" << command[0] << "- Error in Direction" << endl;
-			return false;
+			return FAIL;
 		}
-		return false;
+		return FAIL;
 	}//DISCONNECT <PID>
 	else if (command[0] == "DISCONNECT") {
 		if (command.size() == 2) {
 			char* p;
 			strtol(command[1].c_str(), &p, 10);
 			if (*p == 0)
-				return true;
+				return DISCONNECT;
 			else
 				cout << "COMMAND -" << command[0] << "- Error in PID" << endl;
-			return false;
+			return FAIL;
 		}
-		return false;
+		return FAIL;
 	}
 	else {
 		//WRONG COMMAND
-		return false;
+		return FAIL;
 	}
-	return false;
+	return FAIL;
 }
 
 void Server::treatCommand(vector<string> command, Message msg)
@@ -678,7 +678,7 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 		} else {
 			vector<string> command = getCommand(clientRequest.msg);
 
-			if (commandParser(command)) {
+			if (commandParser(command)!=FAIL) {
 				treatCommand(command, clientRequest);
 			}
 			else {
