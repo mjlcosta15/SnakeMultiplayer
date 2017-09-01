@@ -2,17 +2,15 @@
 using namespace std;
 
 
-
-/*
 int _tmain()
 {
 	Server server;
 	server.startServer();
 
-}*/
+}
 
 
-
+/*
 #define SERVICE_NAME TEXT("SMServerNT")
 SERVICE_STATUS MyServiceStatus;
 SERVICE_STATUS_HANDLE MyServiceStatusHandle;
@@ -147,7 +145,7 @@ VOID WINAPI MyServiceCtrlHandler(DWORD Opcode)
 	return;
 }
 
-/*
+
 void MostrarErro(TCHAR *str, DWORD val)
 {
 	TCHAR buf[TAM * 4];
@@ -172,4 +170,5 @@ void MostrarErro(TCHAR *str, DWORD val)
 			NULL);
 	}
 
-}*/
+}
+*/
