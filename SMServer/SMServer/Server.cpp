@@ -458,10 +458,10 @@ int Server::waitConnection()
 	// Enter the cicle(Main Thread)
 	_tprintf(TEXT("\nServidor a aceitar clientes"));
 
-	
+
 	while (1) {
 
-		if (numPlayersConnected > MAX_PLAYERS) {		
+		if (numPlayersConnected > MAX_PLAYERS) {
 			break;
 		}
 
@@ -683,40 +683,41 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 			//nao leu tudo do readFile
 			_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
 			break;
-		} else {
+		}
+		else {
 			vector<string> command = getCommand(clientRequest.msg);
 
-			if (commandParser(command) != FAIL) {
-				treatCommand(command, clientRequest);
-			}
-			else {
-				//tratar se nao for reconhecido o comando
-			}
 
 			switch (commandParser(command))
 			{
 			case START:
-			
+				treatCommand(command, clientRequest);
 				break;
+
 			case CREATEGAME:
+				treatCommand(command, clientRequest);
 				Write(hPipe, clientRequest);
 				break;
+
 			case JOIN:
-		
+				treatCommand(command, clientRequest);
 				break;
+
 			case SETDIRECTION:
-			
+				treatCommand(command, clientRequest);
 				break;
+
 			case DISCONNECT:
-			
+				treatCommand(command, clientRequest);
 				break;
+
 			case FAIL:
 				break;
 			default:
 				break;
 			}
 
-			
+
 		}
 	}//end while
 

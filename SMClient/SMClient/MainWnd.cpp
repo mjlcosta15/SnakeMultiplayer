@@ -282,13 +282,13 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		dominio[20];		// pode ser o IP da máquina
 
 
-	_tcscpy(dominio, TEXT("192.168.1.81"));
-	_tcscpy(username, TEXT("Diogo"));
-	_tcscpy(pass, TEXT("q1w2e3r4"));
+	_tcscpy(dominio, TEXT("192.168.0.105"));
+	_tcscpy(username, TEXT("Mário Costa"));
+	_tcscpy(pass, TEXT("b432A09b1F"));
 
 	//_tcscpy(lpszPipename, TEXT("\\\\"));
 	//_tcscat(lpszPipename, dominio);
-	lpszPipename = TEXT("\\\\192.168.1.81\\pipe\\pipeexemplo");
+	lpszPipename = TEXT("\\\\192.168.0.105\\pipe\\pipeexemplo");
 
 	log = LogonUser(username, dominio, pass,
 		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
@@ -594,7 +594,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 				direction = GOING_DOWN;
 
 			//enviar a direção
-			sprintf(msg.msg, "setdirection %d", direction);
+			sprintf(msg.msg, "SETDIRECTION %d", direction);
 
 			SetEvent(eWriteToServer);
 
