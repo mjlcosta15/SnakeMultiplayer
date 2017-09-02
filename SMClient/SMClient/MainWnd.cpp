@@ -174,6 +174,7 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 			&cbBytesRead,
 			&OverlRd);
 
+
 		MessageBox(NULL, response.msg, "Message from server", MB_OK);
 
 		WaitForSingleObject(ReadReady, INFINITE);
@@ -282,18 +283,23 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		dominio[20];		// pode ser o IP da máquina
 
 
-	_tcscpy(dominio, TEXT("192.168.0.105"));
-	_tcscpy(username, TEXT("diogo"));
+	_tcscpy(dominio, TEXT("192.168.1.81"));
+	_tcscpy(username, TEXT("Diogo"));
 	_tcscpy(pass, TEXT("q1w2e3r4"));
 
 	//_tcscpy(lpszPipename, TEXT("\\\\"));
 	//_tcscat(lpszPipename, dominio);
-	lpszPipename = TEXT("\\\\192.168.0.105\\pipe\\pipeexemplo");
+	lpszPipename = TEXT("\\\\192.168.1.81\\pipe\\pipeexemplo");
 
-	log = LogonUser(username, dominio, pass,
+	// porque nao retorna um BOOL???
+	log = LogonUser(username,
+		dominio,
+		pass,
 		LOGON32_LOGON_NEW_CREDENTIALS,	// tipo de logon
 		LOGON32_PROVIDER_DEFAULT,		// logon provider
 		&hUserToken);
+
+	//MessageBox(NULL, TEXT("Numero de Jogadores errado [1,10]"), TEXT("Erro"), MB_ICONERROR);
 
 	log = ImpersonateLoggedOnUser(hUserToken);
 
@@ -712,6 +718,8 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 
 
 LRESULT CALLBACK WWindow::TreatDialogConnectToServer(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
+
+
 	switch (messg) {
 	case WM_CLOSE:
 		EndDialog(hWnd, 0);
