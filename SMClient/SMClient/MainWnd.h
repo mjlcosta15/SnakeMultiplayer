@@ -27,7 +27,8 @@ class WWindow
 	static LRESULT CALLBACK TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static tstring AppName;
 	static bool started;
-	static HINSTANCE hInstance;   
+	static HINSTANCE hInstance;  
+
 public:
 	// Utilizaremos o construtor para criar e inicializar
 	WWindow(LPCTSTR clsname,
@@ -61,5 +62,7 @@ protected:
 	HWND _hwnd;
 	//Confirmar fecho da janela
 	bool doConfirmation(void);
+
+	HWND hWnd;
 };
 //---------------------------------------------------------------------------
