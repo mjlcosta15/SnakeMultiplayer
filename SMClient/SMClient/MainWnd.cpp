@@ -174,8 +174,8 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 			&cbBytesRead,
 			&OverlRd);
 
-
-		MessageBox(NULL, response.msg, "Message from server", MB_OK);
+		//if(fSuccess)
+			MessageBox(NULL, response.msg, "Message from server", MB_OK);
 
 		WaitForSingleObject(ReadReady, INFINITE);
 		_tprintf(TEXT("\nRead concluido"));
@@ -319,9 +319,15 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 			break;
 
 		if (GetLastError() != ERROR_PIPE_BUSY) {
+			// Nao ha nenhum servidor a correr
+			
+			MessageBox(NULL, "Nenhum servidor disponivel de momento!", "Erro!", MB_OK);
+
 			DWORD i = GetLastError();
 			_tprintf(TEXT("\nCreate file deu erro e nao foi BUSY. Erro = %d\n"), GetLastError());
 			return -1;
+
+			
 		}
 
 		// Se chegou aqui é porque todas as instªancias
@@ -335,6 +341,8 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		}
 
 	}
+
+	// Aqui é que se tem de abrir a dialog box!!!
 
 	dwMode = PIPE_READMODE_MESSAGE;
 	fSuccess = SetNamedPipeHandleState(
@@ -458,6 +466,7 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 		TEXT("WriteToServerEvent")  // object name
 	);
 
+
 	if (eWriteToServer == NULL)
 	{
 		printf("CreateEvent failed (%d)\n", GetLastError());
@@ -538,6 +547,11 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT PtStc;
 	WWindow *pWin = (WWindow *)GetWindowLongPtr(hWnd, 0);
 	BOOL eRato = FALSE;
+
+	//TCHAR erro[100];
+	//DWORD lastError;
+
+
 	int direction;
 	switch (messg)
 	{
@@ -554,6 +568,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 		switch (LOWORD(wParam)) {
 			//Menu		
 		case ID_JOGO_LIGARREMOTAMENTE: // Create Instance of "ThreadConnectClient" for multiplayer game
+
 			CreateThread(
 				NULL,
 				0,
@@ -561,7 +576,19 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 				(LPVOID)hThreadClient,
 				0,
 				&dwThreadClient);
+
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_LIGAR_SERVIDOR), hWnd, (DLGPROC)TreatDialogConnectToServer);
+
+			//lastError = GetLastError();
+			//_stprintf_s(erro, _T("%X"), lastError);
+			 
+			//MessageBox(hWnd, erro, "Erro", MB_OK);
+
+			
+
+			//EnableWindow(GetDlgItem(hWnd, ID_CRIAR_JOGO), FALSE); // isto nao esta a funcionar nao sei pq
+																  // deveria desativar o botao
+
 			break;
 		case ID_JOGO_LIGARLOCALMENTE:
 			CreateThread(
