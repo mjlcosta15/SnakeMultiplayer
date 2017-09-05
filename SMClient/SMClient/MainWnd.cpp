@@ -1,5 +1,4 @@
 #include "MainWnd.h"
-#include "MainHeader.h"
 
 #define msg_sz sizeof(Message)
 
@@ -33,6 +32,88 @@ bool threadSharedMemFlag = true;
 bool threadReadFromSMFlag = false;
 bool threadWriteFromSMFlag = false;
 DWORD smThreadID;
+
+
+//------------Treat Responses Functions-----------------------------------------
+/*int commandParser(vector<string> command, Message msg)
+{
+	if (command.size() <= 0)
+		return FAIL;
+
+	if (command[0] == "SUCCESS") {
+		return SUCCESS;
+	}
+	else if (command[0] == "ERROR") {
+		return ERROR;
+	}
+	else if (command[0] == "MAP") {
+		return MAP;
+	}
+	else if (command[0] == "START") {
+		return START;
+	}
+	else if (command[0] == "DISCONNECT") {
+		return DISCONNECT;
+	}
+
+	return FAIL;
+}*/
+
+
+void treatCommand(vector<string> command, Message msg)
+{
+	switch (msg.code) {
+	case SUCCESS:
+		MessageBox(NULL, msg.msg, "Message from server", MB_OK);
+		break;
+
+	case ERROR:
+		MessageBox(NULL, msg.msg, "Message from server", MB_OK);
+		break;
+
+	case MAP:
+		//Update ao map
+		break;
+
+	case START:
+		//dar start ao jogo
+		break;
+
+	case DISCONNECT:
+		//desligar tudo
+		break;
+	}
+}
+
+string commandToUpperCase(string command)
+{
+	for (unsigned int i = 0; i < command.size(); i++) {
+		if (command[i] >= 'a' && command[i] <= 'z') {
+			command[i] -= 32;
+		}
+	}
+	return command;
+}
+
+vector<string> getCommand(char* buffer)
+{
+
+	string commandString = buffer;
+	commandString = commandToUpperCase(commandString);
+	//Vectorize command
+	vector <string> comand;
+	string temp;
+	stringstream ss(commandString);
+	while (ss >> temp)
+		comand.push_back(temp);
+
+	return comand;
+}
+
+//------------Treat Responses Functions END-------------------------------------
+
+
+
 
 //------------Threads Shared Memory-----------------------------------------
 DWORD WINAPI readFromSharedMemory(LPVOID lParam) {
@@ -173,9 +254,14 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 			msg_sz,
 			&cbBytesRead,
 			&OverlRd);
-
-		//if(fSuccess)
-			MessageBox(NULL, response.msg, "Message from server", MB_OK);
+			
+		
+		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
+		//if (fSuccess) {
+			vector<string> command = getCommand(response.msg);
+			treatCommand(command, response);
+		//}
+			
 
 		WaitForSingleObject(ReadReady, INFINITE);
 		_tprintf(TEXT("\nRead concluido"));
@@ -183,7 +269,7 @@ DWORD WINAPI ThreadClientReader(LPVOID lpvParam) {
 
 		// Testar se correu como esperado
 
-		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
+		
 
 		if (cbBytesRead < msg_sz)
 			_tprintf(TEXT("\nReadFile falhou. Erro = %d"), GetLastError());
@@ -283,13 +369,13 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 		dominio[20];		// pode ser o IP da máquina
 
 
-	_tcscpy(dominio, TEXT("192.168.1.81"));
-	_tcscpy(username, TEXT("Diogo"));
-	_tcscpy(pass, TEXT("q1w2e3r4"));
+	_tcscpy(dominio, TEXT("192.168.0.105"));
+	_tcscpy(username, TEXT("Mário Costa"));
+	_tcscpy(pass, TEXT("b432A09b1F"));
 
 	//_tcscpy(lpszPipename, TEXT("\\\\"));
 	//_tcscat(lpszPipename, dominio);
-	lpszPipename = TEXT("\\\\192.168.1.81\\pipe\\pipeexemplo");
+	lpszPipename = TEXT("\\\\192.168.0.105\\pipe\\pipeexemplo");
 
 	// porque nao retorna um BOOL???
 	log = LogonUser(username,
@@ -431,7 +517,6 @@ DWORD WINAPI ThreadConnectClient(LPVOID lpvParam) {
 //------------Thread Client END-------------------------------------------------
 
 
-
 //---------------------------------------------------------------------------
 WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 	HWND parent,
@@ -558,7 +643,8 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	case WM_CLOSE:
 		threadSharedMemFlag = false;
 		if (hPipe != NULL && hPipe != INVALID_HANDLE_VALUE) {
-			sprintf(msg.msg, "disconnect");
+			msg.code = DISCONNECT;
+			sprintf(msg.msg, "");
 			SetEvent(eWriteToServer);
 			DeveContinuar = 0;
 		}
@@ -627,8 +713,8 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 				direction = GOING_DOWN;
 
 			//enviar a direção
-			sprintf(msg.msg, "SETDIRECTION %d", direction);
-
+			msg.code = SETDIRECTION;
+			sprintf(msg.msg, "%d", direction);
 			SetEvent(eWriteToServer);
 
 			break;
@@ -697,8 +783,8 @@ LRESULT CALLBACK WWindow::TreatDialogCreateGame(HWND hWnd, UINT messg, WPARAM wP
 			}
 
 			//Enviar o comando aqui
-
-			sprintf(msg.msg, "CREATEGAME %d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
+			msg.code = CREATEGAME;
+			sprintf(msg.msg, "%d %d %d %d %d %d %s", width, height, numPlayers, initialSnakeTam, numObjects, numSnakesAI, playerName);
 			SetEvent(eWriteToServer);
 
 			return TRUE;
@@ -726,8 +812,8 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 		switch (LOWORD(wParam)) {
 		case ID_DLG_JOIN_OK:
 			GetWindowText(GetDlgItem(hWnd, ID_DLG_JOIN_PLAYER_NAME), playerName, 256);
-			
-			sprintf(msg.msg, "join %s", playerName);
+			msg.code = JOIN;
+			sprintf(msg.msg, "JOIN %s", playerName);
 			SetEvent(eWriteToServer);
 			
 			return TRUE;

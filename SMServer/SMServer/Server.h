@@ -49,7 +49,7 @@ public:
 
 
 	//Function that validates the command inputed
-	static int commandParser(vector<string> command);
+	static int commandParser(vector<string> command, Message msg);
 	//Function that process the requested command
 	static void treatCommand(vector<string> command, Message msg);
 	//Function to convert all string characters into upper case version

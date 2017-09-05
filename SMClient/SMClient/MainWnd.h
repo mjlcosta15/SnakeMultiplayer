@@ -12,10 +12,23 @@ using namespace std;
 #define tstring string
 #endif
 
-#define GOING_UP 1
-#define GOING_DOWN 2
-#define GOING_LEFT 3
-#define GOING_RIGHT 4 
+#define GOING_UP		1
+#define GOING_DOWN		2
+#define GOING_LEFT		3
+#define GOING_RIGHT		4
+
+/*
+#define FAIL			0
+
+// Command Parser returns
+#define START			1
+#define CREATEGAME		2
+#define JOIN			3
+#define SETDIRECTION	4
+#define DISCONNECT		5
+#define SUCCESS			6
+#define ERROR			7
+#define MAP				8*/
 
 //---------------------------------------------------------------------------
 class WWindow
