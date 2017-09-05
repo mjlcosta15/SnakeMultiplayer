@@ -250,6 +250,7 @@ Block Game::getBlock(int x, int y)
 Message Game::exportInfoToMessage()
 {
 	Message msg;
+	msg.code = MAP;
 	msg.map.actualX = mapWidth;
 	msg.map.actualY = mapHeight;
 

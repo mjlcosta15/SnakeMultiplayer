@@ -22,7 +22,6 @@ class Game
 	int gamePhase;
 	int tick;
 
-
 public:
 	Game();
 	~Game();

@@ -35,30 +35,6 @@ DWORD smThreadID;
 
 
 //------------Treat Responses Functions-----------------------------------------
-/*int commandParser(vector<string> command, Message msg)
-{
-	if (command.size() <= 0)
-		return FAIL;
-
-	if (command[0] == "SUCCESS") {
-		return SUCCESS;
-	}
-	else if (command[0] == "ERROR") {
-		return ERROR;
-	}
-	else if (command[0] == "MAP") {
-		return MAP;
-	}
-	else if (command[0] == "START") {
-		return START;
-	}
-	else if (command[0] == "DISCONNECT") {
-		return DISCONNECT;
-	}
-
-	return FAIL;
-}*/
-
 
 void treatCommand(vector<string> command, Message msg)
 {
