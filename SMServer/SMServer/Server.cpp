@@ -701,14 +701,14 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 			{
 			case START:
 				treatCommand(command, clientRequest);
-				clientRequest.code = SUCCESS;
+				clientRequest.code = START;
 				sprintf(clientRequest.msg, "Game started");
 				Write(hPipe, clientRequest);
 				break;
 
 			case CREATEGAME:
 				treatCommand(command, clientRequest);
-				clientRequest.code = SUCCESS;
+				clientRequest.code = CREATEGAME;
 				sprintf(clientRequest.msg, "Game created with success");
 				Write(hPipe, clientRequest);
 				break;
@@ -716,7 +716,7 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 			case JOIN:
 				treatCommand(command, clientRequest);
 				sprintf(clientRequest.msg, "You joined in a created game");
-				clientRequest.code = SUCCESS;
+				clientRequest.code = JOIN;
 				Write(hPipe, clientRequest);
 				break;
 
