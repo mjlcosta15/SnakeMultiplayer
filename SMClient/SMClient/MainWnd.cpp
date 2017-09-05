@@ -2,10 +2,10 @@
 
 #define msg_sz sizeof(Message)
 
-#define IP "192.168.0.105"
-#define LOGIN "Mário Costa"
-#define PASSWORD "b432A09b1F"
-#define PIPENAME "\\\\192.168.0.105\\pipe\\pipeexemplo"
+#define IP "192.168.0.0"
+#define LOGIN "login"
+#define PASSWORD "pass"
+#define PIPENAME "\\\\192.168.0.0\\pipe\\pipeexemplo"
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
