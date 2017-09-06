@@ -214,8 +214,13 @@ void Server::serverMainLoop()
 
 
 	} while (game.getGamePhase() == FINISH_PHASE);
-	_tprintf(TEXT("\nFase inicial iniciada"));
+	
+	Message msg;
+	msg.code = END;
+	sprintf(msg.msg, "Game finished");
+	Broadcast(msg);
 	//Finish Phase
+	
 	finishServer();
 }
 
@@ -364,6 +369,10 @@ void Server::treatCommand(vector<string> command, Message msg)
 
 	case START:
 		game.setInProgressPhase();
+		Message response;
+		response.code = START;
+		sprintf(response.msg, "Game Started");
+		Broadcast(response);
 		break;
 
 	case CREATEGAME:
@@ -726,7 +735,7 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 
 			case DISCONNECT:
 				treatCommand(command, clientRequest);
-				sprintf(clientRequest.msg, "Client has to closed");
+				sprintf(clientRequest.msg, "Client has to close");
 				clientRequest.code = DISCONNECT;
 				Write(hPipe, clientRequest);
 				break;

@@ -19,6 +19,7 @@
 #define SUCCESS			6
 #define SERVER_ERROR	7
 #define MAP				8
+#define END				9
 
 #include <Windows.h>
 #include <vector>
