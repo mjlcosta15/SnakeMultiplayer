@@ -186,7 +186,7 @@ void Game::initMap()
 	//fill with some objects
 	int objectType, x, y;
 	for (int i = 0; i < numberOfObjects; i++) {
-		objectType = rand() % O_GLUE_BLOCK + 1;
+		objectType = rand() % COFFEE_BLOCK + 1;
 		do {
 			x = rand() % mapWidth;
 			y = rand() % mapHeight;
@@ -232,7 +232,7 @@ void Game::changeBlock(Block block)
 
 void Game::addSpecialBlock()
 {
-	int objectType = rand() % O_GLUE_BLOCK + 1;
+	int objectType = rand() % COFFEE_BLOCK + 1;
 	int x, y;
 	do {
 		x = rand() % mapWidth;
@@ -240,6 +240,19 @@ void Game::addSpecialBlock()
 	} while (map.at(y).at(x).getBlockType() != EMPTY_BLOCK);
 
 	map.at(y).at(x).setBlockType(objectType);
+}
+
+void Game::addSpecialBlock(int type, int number)
+{
+	int x, y;
+	for (int i = 0; i < number; i++) {
+		do {
+			x = rand() % mapWidth;
+			y = rand() % mapHeight;
+		} while (map.at(y).at(x).getBlockType() != EMPTY_BLOCK);
+
+		map.at(y).at(x).setBlockType(type);
+	}
 }
 
 Block Game::getBlock(int x, int y)

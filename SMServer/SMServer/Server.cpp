@@ -20,6 +20,7 @@ unsigned int smThreadID;
 
 // Server Pipe
 HANDLE serverPipe;
+HANDLE serverPipeAdmin;
 
 LPCTSTR lpName;
 DWORD dwOpenMode;
@@ -31,7 +32,7 @@ DWORD nDefaultTimeOut;
 LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
-
+LPTSTR lpszPipeNameAdmin = TEXT("\\\\.\\pipe\\pipeAdmin");
 HANDLE WriteReady;
 
 // Client's Array HANDLES
@@ -214,13 +215,13 @@ void Server::serverMainLoop()
 
 
 	} while (game.getGamePhase() == FINISH_PHASE);
-	
+
 	Message msg;
 	msg.code = END;
 	sprintf(msg.msg, "Game finished");
 	Broadcast(msg);
 	//Finish Phase
-	
+
 	finishServer();
 }
 
@@ -355,6 +356,18 @@ int Server::commandParser(vector<string> command, Message msg)
 		}
 		return FAIL;
 		break;
+	case SEED_OBJECT:
+		if (command.size() == 2) {
+			if (stoi(command[0]) >= 2 && stoi(command[0]) <= COFFEE_BLOCK)
+				if (stoi(command[0]) >= 1 && stoi(command[0]) <= 10)//maximo de 10 objectos postos
+					return SEED_OBJECT;
+				else
+					return FAIL;
+			else
+				return FAIL;
+		}
+		return FAIL;
+		break;
 	default:
 		//WRONG COMMAND
 		return FAIL;
@@ -395,6 +408,10 @@ void Server::treatCommand(vector<string> command, Message msg)
 
 	case DISCONNECT:
 		game.removePlayer(msg.pid);
+		break;
+
+	case SEED_OBJECT:
+		game.addSpecialBlock(stoi(command[0]), stoi(command[1]));
 		break;
 
 	}
@@ -651,6 +668,28 @@ HANDLE Server::getHNamedPipe()
 	return HANDLE();
 }
 
+void Server::startAdminPipe()
+{
+	HANDLE hThread;
+	
+	hThread = CreateThread(
+		NULL,
+		0,
+		ThreadProcAdmin,
+		NULL,
+		0,
+		NULL);
+
+	addClient(hThread);
+
+	if (hThread == NULL) {
+		_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
+	}
+	else
+		CloseHandle(hThread);
+
+}
+
 DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 {
 
@@ -756,6 +795,104 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 	CloseHandle(hPipe);
 	_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
 	return 1;
+
+}
+
+DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
+{
+	Message clientRequest, Resposta;
+	DWORD cbBytesRead = 0, cbReplyBytes = 0;
+	int numresp = 0;
+	BOOL fSuccess = FALSE;
+
+	HANDLE ReadReady;
+	OVERLAPPED OverlRd = { 0 };
+
+	serverPipeAdmin = CreateNamedPipe(
+		lpszPipeNameAdmin, // nome do pipe
+		PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+		PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		BUFSIZE,
+		BUFSIZE,
+		5000,
+		NULL);
+
+	if (serverPipeAdmin == INVALID_HANDLE_VALUE) {
+		_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
+		return 1;
+	}
+
+
+	fConnected = ConnectNamedPipe(serverPipeAdmin, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+
+	if (fConnected) {
+
+		ReadReady = CreateEvent(
+			NULL,	// default 
+			TRUE,
+			FALSE,
+			NULL);
+
+		if (ReadReady == NULL) {
+			_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+			return 1;
+		}
+
+
+		while (threadSharedMemFlag) {
+
+			ZeroMemory(&OverlRd, sizeof(OverlRd));
+			ResetEvent(ReadReady);
+			OverlRd.hEvent = ReadReady;
+
+			fSuccess = ReadFile(
+				serverPipeAdmin,
+				&clientRequest,
+				msg_sz,
+				&cbBytesRead,
+				&OverlRd);
+
+			WaitForSingleObject(ReadReady, INFINITE);
+
+			GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
+
+			if (cbBytesRead < msg_sz) {
+				//nao leu tudo do readFile
+				_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
+				break;
+			}
+			else {
+				vector<string> command = getCommand(clientRequest.msg);
+
+
+				switch (commandParser(command, clientRequest))
+				{
+				case SEED_OBJECT:
+					treatCommand(command, clientRequest);
+					break;
+				case FAIL:
+					break;
+				default:
+					break;
+				}
+
+
+			}
+		}//end while
+		FlushFileBuffers(serverPipeAdmin);
+		DisconnectNamedPipe(serverPipeAdmin);
+		CloseHandle(serverPipeAdmin);
+
+
+	}
+	else {
+		CloseHandle(serverPipe);
+		return 1;
+	}
+
+	return 0;
 
 }
 

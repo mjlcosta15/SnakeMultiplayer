@@ -97,7 +97,11 @@ public:
 
 	HANDLE getHNamedPipe();
 
+	void startAdminPipe();
+
 	static DWORD WINAPI ThreadProcClient(LPVOID lpvParam);
+	
+	static DWORD WINAPI ThreadProcAdmin(LPVOID lpvParam);
 };
 
 #endif // !SERVER_H

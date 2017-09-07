@@ -20,6 +20,7 @@
 #define SERVER_ERROR	7
 #define MAP				8
 #define END				9
+#define SEED_OBJECT		10
 
 #include <Windows.h>
 #include <vector>
