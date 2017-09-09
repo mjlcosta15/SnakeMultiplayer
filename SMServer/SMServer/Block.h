@@ -1,6 +1,8 @@
 #ifndef BLOCK_H
 #define BLOCK_H
+
 #include "MainHeader.h"
+
 #define EMPTY_BLOCK 1
 #define ICE_BLOCK  2
 #define FOOD_BLOCK  3
@@ -11,10 +13,12 @@
 #define O_VODKA_BLOCK  8
 #define O_OIL_BLOCK  9
 #define O_GLUE_BLOCK  10
-#define SNAKE_BLOCK  11
-#define OILED_SNAKE_BLOCK  12
-#define GLUED_SNAKE_BLOCK  13
-#define VODKA_SNAKE_BLOCK  14
+#define COFFEE_BLOCK  11
+#define SNAKE_BLOCK  12
+#define OILED_SNAKE_BLOCK  13
+#define GLUED_SNAKE_BLOCK  14
+#define VODKA_SNAKE_BLOCK  15
+
 
 class Block
 {

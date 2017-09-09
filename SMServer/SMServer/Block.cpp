@@ -94,6 +94,9 @@ TCHAR Block::getCharId()
 	case VODKA_SNAKE_BLOCK:
 		return '+';
 		break;
+	case COFFEE_BLOCK:
+		return 'c';
+		break;
 	default:
 		return '?';
 		break;

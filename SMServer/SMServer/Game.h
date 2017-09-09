@@ -22,7 +22,6 @@ class Game
 	int gamePhase;
 	int tick;
 
-
 public:
 	Game();
 	~Game();
@@ -68,6 +67,7 @@ public:
 	void updateMap();
 	void changeBlock(Block block);
 	void addSpecialBlock();
+	void addSpecialBlock(int type, int number);
 	Block getBlock(int x, int y);
 
 

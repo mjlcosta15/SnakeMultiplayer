@@ -244,6 +244,14 @@ void Player::effectAfterMovement()
 			game->changeBlock(*block);
 		}
 		break;
+	case COFFEE_BLOCK:
+		//Incompletooooooo
+		if (!isAutomated) {
+			setSpeed(SPEED_FAST);
+			game->changeBlock(*block);
+		}
+
+		break;
 	case SNAKE_BLOCK:
 		//perde
 		for (auto it = snake.begin(); it != snake.end(); it++) {

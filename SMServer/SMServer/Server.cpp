@@ -20,6 +20,7 @@ unsigned int smThreadID;
 
 // Server Pipe
 HANDLE serverPipe;
+HANDLE serverPipeAdmin;
 
 LPCTSTR lpName;
 DWORD dwOpenMode;
@@ -31,7 +32,7 @@ DWORD nDefaultTimeOut;
 LPSECURITY_ATTRIBUTES lpSecurityAttributes;
 
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
-
+LPTSTR lpszPipeNameAdmin = TEXT("\\\\.\\pipe\\pipeAdmin");
 HANDLE WriteReady;
 
 // Client's Array HANDLES
@@ -214,8 +215,13 @@ void Server::serverMainLoop()
 
 
 	} while (game.getGamePhase() == FINISH_PHASE);
-	_tprintf(TEXT("\nFase inicial iniciada"));
+
+	Message msg;
+	msg.code = END;
+	sprintf(msg.msg, "Game finished");
+	Broadcast(msg);
 	//Finish Phase
+
 	finishServer();
 }
 
@@ -251,135 +257,164 @@ void Server::startGame()
 
 
 // Support Command Functions
-int Server::commandParser(vector<string> command)
-
+int Server::commandParser(vector<string> command, Message msg)
 {
+
 	if (command.size() <= 0)
 		return FAIL;
-
-	//START
-	if (command[0] == "START") {
+	switch (msg.code) {
+		//START
+	case START:
 		if (game.getGamePhase() == INITIAL_PHASE) {
 			return START;
 		}
 		return FAIL;
-	}
+		break;
 
-	//CREATEGAME <Map Width [1,80]> <Map Height [1,80]> <Nr Players [1,10]> <Snake Size [1,10]> <Nr Objects [1,10]> <Nr Snakes AI [1,10]> <Player Username>
-	else if (command[0] == "CREATEGAME") {
+		//CREATEGAME <Map Width [1,80]> <Map Height [1,80]> <Nr Players [1,10]> <Snake Size [1,10]> <Nr Objects [1,10]> <Nr Snakes AI [1,10]> <Player Username>
+	case CREATEGAME:
 		if (game.getGamePhase() == INITIAL_PHASE) {
-			if (command.size() == 8) {
-				if (stoi(command[1]) >= 1 && stoi(command[1]) <= MAX_TAM_MAP) {
-					if (stoi(command[2]) >= 1 && stoi(command[2]) <= MAX_TAM_MAP) {
-						if (stoi(command[3]) >= 1 && stoi(command[3]) <= MAX_PLAYERS) {
-							if (stoi(command[4]) >= 1 && stoi(command[4]) <= MAX_PLAYERS) {
-								if (stoi(command[5]) >= 1 && stoi(command[5]) <= MAX_PLAYERS) {
-									if (stoi(command[6]) >= 1 && stoi(command[6]) <= MAX_PLAYERS) {
-										if (command[7] != "") {
+			if (command.size() == 7) {
+				if (stoi(command[0]) >= 1 && stoi(command[0]) <= MAX_TAM_MAP) {
+					if (stoi(command[1]) >= 1 && stoi(command[1]) <= MAX_TAM_MAP) {
+						if (stoi(command[2]) >= 1 && stoi(command[2]) <= MAX_PLAYERS) {
+							if (stoi(command[3]) >= 1 && stoi(command[3]) <= MAX_PLAYERS) {
+								if (stoi(command[4]) >= 1 && stoi(command[4]) <= MAX_PLAYERS) {
+									if (stoi(command[5]) >= 1 && stoi(command[5]) <= MAX_PLAYERS) {
+										if (command[6] != "") {
 											return CREATEGAME;
 										}
 										else {
-											cout << "COMMAND -" << command[0] << "- Error in Username" << endl;
+											cout << "COMMAND - Error in Username" << endl;
 
 										}
 									}
 									else {
-										cout << "COMMAND -" << command[0] << "- Error in Nr Snakes AI" << endl;
+										cout << "COMMAND - Error in Nr Snakes AI" << endl;
 
 									}
 								}
 								else {
-									cout << "COMMAND -" << command[0] << "- Error in Nr Objects" << endl;
+									cout << "COMMAND - Error in Nr Objects" << endl;
 								}
 							}
 							else {
-								cout << "COMMAND -" << command[0] << "- Error in Snake Size" << endl;
+								cout << "COMMAND - Error in Snake Size" << endl;
 							}
 						}
 						else {
-							cout << "COMMAND -" << command[0] << "- Error in Nr Players" << endl;
+							cout << "COMMAND - Error in Nr Players" << endl;
 						}
 					}
 					else {
-						cout << "COMMAND -" << command[0] << "- Error in Map Height" << endl;
+						cout << "COMMAND - Error in Map Height" << endl;
 					}
 				}
 				else {
-					cout << "COMMAND -" << command[0] << "- Error in Map Width" << endl;
+					cout << "COMMAND - Error in Map Width" << endl;
 				}
 				return FAIL;
 			}
 			return FAIL;
 		}
 		return FAIL;
-	}//JOIN <username>
-	//JOIN <playerName>
-	else if (command[0] == "JOIN") {
+		break;
+
+		//JOIN <playerName>
+	case JOIN:
 		if (game.getGamePhase() == INITIAL_PHASE) {
-			if (command.size() == 2)
-				if (command[1] != "")
+			if (command.size() == 1)
+				if (command[0] != "")
 					return JOIN;
 				else
-					cout << "COMMAND -" << command[0] << "- Error in Username" << endl;
+					cout << "COMMAND - Error in Username" << endl;
 			return FAIL;
 		}
 		return FAIL;
-	}
-	//SETDIRECTION <Direction(1,2,3,4)>
-	else if (command[0] == "SETDIRECTION") {
-		if (command.size() == 2) {
+		break;
+		//SETDIRECTION <Direction(1,2,3,4)>
+	case SETDIRECTION:
+		if (command.size() == 1) {
 			if (game.getGamePhase() == IN_PROGRESS_PHASE)
-				if (stoi(command[1]) > 0 && stoi(command[1]) < GOING_RIGHT)
+				if (stoi(command[0]) > 0 && stoi(command[0]) < GOING_RIGHT)
 					return SETDIRECTION;
 				else
-					cout << "COMMAND -" << command[0] << "- Error in Direction" << endl;
+					cout << "COMMAND - Error in Direction" << endl;
 			return FAIL;
 		}
 		return FAIL;
-	}//DISCONNECT <PID>
-	else if (command[0] == "DISCONNECT") {
-		if (command.size() == 2) {
+		break;//DISCONNECT <PID>
+	case DISCONNECT:
+		if (command.size() == 1) {
 			char* p;
-			strtol(command[1].c_str(), &p, 10);
+			strtol(command[0].c_str(), &p, 10);
 			if (*p == 0)
 				return DISCONNECT;
 			else
-				cout << "COMMAND -" << command[0] << "- Error in PID" << endl;
+				cout << "COMMAND - Error in PID" << endl;
 			return FAIL;
 		}
 		return FAIL;
-	}
-	else {
+		break;
+	case SEED_OBJECT:
+		if (command.size() == 2) {
+			if (stoi(command[0]) >= 2 && stoi(command[0]) <= COFFEE_BLOCK)
+				if (stoi(command[0]) >= 1 && stoi(command[0]) <= 10)//maximo de 10 objectos postos
+					return SEED_OBJECT;
+				else
+					return FAIL;
+			else
+				return FAIL;
+		}
+		return FAIL;
+		break;
+	default:
 		//WRONG COMMAND
 		return FAIL;
+		break;
 	}
 	return FAIL;
 }
 
 void Server::treatCommand(vector<string> command, Message msg)
 {
-	if (command[0] == "START") {
-		game.setInProgressPhase();
-	}
-	else if (command[0] == "CREATEGAME") {
-		game.setMapWidth(stoi(command[1]));
-		game.setMapHeight(stoi(command[2]));
-		game.setNumPlayers(stoi(command[3]));
-		game.setSnakeSize(stoi(command[4]));
-		game.setNumberOfObjects(stoi(command[5]));
-		game.setNumSnakesAI(stoi(command[6]));
-		game.addPlayer(new Player(msg.pid, command[7], &game));
-	}
-	else if (command[0] == "JOIN") {
-		game.addPlayer(new Player(msg.pid, command[1], &game));
-	}
-	else if (command[0] == "SETDIRECTION") {
-		game.setDirectionToPlayer(msg.pid, stoi(command[1]));
-	}
-	else if (command[0] == "DISCONNECT") {
-		game.removePlayer(msg.pid);
-	}
+	switch (msg.code) {
 
+	case START:
+		game.setInProgressPhase();
+		Message response;
+		response.code = START;
+		sprintf(response.msg, "Game Started");
+		Broadcast(response);
+		break;
+
+	case CREATEGAME:
+		game.setMapWidth(stoi(command[0]));
+		game.setMapHeight(stoi(command[1]));
+		game.setNumPlayers(stoi(command[2]));
+		game.setSnakeSize(stoi(command[3]));
+		game.setNumberOfObjects(stoi(command[4]));
+		game.setNumSnakesAI(stoi(command[5]));
+		game.addPlayer(new Player(msg.pid, command[6], &game));
+		break;
+
+	case JOIN:
+		game.addPlayer(new Player(msg.pid, command[0], &game));
+		break;
+
+	case SETDIRECTION:
+		game.setDirectionToPlayer(msg.pid, stoi(command[0]));
+		break;
+
+	case DISCONNECT:
+		game.removePlayer(msg.pid);
+		break;
+
+	case SEED_OBJECT:
+		game.addSpecialBlock(stoi(command[0]), stoi(command[1]));
+		break;
+
+	}
 }
 
 vector<string> Server::getCommand(char* buffer)
@@ -633,6 +668,28 @@ HANDLE Server::getHNamedPipe()
 	return HANDLE();
 }
 
+void Server::startAdminPipe()
+{
+	HANDLE hThread;
+	
+	hThread = CreateThread(
+		NULL,
+		0,
+		ThreadProcAdmin,
+		NULL,
+		0,
+		NULL);
+
+	addClient(hThread);
+
+	if (hThread == NULL) {
+		_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
+	}
+	else
+		CloseHandle(hThread);
+
+}
+
 DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 {
 
@@ -662,7 +719,7 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 	}
 
 
-	while (1) {
+	while (threadSharedMemFlag) {
 
 		ZeroMemory(&OverlRd, sizeof(OverlRd));
 		ResetEvent(ReadReady);
@@ -688,19 +745,27 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 			vector<string> command = getCommand(clientRequest.msg);
 
 
-			switch (commandParser(command))
+			switch (commandParser(command, clientRequest))
 			{
 			case START:
 				treatCommand(command, clientRequest);
+				clientRequest.code = START;
+				sprintf(clientRequest.msg, "Game started");
+				Write(hPipe, clientRequest);
 				break;
 
 			case CREATEGAME:
 				treatCommand(command, clientRequest);
+				clientRequest.code = CREATEGAME;
+				sprintf(clientRequest.msg, "Game created with success");
 				Write(hPipe, clientRequest);
 				break;
 
 			case JOIN:
 				treatCommand(command, clientRequest);
+				sprintf(clientRequest.msg, "You joined in a created game");
+				clientRequest.code = JOIN;
+				Write(hPipe, clientRequest);
 				break;
 
 			case SETDIRECTION:
@@ -709,6 +774,9 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 
 			case DISCONNECT:
 				treatCommand(command, clientRequest);
+				sprintf(clientRequest.msg, "Client has to close");
+				clientRequest.code = DISCONNECT;
+				Write(hPipe, clientRequest);
 				break;
 
 			case FAIL:
@@ -727,6 +795,104 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 	CloseHandle(hPipe);
 	_tprintf(TEXT("\nThread dedicada Cliente a terminar"));
 	return 1;
+
+}
+
+DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
+{
+	Message clientRequest, Resposta;
+	DWORD cbBytesRead = 0, cbReplyBytes = 0;
+	int numresp = 0;
+	BOOL fSuccess = FALSE;
+
+	HANDLE ReadReady;
+	OVERLAPPED OverlRd = { 0 };
+
+	serverPipeAdmin = CreateNamedPipe(
+		lpszPipeNameAdmin, // nome do pipe
+		PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+		PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		BUFSIZE,
+		BUFSIZE,
+		5000,
+		NULL);
+
+	if (serverPipeAdmin == INVALID_HANDLE_VALUE) {
+		_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
+		return 1;
+	}
+
+
+	fConnected = ConnectNamedPipe(serverPipeAdmin, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+
+	if (fConnected) {
+
+		ReadReady = CreateEvent(
+			NULL,	// default 
+			TRUE,
+			FALSE,
+			NULL);
+
+		if (ReadReady == NULL) {
+			_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+			return 1;
+		}
+
+
+		while (threadSharedMemFlag) {
+
+			ZeroMemory(&OverlRd, sizeof(OverlRd));
+			ResetEvent(ReadReady);
+			OverlRd.hEvent = ReadReady;
+
+			fSuccess = ReadFile(
+				serverPipeAdmin,
+				&clientRequest,
+				msg_sz,
+				&cbBytesRead,
+				&OverlRd);
+
+			WaitForSingleObject(ReadReady, INFINITE);
+
+			GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
+
+			if (cbBytesRead < msg_sz) {
+				//nao leu tudo do readFile
+				_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
+				break;
+			}
+			else {
+				vector<string> command = getCommand(clientRequest.msg);
+
+
+				switch (commandParser(command, clientRequest))
+				{
+				case SEED_OBJECT:
+					treatCommand(command, clientRequest);
+					break;
+				case FAIL:
+					break;
+				default:
+					break;
+				}
+
+
+			}
+		}//end while
+		FlushFileBuffers(serverPipeAdmin);
+		DisconnectNamedPipe(serverPipeAdmin);
+		CloseHandle(serverPipeAdmin);
+
+
+	}
+	else {
+		CloseHandle(serverPipe);
+		return 1;
+	}
+
+	return 0;
 
 }
 

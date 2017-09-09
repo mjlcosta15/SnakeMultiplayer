@@ -8,6 +8,18 @@
 #define MAX_PLAYERS 10
 #define BUFFER_SIZE 2048
 
+#define FAIL			0
+
+// Command Parser returns
+#define START			1
+#define CREATEGAME		2
+#define JOIN			3
+#define SETDIRECTION	4
+#define DISCONNECT		5
+#define SUCCESS			6
+#define SERVER_ERROR	7
+#define MAP				8
+#define END				9
 
 #include <Windows.h>
 #include <vector>
@@ -54,6 +66,7 @@ typedef struct
 {
 	int pid;
 	int numOfPlayers;
+	int code;
 	char msg[BUFFER_SIZE];
 	int scores[MAX_PLAYERS];
 	Map map;
