@@ -2,10 +2,10 @@
 
 #define msg_sz sizeof(Message)
 
-#define IP "192.168.1.121"
-#define LOGIN ""
-#define PASSWORD ""
-#define PIPENAME "\\\\192.168.1.121\\pipe\\pipeexemplo"
+#define IP "192.168.1.81"
+#define LOGIN "Diogo"
+#define PASSWORD "q1w2e3r4"
+#define PIPENAME "\\\\192.168.1.81\\pipe\\pipeexemplo"
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -284,7 +284,7 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 }
 
 DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
-	Message FromServer;
+	//Message FromServer;
 	DWORD cbWritten;
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
@@ -353,7 +353,6 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 	HANDLE hUserToken = NULL;
 	BOOL log;
-	int ret;
 
 	TCHAR username[20],	// username da máquina destino
 		pass[20],			// password desse utilizador (na máquina destino)
@@ -509,8 +508,79 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 
 
+LRESULT CALLBACK WWindow::DesenhaSerpente(
+	HWND hwnd,
+	UINT message,
+	WPARAM wParam,
+	LPARAM lParam)
+{
+	static TCHAR *msg = TEXT("Aqui vao aparecer as cobras");
 
-WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
+
+	Rect mat[MAX_RECTS];
+
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	switch (message) {
+	case WM_CREATE:
+		drawing = 0;
+		numrect = 0;
+		break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	case WM_LBUTTONDOWN:
+		x1 = LOWORD(lParam);
+		y1 = HIWORD(lParam);
+		drawing = 1;
+	case WM_MOUSEMOVE:
+		if (drawing == 1) {
+			x2 = LOWORD(lParam);
+			y2 = HIWORD(lParam);
+			InvalidateRect(hwnd, NULL, true);
+		}
+		break;
+	case WM_LBUTTONUP:
+		if (drawing == 1) {
+			x2 = LOWORD(lParam);
+			y2 = HIWORD(lParam);
+			mat[numrect].xi = x1;
+			mat[numrect].yi = y1;
+			mat[numrect].xf = x2;
+			mat[numrect].yf = y2;
+
+			if (numrect < MAX_RECTS - 1)
+				numrect++;
+
+			drawing = 0;
+
+			InvalidateRect(hwnd, NULL, true);
+		}
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		TextOut(hdc, 50, 50, msg, _tcslen(msg));
+		for (int i = 0; i < numrect; i++) {
+			Rectangle(hdc, mat[i].xi, mat[i].yi, mat[i].xf, mat[i].yf);
+		}
+		if (drawing == 1) {
+			Rectangle(hdc, x1, y1, x2, y2);
+		}
+		EndPaint(hwnd, &ps);
+		break;
+	default:
+		return DefWindowProc(hwnd, message, wParam, lParam);
+	}
+	return 0;
+
+
+}
+
+
+WWindow::WWindow(
+	LPCTSTR clsname, 
+	LPCTSTR wndname,
 	HWND parent,
 	DWORD dStyle,
 	DWORD dXStyle,
@@ -519,6 +589,7 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 	int width,
 	int height)
 {
+
 	AppName = clsname;
 	//Registar a classe se ainda não foi registada antes
 	if (!started)
@@ -550,6 +621,8 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname,
 		return;
 	}
 }
+
+
 	
 
 
@@ -602,13 +675,13 @@ bool WWindow::doConfirmation(void) {
 	return false;
 }
 //---------------------------------------------------------------------------
-WWindow::operator HWND()
+/*WWindow::operator HWND()
 {
 	//Uma vez que cada janela é do tipo HWND, utilizaremos 
 	//um modo de reconhecer o handle da janela quando utilizado 
 	//na aplicação
 	return _hwnd;
-}
+}*/
 //---------------------------------------------------------------------------
 void WWindow::StartUp(void) {
 	hInstance = GetModuleHandle(AppName.c_str());
@@ -628,6 +701,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	//TCHAR erro[100];
 	//DWORD lastError;
 
+	//DesenhaSerpente(hWnd, messg, wParam, lParam);
 
 	int direction;
 	switch (messg)
@@ -987,6 +1061,7 @@ LRESULT WWindow::TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPAR
 	default:
 		return FALSE;
 	}
+	return 0;
 }
 
 LRESULT CALLBACK WWindow::TreatDialogStartGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
