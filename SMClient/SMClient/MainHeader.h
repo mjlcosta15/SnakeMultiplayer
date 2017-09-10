@@ -2,7 +2,7 @@
 #ifndef MAIN_HEADER_H
 #define MAIN_HEADER_H
 
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 
 #define MAX_TAM_MAP 80
 #define MAX_PLAYERS 10
@@ -71,5 +71,16 @@ typedef struct
 	int scores[MAX_PLAYERS];
 	Map map;
 }Message;
+
+// Esta estrutura sera apenas usada para um exemplo
+typedef struct { 
+	int xi, yi, xf, yf;
+}Rect;
+
+# define MAX_RECTS 250
+
+
+// --- Fim Exemplo-----
+
 
 #endif //MAIN_HEADER_H

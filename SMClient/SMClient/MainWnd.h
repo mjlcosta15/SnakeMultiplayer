@@ -39,6 +39,7 @@ class WWindow
 	static LRESULT CALLBACK TreatDialogConnectToServer(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK TreatDialogEditSkins(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK TreatDialogStartGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK DesenhaSerpente(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	//Threads
 	static DWORD WINAPI readFromSharedMemory(LPVOID lParam);
 	static DWORD WINAPI WriteForSharedMemory(LPVOID lParam);
@@ -69,6 +70,15 @@ public:
 
 		int width = 720,
 		int height = 480);
+
+
+	static int numrect;
+	static int drawing;
+
+	static int x1, y1, x2, y2;
+
+	POINT p;
+	
 
 	// Registo da estrutura (WNDCLASSEX) da janela
 	bool Register();
