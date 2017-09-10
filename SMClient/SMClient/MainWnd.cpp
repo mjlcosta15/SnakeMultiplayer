@@ -41,12 +41,13 @@ DWORD smThreadID;
 
 //------------Auxiliary Functions-----------------------------------------
 
-bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC)
+bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, 0, 0,
-		LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, 10, 10,LR_LOADFROMFILE);
+
+
 	// Verify that the image was loaded
 	if (hBitmap == NULL) {
 		::MessageBox(NULL, "LoadImage Failed", "Error", MB_OK);
@@ -56,6 +57,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC)
 	// Create a device context that is compatible with the window
 	HDC hLocalDC;
 	hLocalDC = ::CreateCompatibleDC(hWinDC);
+
 	// Verify that the device context was created
 	if (hLocalDC == NULL) {
 		::MessageBox(NULL, "CreateCompatibleDC Failed", "Error", MB_OK);
@@ -64,12 +66,12 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC)
 
 	// Get the bitmap's parameters and verify the get
 	BITMAP qBitmap;
-	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP),
-		reinterpret_cast<LPVOID>(&qBitmap));
+	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP),reinterpret_cast<LPVOID>(&qBitmap));
 	if (!iReturn) {
 		::MessageBox(NULL, "GetObject Failed", "Error", MB_OK);
 		return false;
 	}
+
 
 	// Select the loaded bitmap into the device context
 	HBITMAP hOldBmp = (HBITMAP)::SelectObject(hLocalDC, hBitmap);
@@ -78,13 +80,16 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC)
 		return false;
 	}
 
+	
+
 	// Blit the dc which holds the bitmap onto the window's dc
-	BOOL qRetBlit = ::BitBlt(hWinDC, 0, 0, qBitmap.bmWidth, qBitmap.bmHeight,
+	BOOL qRetBlit = ::BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
 		hLocalDC, 0, 0, SRCCOPY);
 	if (!qRetBlit) {
 		::MessageBox(NULL, "Blit Failed", "Error", MB_OK);
 		return false;
 	}
+
 
 	// Unitialize and deallocate resources
 	::SelectObject(hLocalDC, hOldBmp);
@@ -574,23 +579,44 @@ LRESULT CALLBACK WWindow::DesenhaSerpente(
 
 	switch (message) {
 	case WM_CREATE:
-		hdc = BeginPaint(hwnd, &ps);
-		// TODO: Add any drawing code here...
-		LoadAndBlitBitmap("skblock.bmp", hdc);
-		EndPaint(hwnd, &ps);
+
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_KEYDOWN: // Programacao das teclas
+	{
+		switch (wParam)
+		{
+		case VK_LEFT:
+			//::MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_RIGHT:
+			//::MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_UP:
+			//::MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_DOWN:
+			//::MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
+			break;
+		default:
+			::MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
+			break;
+		}
+	}
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		// TODO: Add any drawing code here...
-		LoadAndBlitBitmap("skblock.bmp", hdc);
+		LoadAndBlitBitmap("skblock.bmp", hdc,50,50);
+		LoadAndBlitBitmap("skblock.bmp", hdc, 100, 100);
 		EndPaint(hwnd, &ps);
 		break;
 	default:
 		return DefWindowProc(hwnd, message, wParam, lParam);
 	}
+
+
 	return 0;
 
 
