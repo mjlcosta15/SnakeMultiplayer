@@ -39,6 +39,61 @@ bool threadWriteFromSMFlag = false;
 DWORD smThreadID;
 
 
+//------------Auxiliary Functions-----------------------------------------
+
+bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC)
+{
+	// Load the bitmap image file
+	HBITMAP hBitmap;
+	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, 0, 0,
+		LR_LOADFROMFILE);
+	// Verify that the image was loaded
+	if (hBitmap == NULL) {
+		::MessageBox(NULL, "LoadImage Failed", "Error", MB_OK);
+		return false;
+	}
+
+	// Create a device context that is compatible with the window
+	HDC hLocalDC;
+	hLocalDC = ::CreateCompatibleDC(hWinDC);
+	// Verify that the device context was created
+	if (hLocalDC == NULL) {
+		::MessageBox(NULL, "CreateCompatibleDC Failed", "Error", MB_OK);
+		return false;
+	}
+
+	// Get the bitmap's parameters and verify the get
+	BITMAP qBitmap;
+	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP),
+		reinterpret_cast<LPVOID>(&qBitmap));
+	if (!iReturn) {
+		::MessageBox(NULL, "GetObject Failed", "Error", MB_OK);
+		return false;
+	}
+
+	// Select the loaded bitmap into the device context
+	HBITMAP hOldBmp = (HBITMAP)::SelectObject(hLocalDC, hBitmap);
+	if (hOldBmp == NULL) {
+		::MessageBox(NULL, "SelectObject Failed", "Error", MB_OK);
+		return false;
+	}
+
+	// Blit the dc which holds the bitmap onto the window's dc
+	BOOL qRetBlit = ::BitBlt(hWinDC, 0, 0, qBitmap.bmWidth, qBitmap.bmHeight,
+		hLocalDC, 0, 0, SRCCOPY);
+	if (!qRetBlit) {
+		::MessageBox(NULL, "Blit Failed", "Error", MB_OK);
+		return false;
+	}
+
+	// Unitialize and deallocate resources
+	::SelectObject(hLocalDC, hOldBmp);
+	::DeleteDC(hLocalDC);
+	::DeleteObject(hBitmap);
+	return true;
+}
+
+
 //------------Treat Responses Functions-----------------------------------------
 
 void WWindow::treatCommand(vector<string> command, Message msg)
@@ -506,8 +561,6 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 //------------Thread Client END-------------------------------------------------
 
 
-
-
 LRESULT CALLBACK WWindow::DesenhaSerpente(
 	HWND hwnd,
 	UINT message,
@@ -515,9 +568,6 @@ LRESULT CALLBACK WWindow::DesenhaSerpente(
 	LPARAM lParam)
 {
 	static TCHAR *msg = TEXT("Aqui vao aparecer as cobras");
-
-
-	Rect mat[MAX_RECTS];
 
 	PAINTSTRUCT ps;
 	HDC hdc;
@@ -530,43 +580,10 @@ LRESULT CALLBACK WWindow::DesenhaSerpente(
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-	case WM_LBUTTONDOWN:
-		x1 = LOWORD(lParam);
-		y1 = HIWORD(lParam);
-		drawing = 1;
-	case WM_MOUSEMOVE:
-		if (drawing == 1) {
-			x2 = LOWORD(lParam);
-			y2 = HIWORD(lParam);
-			InvalidateRect(hwnd, NULL, true);
-		}
-		break;
-	case WM_LBUTTONUP:
-		if (drawing == 1) {
-			x2 = LOWORD(lParam);
-			y2 = HIWORD(lParam);
-			mat[numrect].xi = x1;
-			mat[numrect].yi = y1;
-			mat[numrect].xf = x2;
-			mat[numrect].yf = y2;
-
-			if (numrect < MAX_RECTS - 1)
-				numrect++;
-
-			drawing = 0;
-
-			InvalidateRect(hwnd, NULL, true);
-		}
-		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		TextOut(hdc, 50, 50, msg, _tcslen(msg));
-		for (int i = 0; i < numrect; i++) {
-			Rectangle(hdc, mat[i].xi, mat[i].yi, mat[i].xf, mat[i].yf);
-		}
-		if (drawing == 1) {
-			Rectangle(hdc, x1, y1, x2, y2);
-		}
+		// TODO: Add any drawing code here...
+		LoadAndBlitBitmap("skblock.bmp", hdc);
 		EndPaint(hwnd, &ps);
 		break;
 	default:

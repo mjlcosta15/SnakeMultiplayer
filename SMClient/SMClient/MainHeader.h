@@ -72,12 +72,7 @@ typedef struct
 	Map map;
 }Message;
 
-// Esta estrutura sera apenas usada para um exemplo
-typedef struct { 
-	int xi, yi, xf, yf;
-}Rect;
-
-# define MAX_RECTS 250
+//#define __T(x)      L ## x
 
 
 // --- Fim Exemplo-----
