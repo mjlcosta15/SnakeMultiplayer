@@ -1,6 +1,8 @@
 #include "MainHeader.h"
 using namespace std;
 
+#define msg_sz sizeof(Message)
+
 int _tmain()
 {
 	HANDLE hPipe;
@@ -52,9 +54,16 @@ int _tmain()
 		return -1;
 	}
 
-	//Envia a primeira mensagem
+
+	string cmd;
 	HANDLE WriteReady; // Handle para o evento da leitura (cada thread tem um)
 	OVERLAPPED OverlWr = { 0 };
+	do {
+
+	
+
+	//Envia a primeira mensagem
+	
 
 	WriteReady = CreateEvent(
 		NULL,
@@ -90,6 +99,9 @@ int _tmain()
 
 	if (cbWritten < msg_sz)
 		_tprintf(TEXT("\nWriteFile TALVEZ falhou. Erro = %d"), GetLastError());
+	
+	} while (cmd != "SAIR");
 
 	CloseHandle(WriteReady);
+	CloseHandle(hPipe);
 }
