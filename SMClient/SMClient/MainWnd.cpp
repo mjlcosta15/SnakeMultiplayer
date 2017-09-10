@@ -574,8 +574,10 @@ LRESULT CALLBACK WWindow::DesenhaSerpente(
 
 	switch (message) {
 	case WM_CREATE:
-		drawing = 0;
-		numrect = 0;
+		hdc = BeginPaint(hwnd, &ps);
+		// TODO: Add any drawing code here...
+		LoadAndBlitBitmap("skblock.bmp", hdc);
+		EndPaint(hwnd, &ps);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -718,7 +720,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	//TCHAR erro[100];
 	//DWORD lastError;
 
-	//DesenhaSerpente(hWnd, messg, wParam, lParam);
+	DesenhaSerpente(hWnd, messg, wParam, lParam);
 
 	int direction;
 	switch (messg)

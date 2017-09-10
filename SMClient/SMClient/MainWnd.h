@@ -69,16 +69,7 @@ public:
 		//int height = (int)GetSystemMetrics(SM_CYSCREEN));
 
 		int width = 720,
-		int height = 480);
-
-
-	static int numrect;
-	static int drawing;
-
-	static int x1, y1, x2, y2;
-
-	POINT p;
-	
+		int height = 480);	
 
 	// Registo da estrutura (WNDCLASSEX) da janela
 	bool Register();
