@@ -570,7 +570,9 @@ LRESULT CALLBACK WWindow::DesenhaSerpente(
 	HWND hwnd,
 	UINT message,
 	WPARAM wParam,
-	LPARAM lParam)
+	LPARAM lParam,
+	int posX,
+	int posY)
 {
 	static TCHAR *msg = TEXT("Aqui vao aparecer as cobras");
 
@@ -608,8 +610,69 @@ LRESULT CALLBACK WWindow::DesenhaSerpente(
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		// TODO: Add any drawing code here...
-		LoadAndBlitBitmap("skblock.bmp", hdc,50,50);
-		LoadAndBlitBitmap("skblock.bmp", hdc, 100, 100);
+		LoadAndBlitBitmap("skblock.bmp", hdc, posX, posY);
+		EndPaint(hwnd, &ps);
+		break;
+	default:
+		return DefWindowProc(hwnd, message, wParam, lParam);
+	}
+
+
+	return 0;
+
+
+}
+
+LRESULT CALLBACK WWindow::DesenhaMapa(
+	HWND hwnd,
+	UINT message,
+	WPARAM wParam,
+	LPARAM lParam,
+	int width,
+	int height)
+{
+
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	switch (message) {
+	case WM_CREATE:
+
+		break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	case WM_KEYDOWN: // Programacao das teclas
+	{
+		switch (wParam)
+		{
+		case VK_LEFT:
+			//::MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_RIGHT:
+			//::MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_UP:
+			//::MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_DOWN:
+			//::MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
+			break;
+		default:
+			::MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
+			break;
+		}
+	}
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		LoadAndBlitBitmap("cornerTL.bmp", hdc, 0, 0);
+		/*for (int i = 1; i < width-1; i++) {
+			LoadAndBlitBitmap("wallV.bmp", hdc, i, 0);
+		}
+		LoadAndBlitBitmap("cornerTR.bmp", hdc, width, 0);
+
+		LoadAndBlitBitmap("skblock.bmp", hdc, 50, 50);
+		LoadAndBlitBitmap("skblock.bmp", hdc, 100, 100);*/
 		EndPaint(hwnd, &ps);
 		break;
 	default:
@@ -746,7 +809,8 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	//TCHAR erro[100];
 	//DWORD lastError;
 
-	DesenhaSerpente(hWnd, messg, wParam, lParam);
+	DesenhaMapa(hWnd, messg, wParam, lParam, 10, 10);
+
 
 	int direction;
 	switch (messg)

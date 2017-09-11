@@ -164,6 +164,7 @@
     <ResourceCompile Include="SM_Client.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="cornerTL.bmp" />
     <Image Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
