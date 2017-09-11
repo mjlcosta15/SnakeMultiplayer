@@ -7,7 +7,7 @@
 #define MAX_TAM_MAP 80
 #define MAX_PLAYERS 10
 #define BUFFER_SIZE 2048
-#define BIPMAP_PIX_SIZE 10
+#define BITMAP_PIX_SIZE 10
 
 #define FAIL			0
 
