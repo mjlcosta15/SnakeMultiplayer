@@ -45,7 +45,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, 10, 10,LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, BIPMAP_PIX_SIZE, BIPMAP_PIX_SIZE,LR_LOADFROMFILE);
 
 
 	// Verify that the image was loaded
@@ -566,74 +566,23 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 //------------Thread Client END-------------------------------------------------
 
 
-LRESULT CALLBACK WWindow::DesenhaSerpente(
-	HWND hwnd,
-	UINT message,
-	WPARAM wParam,
-	LPARAM lParam,
-	int posX,
-	int posY)
-{
-	static TCHAR *msg = TEXT("Aqui vao aparecer as cobras");
-
-	PAINTSTRUCT ps;
-	HDC hdc;
-
-	switch (message) {
-	case WM_CREATE:
-
-		break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	case WM_KEYDOWN: // Programacao das teclas
-	{
-		switch (wParam)
-		{
-		case VK_LEFT:
-			//::MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
-			break;
-		case VK_RIGHT:
-			//::MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
-			break;
-		case VK_UP:
-			//::MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
-			break;
-		case VK_DOWN:
-			//::MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
-			break;
-		default:
-			::MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
-			break;
-		}
-	}
-	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
-		// TODO: Add any drawing code here...
-		LoadAndBlitBitmap("skblock.bmp", hdc, posX, posY);
-		EndPaint(hwnd, &ps);
-		break;
-	default:
-		return DefWindowProc(hwnd, message, wParam, lParam);
-	}
-
-
-	return 0;
-
-
-}
-
 LRESULT CALLBACK WWindow::DesenhaMapa(
 	HWND hwnd,
 	UINT message,
 	WPARAM wParam,
 	LPARAM lParam,
-	int width,
-	int height)
+	Map map)
 {
 
 	PAINTSTRUCT ps;
 	HDC hdc;
+
+	int x = map.actualX;
+	int y = map.actualY;
+
+	x = x * BIPMAP_PIX_SIZE;
+	y = y * BIPMAP_PIX_SIZE;
+
 
 	switch (message) {
 	case WM_CREATE:
@@ -665,14 +614,24 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 	}
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		LoadAndBlitBitmap("cornerTL.bmp", hdc, 0, 0);
-		/*for (int i = 1; i < width-1; i++) {
-			LoadAndBlitBitmap("wallV.bmp", hdc, i, 0);
-		}
-		LoadAndBlitBitmap("cornerTR.bmp", hdc, width, 0);
 
-		LoadAndBlitBitmap("skblock.bmp", hdc, 50, 50);
-		LoadAndBlitBitmap("skblock.bmp", hdc, 100, 100);*/
+		// PAREDES - INICIO
+		LoadAndBlitBitmap("skblock.bmp", hdc, 0, 0); // canto superior esquerdo
+		for (int i = BIPMAP_PIX_SIZE; i < x-1; i += BIPMAP_PIX_SIZE)
+			LoadAndBlitBitmap("skblock.bmp", hdc, i, 0); // parede superior	
+		LoadAndBlitBitmap("skblock.bmp", hdc, x, 0); // canto superior direito
+
+		for (int i = BIPMAP_PIX_SIZE; i < y - 1; i += BIPMAP_PIX_SIZE) {
+			LoadAndBlitBitmap("skblock.bmp", hdc, 0, i); // parede lateral esquerda
+			LoadAndBlitBitmap("skblock.bmp", hdc, x, i); // parede lateral direita
+		}
+
+		LoadAndBlitBitmap("skblock.bmp", hdc, 0, y); // canto inferior esquerdo
+		for (int i = BIPMAP_PIX_SIZE; i < x - 1; i += BIPMAP_PIX_SIZE)
+			LoadAndBlitBitmap("skblock.bmp", hdc, i, y); // parede inferior
+		LoadAndBlitBitmap("skblock.bmp", hdc, x, y); // canto inferior direito
+		// PAREDES - FIM
+
 		EndPaint(hwnd, &ps);
 		break;
 	default:
@@ -809,7 +768,12 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	//TCHAR erro[100];
 	//DWORD lastError;
 
-	DesenhaMapa(hWnd, messg, wParam, lParam, 10, 10);
+	Map map;
+
+	map.actualX = 50;
+	map.actualY = 35;
+
+	DesenhaMapa(hWnd, messg, wParam, lParam, map);
 
 
 	int direction;
