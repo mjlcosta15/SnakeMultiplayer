@@ -13,9 +13,6 @@ SM_DLL/.vs/SM_DLL/v14/.suo
 
 *.db
 
-*.vcxproj
-
-*.filters
 *.tlog
 *.idb
 *.lastbuildstate
@@ -33,9 +30,6 @@ SM_DLL/.vs/SM_DLL/v14/.suo
 
 SM_DLL/.vs/SnakeMultiplayer/v14/.suo
 
-*.vcxproj
-
-*.filters
 
 *.userprefs
 
