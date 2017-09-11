@@ -31,6 +31,14 @@
 #include <process.h>
 #include <io.h>
 #include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <fcntl.h>
+
+
+
+
 
 using namespace std;
 

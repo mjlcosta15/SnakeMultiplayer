@@ -227,6 +227,7 @@ void Server::serverMainLoop()
 
 void Server::initialPhaseLoop()
 {
+	startAdminPipe();
 	waitConnection();
 }
 
@@ -671,7 +672,7 @@ HANDLE Server::getHNamedPipe()
 void Server::startAdminPipe()
 {
 	HANDLE hThread;
-	
+
 	hThread = CreateThread(
 		NULL,
 		0,
@@ -800,7 +801,7 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 
 DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 {
-	Message clientRequest, Resposta;
+	Message adminRequest;
 	DWORD cbBytesRead = 0, cbReplyBytes = 0;
 	int numresp = 0;
 	BOOL fSuccess = FALSE;
@@ -849,7 +850,7 @@ DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 
 			fSuccess = ReadFile(
 				serverPipeAdmin,
-				&clientRequest,
+				&adminRequest,
 				msg_sz,
 				&cbBytesRead,
 				&OverlRd);
@@ -864,15 +865,21 @@ DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 				break;
 			}
 			else {
-				vector<string> command = getCommand(clientRequest.msg);
+				vector<string> command = getCommand(adminRequest.msg);
 
 
-				switch (commandParser(command, clientRequest))
+				switch (commandParser(command, adminRequest))
 				{
 				case SEED_OBJECT:
-					treatCommand(command, clientRequest);
+					treatCommand(command, adminRequest);
+					adminRequest.code = SUCCESS;
+					sprintf(adminRequest.msg, "Blocos adicionados com sucesso");
+					Write(serverPipeAdmin, adminRequest);
 					break;
 				case FAIL:
+					adminRequest.code = FAIL;
+					sprintf(adminRequest.msg, "Erro no comando!");
+					Write(serverPipeAdmin, adminRequest);
 					break;
 				default:
 					break;
