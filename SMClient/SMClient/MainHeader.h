@@ -7,6 +7,7 @@
 #define MAX_TAM_MAP 80
 #define MAX_PLAYERS 10
 #define BUFFER_SIZE 2048
+#define BIPMAP_PIX_SIZE 10
 
 #define FAIL			0
 
@@ -20,6 +21,7 @@
 #define SERVER_ERROR	7
 #define MAP				8
 #define END				9
+
 
 #include <Windows.h>
 #include <vector>
