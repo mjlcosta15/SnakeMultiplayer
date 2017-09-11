@@ -187,8 +187,8 @@ void Server::startServer()
 
 	//lançar a thread the leitura
 	threadSharedMemFlag = true;
-	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
-	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
+	//_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
+	//hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
 	serverMainLoop();
 }
@@ -228,6 +228,13 @@ void Server::serverMainLoop()
 void Server::initialPhaseLoop()
 {
 	startAdminPipe();
+	game.setMapHeight(10);
+	game.setMapWidth(10);
+	game.setNumSnakesAI(3);
+	game.setNumberOfObjects(3);
+	game.setSnakeSize(3);
+	game.addPlayer(1, "jorge");
+	startGame();
 	waitConnection();
 }
 
@@ -236,7 +243,8 @@ void Server::GamePhaseLoop()
 	tcout << "Game Phase Loop started" << endl;
 	do {
 		game.updateMap();
-		Broadcast(game.exportInfoToMessage());
+		game.exportInfoToMessage();
+		//Broadcast(game.exportInfoToMessage());
 		Sleep(33); //Fazer 30 atualizações por segundo (30 FPS)
 	} while (game.getGamePhase() == IN_PROGRESS_PHASE);
 }

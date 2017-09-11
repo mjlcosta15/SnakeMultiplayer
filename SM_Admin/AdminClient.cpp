@@ -17,7 +17,6 @@ void AdminClient::connectToServer()
 
 	while (1) {
 
-
 		hPipe = CreateFile(
 			pipeNameAdmin,
 			GENERIC_READ |
@@ -36,8 +35,6 @@ void AdminClient::connectToServer()
 		if (GetLastError() != ERROR_PIPE_BUSY) {
 			DWORD i = GetLastError();
 			_tprintf(TEXT("\nCreate file deu erro e nao foi BUSY. Erro = %d\n"), GetLastError());
-			
-
 		}
 
 		if (!WaitNamedPipe(pipeNameAdmin, 30000)) {
@@ -116,10 +113,7 @@ void AdminClient::startMessaging()
 				&cbWritten,
 				&OverlWr);
 
-			WaitForSingleObject(WriteReady, INFINITE);
 
-
-			GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
 
 			// Le do pipe
 			ZeroMemory(&OverlRd, sizeof(OverlRd));
