@@ -45,12 +45,12 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, BIPMAP_PIX_SIZE, BIPMAP_PIX_SIZE,LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
 
 
 	// Verify that the image was loaded
 	if (hBitmap == NULL) {
-		::MessageBox(NULL, "LoadImage Failed", "Error", MB_OK);
+		::MessageBox(NULL, ("LoadImage  %s Failed",szFileName), "Error", MB_OK);
 		return false;
 	}
 
@@ -580,8 +580,11 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 	int x = map.actualX;
 	int y = map.actualY;
 
-	x = x * BIPMAP_PIX_SIZE;
-	y = y * BIPMAP_PIX_SIZE;
+	x = x * BITMAP_PIX_SIZE;
+	y = y * BITMAP_PIX_SIZE;
+
+	int ii = 0;
+	int jj = 0;
 
 
 	switch (message) {
@@ -617,20 +620,87 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 
 		// PAREDES - INICIO
 		LoadAndBlitBitmap("skblock.bmp", hdc, 0, 0); // canto superior esquerdo
-		for (int i = BIPMAP_PIX_SIZE; i < x-1; i += BIPMAP_PIX_SIZE)
+		for (int i = BITMAP_PIX_SIZE; i < x-1; i += BITMAP_PIX_SIZE)
 			LoadAndBlitBitmap("skblock.bmp", hdc, i, 0); // parede superior	
 		LoadAndBlitBitmap("skblock.bmp", hdc, x, 0); // canto superior direito
 
-		for (int i = BIPMAP_PIX_SIZE; i < y - 1; i += BIPMAP_PIX_SIZE) {
+		for (int i = BITMAP_PIX_SIZE; i < y - 1; i += BITMAP_PIX_SIZE) {
 			LoadAndBlitBitmap("skblock.bmp", hdc, 0, i); // parede lateral esquerda
 			LoadAndBlitBitmap("skblock.bmp", hdc, x, i); // parede lateral direita
 		}
 
 		LoadAndBlitBitmap("skblock.bmp", hdc, 0, y); // canto inferior esquerdo
-		for (int i = BIPMAP_PIX_SIZE; i < x - 1; i += BIPMAP_PIX_SIZE)
+		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
 			LoadAndBlitBitmap("skblock.bmp", hdc, i, y); // parede inferior
 		LoadAndBlitBitmap("skblock.bmp", hdc, x, y); // canto inferior direito
 		// PAREDES - FIM
+
+		for (int i = 0; i < map.actualX; i++) {
+
+			if (i == map.actualX-1)
+				ii = 0;
+			ii += BITMAP_PIX_SIZE;
+			
+
+			for (int j = 1; j < map.actualY; j++) {
+
+				if (j == map.actualY - 1)
+					jj = 0;
+				jj += BITMAP_PIX_SIZE;
+				
+
+				switch (map.map[i][j]){
+					case '_': // grass
+						LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+						break;
+					case 'i': // ice
+						LoadAndBlitBitmap("ice.bmp", hdc, ii, jj);
+						break;
+					case 'f': // food
+						LoadAndBlitBitmap("food.bmp", hdc, ii, jj);
+						break;
+					case 'v': // vodka
+						LoadAndBlitBitmap("vodka.bmp", hdc, ii, jj);
+						break;
+					case 'b': // granade
+						LoadAndBlitBitmap("granade.bmp", hdc, ii, jj);
+						break;
+					case 'o': // oil
+						LoadAndBlitBitmap("oil.bmp", hdc, ii, jj);
+						break;
+					case 'g': // glue
+						LoadAndBlitBitmap("glue.bmp", hdc, ii, jj);
+						break;
+					case 'V': // vodka
+						LoadAndBlitBitmap("o_vodka.bmp", hdc, ii, jj);
+						break;
+					case 'O': // oil
+						LoadAndBlitBitmap("o_oil.bmp", hdc, ii, jj);
+						break;
+					case 'G': // glue
+						LoadAndBlitBitmap("o_glue.bmp", hdc, ii, jj);
+						break;
+					case 's': // snake
+						LoadAndBlitBitmap("snake.bmp", hdc, ii, jj);
+						break;
+					case '>': // oiled snake block
+						LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);
+						break;
+					case '<': // glued snake block
+						LoadAndBlitBitmap("snake_glue.bmp", hdc, ii, jj);
+						break;
+					case '+': // vodka
+						LoadAndBlitBitmap("snake_vodka.bmp", hdc, ii, jj);;
+						break;
+					case 'c': // coffe
+						LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);;
+						break;
+					default: // grass
+						LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+						break;
+				}
+			}
+		}
 
 		EndPaint(hwnd, &ps);
 		break;
@@ -770,8 +840,22 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	Map map;
 
-	map.actualX = 50;
-	map.actualY = 35;
+	map.actualX = 10;
+	map.actualY = 10;
+
+	for (int i = 0; i < map.actualX; i++) {
+		for (int j = 0; j < map.actualY; j++) {
+			map.map[i][j] = '_';
+		}
+	}
+
+	map.map[5][5] = 's';
+
+	map.map[7][7] = 'V';
+
+	map.map[2][7] = 'g';
+
+	map.map[1][1] = 'o';
 
 	DesenhaMapa(hWnd, messg, wParam, lParam, map);
 
