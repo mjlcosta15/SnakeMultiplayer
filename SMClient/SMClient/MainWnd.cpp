@@ -2,12 +2,25 @@
 
 #define msg_sz sizeof(Message)
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
 
+>>>>>>> origin/diogo
 #define IP "192.168.1.81"
 #define LOGIN "Diogo"
 #define PASSWORD "q1w2e3r4"
 #define PIPENAME "\\\\192.168.1.81\\pipe\\pipeexemplo"
+<<<<<<< HEAD
+=======
+#define IP "192.168.1.70"
+#define LOGIN "Mário Costa"
+#define PASSWORD "b432A09b1F"
+#define PIPENAME "\\\\192.168.1.70\\pipe\\pipeexemplo"
+>>>>>>> master
+=======
 
+>>>>>>> origin/diogo
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -431,9 +444,18 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+		//mainmessg = UpdateWindow(mainhWnd);
+		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
+=======
+>>>>>>> master
+=======
 		//mainmessg = UpdateWindow(mainhWnd);
 		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
 
+>>>>>>> origin/diogo
 
 
 
@@ -674,9 +696,15 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 //------------Thread Client END-------------------------------------------------
 
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DWORD dXStyle, int x, int y, int width, int height)
+=======
+=======
 
 WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DWORD dXStyle, int x, int y, int width, int height)
 
+>>>>>>> origin/diogo
 LRESULT CALLBACK WWindow::DesenhaMapa(
 	HWND hwnd,
 	UINT message,
@@ -836,6 +864,10 @@ WWindow::WWindow(
 	int y,
 	int width,
 	int height)
+<<<<<<< HEAD
+>>>>>>> master
+=======
+>>>>>>> origin/diogo
 {
 
 	AppName = clsname;
@@ -871,7 +903,16 @@ WWindow::WWindow(
 }
 
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
 
+
+
+>>>>>>> master
+=======
+
+>>>>>>> origin/diogo
 //---------------------------------------------------------------------------
 bool WWindow::Register() {
 	WNDCLASSEX _WndClsEx;
@@ -967,9 +1008,16 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	map.map[1][1] = 'o';*/
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
+=======
 
 
 
+>>>>>>> origin/diogo
 
 
 	int direction;
