@@ -40,6 +40,7 @@ HANDLE clients[MAX_PLAYERS];
 int numPlayersConnected = 0;
 
 HANDLE hThread;
+HANDLE hThreadReceiveClients;
 
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
@@ -132,10 +133,10 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 		//}
 
 		//if (threadWriteFromSMFlag) {
-			return 1;
-		//}
-
+	return 1;
 	//}
+
+//}
 
 	return 1;
 }
@@ -186,8 +187,8 @@ void Server::startServer()
 
 	//lançar a thread the leitura
 	threadSharedMemFlag = true;
-	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
-	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
+	//_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
+	//hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
 	serverMainLoop();
 }
@@ -198,22 +199,19 @@ void Server::serverMainLoop()
 	tcout << "Server Online." << endl;
 	game.setInitalPhase();
 	//iniciar thread de aceitar clientes
+
+		//Initial Phase		
+	_tprintf(TEXT("\nFase inicial iniciada"));
+	initialPhaseLoop();
 	do {
 
-		//Initial Phase
-		if (game.getGamePhase() == INITIAL_PHASE) {
-			_tprintf(TEXT("\nFase inicial iniciada"));
-			initialPhaseLoop();
-		}
-		//Game Phase
-		if (game.getGamePhase() == IN_PROGRESS_PHASE) {
-			_tprintf(TEXT("\nFase de jogo iniciada"));
-			//fechar thread de aceitar clientes
-			GamePhaseLoop();
-		}
+	} while (game.getGamePhase() == INITIAL_PHASE);
 
+	//Game Phase
+		_tprintf(TEXT("\nFase de jogo iniciada"));
+		//fechar thread de aceitar clientes
+		GamePhaseLoop();
 
-	} while (game.getGamePhase() == FINISH_PHASE);
 
 	Message msg;
 	msg.code = END;
@@ -226,7 +224,6 @@ void Server::serverMainLoop()
 
 void Server::initialPhaseLoop()
 {
-
 	waitConnection();
 }
 
@@ -265,7 +262,6 @@ int Server::commandParser(vector<string> command, Message msg)
 	if (command.size() <= 0)
 		return FAIL;
 	switch (msg.code) {
-		//START
 	case START:
 		if (game.getGamePhase() == INITIAL_PHASE) {
 			return START;
@@ -397,16 +393,16 @@ void Server::treatCommand(vector<string> command, Message msg)
 		game.setNumberOfObjects(3);
 		game.setSnakeSize(3);
 		game.addPlayer(1, "jorge");
-		//startGame();
+		startGame();
 
 
-		game.setMapWidth(stoi(command[0]));
+		/*game.setMapWidth(stoi(command[0]));
 		game.setMapHeight(stoi(command[1]));
 		game.setNumPlayers(stoi(command[2]));
 		game.setSnakeSize(stoi(command[3]));
 		game.setNumberOfObjects(stoi(command[4]));
 		game.setNumSnakesAI(stoi(command[5]));
-		game.addPlayer(new Player(msg.pid, command[6], &game));
+		game.addPlayer(new Player(msg.pid, command[6], &game));*/
 		break;
 
 	case JOIN:
@@ -455,6 +451,152 @@ string Server::commandToUpperCase(string command)
 
 
 int Server::waitConnection()
+{
+	hThreadReceiveClients = CreateThread(
+		NULL,
+		0,
+		ThreadReceiveClients,
+		NULL,
+		0,
+		NULL);
+
+	if (hThreadReceiveClients == NULL) {
+		_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
+	}
+	else
+		CloseHandle(hThreadReceiveClients);
+	return 1;
+}
+
+HANDLE Server::Create() {
+	return CreateNamedPipe(lpName,
+		dwOpenMode,
+		dwPipeMode,
+		nMaxInstances,
+		nOutBufferSize,
+		nInBufferSize,
+		nDefaultTimeOut,
+		lpSecurityAttributes);
+}
+
+BOOL Server::Connect() {
+	return ConnectNamedPipe(serverPipe, NULL);
+}
+
+BOOL Server::Disconnect() {
+	return DisconnectNamedPipe(serverPipe);
+}
+
+int Server::Write(HANDLE hPipe, Message msg) {
+
+	DWORD cbWritten = 0;
+	BOOL fSuccess = 0;
+
+	OVERLAPPED OverlWr = { 0 };
+
+	ZeroMemory(&OverlWr, sizeof(OverlWr));  // não é necessário pq se inicializa com {0} mas mete-se na mesma
+	ResetEvent(WriteReady); // não assinalado
+	OverlWr.hEvent = WriteReady; // TENHO DE MUDAR ISTO!!!
+
+	fSuccess = WriteFile(
+		hPipe,	// handle para o pipe
+		&msg,	// message(ponteiro)
+		msg_sz,	// tamanho da mensagem
+		&cbWritten,	// ptr p/ guardar num bytes escritos
+		&OverlWr);	// != NULL -> É mesmo overlapped I/O
+
+	//WaitForSingleObject(WriteReady, INFINITE);
+
+	GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
+
+	if (cbWritten < msg_sz)
+		_tprintf(TEXT("\nNao chegou tudo %d"), GetLastError());
+
+	return 1;
+
+}
+
+// Recebe o HANDLE e adiciona o cliente à lista de clientes
+void Server::addClient(HANDLE cli) {
+
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == INVALID_HANDLE_VALUE) {
+			clients[i] = cli;
+			numPlayersConnected++;
+			return;
+		}
+	}
+
+}
+
+void Server::rmClient(HANDLE cli) {
+
+	int i;
+	for (i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] == cli) {
+			clients[i] = INVALID_HANDLE_VALUE;
+			numPlayersConnected--;
+			return;
+			;
+		}
+	}
+}
+
+int Server::Broadcast(Message msg) {
+
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		if (clients[i] != 0)
+			Write(clients[i], msg);
+	}
+
+	return 0;
+
+}
+
+void Server::setfConnected(BOOL flag) {
+
+	fConnected = flag;
+
+}
+
+void Server::initializeClients()
+{
+	for (int i = 0; i < MAX_PLAYERS; i++)
+		clients[i] = INVALID_HANDLE_VALUE;
+}
+
+void Server::setHNamedPipe(HANDLE namedPipe) {
+
+	serverPipe = namedPipe;
+
+}
+
+HANDLE Server::getHNamedPipe()
+{
+	return HANDLE();
+}
+
+void Server::startAdminPipe()
+{
+	HANDLE hThread;
+
+	hThread = CreateThread(
+		NULL,
+		0,
+		ThreadProcAdmin,
+		NULL,
+		0,
+		NULL);
+
+	if (hThread == NULL) {
+		_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
+	}
+	else
+		CloseHandle(hThread);
+
+}
+
+DWORD WINAPI Server::ThreadReceiveClients(LPVOID lbpParam)
 {
 	// Remote pipe atributes ->
 	TCHAR * szSD = TEXT("D:")	// D -> Discretionary ACL (O,G,D,S)
@@ -568,137 +710,6 @@ int Server::waitConnection()
 
 	}
 	return 0;
-
-}
-
-HANDLE Server::Create() {
-	return CreateNamedPipe(lpName,
-		dwOpenMode,
-		dwPipeMode,
-		nMaxInstances,
-		nOutBufferSize,
-		nInBufferSize,
-		nDefaultTimeOut,
-		lpSecurityAttributes);
-}
-
-BOOL Server::Connect() {
-	return ConnectNamedPipe(serverPipe, NULL);
-}
-
-BOOL Server::Disconnect() {
-	return DisconnectNamedPipe(serverPipe);
-}
-
-int Server::Write(HANDLE hPipe, Message msg) {
-
-	DWORD cbWritten = 0;
-	BOOL fSuccess = 0;
-
-	OVERLAPPED OverlWr = { 0 };
-
-	ZeroMemory(&OverlWr, sizeof(OverlWr));  // não é necessário pq se inicializa com {0} mas mete-se na mesma
-	ResetEvent(WriteReady); // não assinalado
-	OverlWr.hEvent = WriteReady; // TENHO DE MUDAR ISTO!!!
-
-	fSuccess = WriteFile(
-		hPipe,	// handle para o pipe
-		&msg,	// message(ponteiro)
-		msg_sz,	// tamanho da mensagem
-		&cbWritten,	// ptr p/ guardar num bytes escritos
-		&OverlWr);	// != NULL -> É mesmo overlapped I/O
-
-	WaitForSingleObject(WriteReady, INFINITE);
-
-	GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
-
-	if (cbWritten < msg_sz)
-		_tprintf(TEXT("\nNao chegou tudo %d"), GetLastError());
-
-	return 1;
-
-}
-
-// Recebe o HANDLE e adiciona o cliente à lista de clientes
-void Server::addClient(HANDLE cli) {
-
-	for (int i = 0; i < MAX_PLAYERS; i++) {
-		if (clients[i] == INVALID_HANDLE_VALUE) {
-			clients[i] = cli;
-			numPlayersConnected++;
-			return;
-		}
-	}
-
-}
-
-void Server::rmClient(HANDLE cli) {
-
-	int i;
-	for (i = 0; i < MAX_PLAYERS; i++) {
-		if (clients[i] == cli) {
-			clients[i] = INVALID_HANDLE_VALUE;
-			numPlayersConnected--;
-			return;
-			;
-		}
-	}
-}
-
-int Server::Broadcast(Message msg) {
-
-	for (int i = 0; i < MAX_PLAYERS; i++) {
-		if (clients[i] != 0)
-			Write(clients[i], msg);
-	}
-
-	return 0;
-
-}
-
-void Server::setfConnected(BOOL flag) {
-
-	fConnected = flag;
-
-}
-
-void Server::initializeClients()
-{
-	for (int i = 0; i < MAX_PLAYERS; i++)
-		clients[i] = INVALID_HANDLE_VALUE;
-}
-
-void Server::setHNamedPipe(HANDLE namedPipe) {
-
-	serverPipe = namedPipe;
-
-}
-
-HANDLE Server::getHNamedPipe()
-{
-	return HANDLE();
-}
-
-void Server::startAdminPipe()
-{
-	HANDLE hThread;
-
-	hThread = CreateThread(
-		NULL,
-		0,
-		ThreadProcAdmin,
-		NULL,
-		0,
-		NULL);
-
-	addClient(hThread);
-
-	if (hThread == NULL) {
-		_tprintf(TEXT("\nErro na criacao da thread. Erro = %d"), GetLastError());
-	}
-	else
-		CloseHandle(hThread);
-
 }
 
 DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
@@ -868,6 +879,7 @@ DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 					&OverlRd);
 
 				WaitForSingleObject(ReadReady, INFINITE);
+
 
 				GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
 
