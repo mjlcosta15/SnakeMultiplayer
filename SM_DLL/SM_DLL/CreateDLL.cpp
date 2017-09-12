@@ -40,6 +40,7 @@ SNAKE_MULTIPLAYER_API Message * ReadFromSharedMemoryBuffer(void)
 		return nullptr;
 	}
 
+	ResetEvent(hEvent);
 
 	UnmapViewOfFile(msg);
 

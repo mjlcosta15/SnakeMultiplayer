@@ -47,7 +47,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
 
 
 	// Verify that the image was loaded
@@ -58,7 +58,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 
 	// Create a device context that is compatible with the window
 	HDC hLocalDC;
-	hLocalDC = ::CreateCompatibleDC(hWinDC);
+	hLocalDC = CreateCompatibleDC(hWinDC);
 
 	// Verify that the device context was created
 	if (hLocalDC == NULL) {
@@ -76,7 +76,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 
 
 	// Select the loaded bitmap into the device context
-	HBITMAP hOldBmp = (HBITMAP)::SelectObject(hLocalDC, hBitmap);
+	HBITMAP hOldBmp = (HBITMAP)SelectObject(hLocalDC, hBitmap);
 	if (hOldBmp == NULL) {
 		MessageBox(NULL, "SelectObject Failed", "Error", MB_OK);
 		return false;
@@ -85,7 +85,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 	
 
 	// Blit the dc which holds the bitmap onto the window's dc
-	BOOL qRetBlit = ::BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
+	BOOL qRetBlit = BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
 		hLocalDC, 0, 0, SRCCOPY);
 	if (!qRetBlit) {
 		MessageBox(NULL, "Blit Failed", "Error", MB_OK);
@@ -94,9 +94,9 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 
 
 	// Unitialize and deallocate resources
-	::SelectObject(hLocalDC, hOldBmp);
-	::DeleteDC(hLocalDC);
-	::DeleteObject(hBitmap);
+	SelectObject(hLocalDC, hOldBmp);
+	DeleteDC(hLocalDC);
+	DeleteObject(hBitmap);
 	return true;
 }
 
@@ -1040,7 +1040,9 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 			msg.code = JOIN;
 			sprintf(msg.msg, "JOIN %s", playerName);
 			SetEvent(eWriteToServer);
-			EndDialog(hWnd, 0);
+			
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_JOGO_PREP), hWnd, (DLGPROC)TreatDialogStartGame);
+			//EndDialog(hWnd, 0);
 			return TRUE;
 		case ID_DLG_JOIN_CANCEL:
 			EndDialog(hWnd, TRUE);

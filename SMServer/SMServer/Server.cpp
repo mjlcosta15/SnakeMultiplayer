@@ -78,7 +78,6 @@ Server::~Server()
 {
 }
 
-
 // Shared Memory Functions
 DWORD WINAPI ReadFromSharedMemory(LPVOID lParam) {
 
@@ -123,20 +122,20 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 		return -1;
 	}
 
-	while (1) {
+	//while (1) //{
 
-		if (ptr(game.exportInfoToMessage())) {
+		//if (ptr(game.exportInfoToMessage())) {
 			//tcout << TEXT("ENviado com sucesso") << endl;
-		}
-		else {
+		//}
+		//else {
 			//tcout << TEXT("Erro ao enviar") << endl;
-		}
+		//}
 
-		if (threadWriteFromSMFlag) {
+		//if (threadWriteFromSMFlag) {
 			return 1;
-		}
+		//}
 
-	}
+	//}
 
 	return 1;
 }
@@ -187,8 +186,8 @@ void Server::startServer()
 
 	//lançar a thread the leitura
 	threadSharedMemFlag = true;
-	//_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
-	//hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
+	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
+	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
 	serverMainLoop();
 }
@@ -227,19 +226,20 @@ void Server::serverMainLoop()
 
 void Server::initialPhaseLoop()
 {
-	startAdminPipe();
-	game.setMapHeight(10);
-	game.setMapWidth(10);
-	game.setNumSnakesAI(3);
-	game.setNumberOfObjects(3);
-	game.setSnakeSize(3);
-	game.addPlayer(1, "jorge");
-	startGame();
+
+	//game.setMapHeight(10);
+	//game.setMapWidth(10);
+	//game.setNumSnakesAI(3);
+	//game.setNumberOfObjects(3);
+	//game.setSnakeSize(3);
+	//game.addPlayer(1, "jorge");
+	//startGame();
 	waitConnection();
 }
 
 void Server::GamePhaseLoop()
 {
+	startAdminPipe();
 	tcout << "Game Phase Loop started" << endl;
 	do {
 		game.updateMap();
@@ -702,7 +702,7 @@ void Server::startAdminPipe()
 DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 {
 
-	Message clientRequest, Resposta;
+	Message clientRequest;
 	DWORD cbBytesRead = 0, cbReplyBytes = 0;
 	int numresp = 0;
 	BOOL fSuccess = FALSE;
@@ -817,94 +817,95 @@ DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 	HANDLE ReadReady;
 	OVERLAPPED OverlRd = { 0 };
 
-	serverPipeAdmin = CreateNamedPipe(
-		lpszPipeNameAdmin, // nome do pipe
-		PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
-		PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		BUFSIZE,
-		BUFSIZE,
-		5000,
-		NULL);
+	while (game.getGamePhase() == IN_PROGRESS_PHASE) {
 
-	if (serverPipeAdmin == INVALID_HANDLE_VALUE) {
-		_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
-		return 1;
-	}
-
-
-	fConnected = ConnectNamedPipe(serverPipeAdmin, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-
-	if (fConnected) {
-
-		ReadReady = CreateEvent(
-			NULL,	// default 
-			TRUE,
-			FALSE,
+		serverPipeAdmin = CreateNamedPipe(
+			lpszPipeNameAdmin, // nome do pipe
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+			PIPE_WAIT,
+			PIPE_UNLIMITED_INSTANCES,
+			BUFSIZE,
+			BUFSIZE,
+			5000,
 			NULL);
 
-		if (ReadReady == NULL) {
-			_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+		if (serverPipeAdmin == INVALID_HANDLE_VALUE) {
+			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
 			return 1;
 		}
 
 
-		while (threadSharedMemFlag) {
+		fConnected = ConnectNamedPipe(serverPipeAdmin, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
 
-			ZeroMemory(&OverlRd, sizeof(OverlRd));
-			ResetEvent(ReadReady);
-			OverlRd.hEvent = ReadReady;
+		if (fConnected) {
 
-			fSuccess = ReadFile(
-				serverPipeAdmin,
-				&adminRequest,
-				msg_sz,
-				&cbBytesRead,
-				&OverlRd);
+			ReadReady = CreateEvent(
+				NULL,	// default 
+				TRUE,
+				FALSE,
+				NULL);
 
-			WaitForSingleObject(ReadReady, INFINITE);
-
-			GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
-
-			if (cbBytesRead < msg_sz) {
-				//nao leu tudo do readFile
-				_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
-				break;
+			if (ReadReady == NULL) {
+				_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+				return 1;
 			}
-			else {
-				vector<string> command = getCommand(adminRequest.msg);
 
 
-				switch (commandParser(command, adminRequest))
-				{
-				case SEED_OBJECT:
-					treatCommand(command, adminRequest);
-					adminRequest.code = SUCCESS;
-					sprintf(adminRequest.msg, "Blocos adicionados com sucesso");
-					Write(serverPipeAdmin, adminRequest);
-					break;
-				case FAIL:
-					adminRequest.code = FAIL;
-					sprintf(adminRequest.msg, "Erro no comando!");
-					Write(serverPipeAdmin, adminRequest);
-					break;
-				default:
+			while (threadSharedMemFlag) {
+
+				ZeroMemory(&OverlRd, sizeof(OverlRd));
+				ResetEvent(ReadReady);
+				OverlRd.hEvent = ReadReady;
+
+				fSuccess = ReadFile(
+					serverPipeAdmin,
+					&adminRequest,
+					msg_sz,
+					&cbBytesRead,
+					&OverlRd);
+
+				WaitForSingleObject(ReadReady, INFINITE);
+
+				GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
+
+				if (cbBytesRead < msg_sz) {
+					//nao leu tudo do readFile
+					_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
 					break;
 				}
+				else {
+					vector<string> command = getCommand(adminRequest.msg);
 
 
-			}
-		}//end while
-		FlushFileBuffers(serverPipeAdmin);
-		DisconnectNamedPipe(serverPipeAdmin);
-		CloseHandle(serverPipeAdmin);
+					switch (commandParser(command, adminRequest))
+					{
+					case SEED_OBJECT:
+						treatCommand(command, adminRequest);
+						adminRequest.code = SUCCESS;
+						sprintf(adminRequest.msg, "Blocos adicionados com sucesso");
+						Write(serverPipeAdmin, adminRequest);
+						break;
+					case FAIL:
+						adminRequest.code = FAIL;
+						sprintf(adminRequest.msg, "Erro no comando!");
+						Write(serverPipeAdmin, adminRequest);
+						break;
+					default:
+						break;
+					}
 
 
-	}
-	else {
-		CloseHandle(serverPipe);
-		return 1;
+				}
+			}//end while
+			FlushFileBuffers(serverPipeAdmin);
+			DisconnectNamedPipe(serverPipeAdmin);
+			CloseHandle(serverPipeAdmin);
+
+		}
+		else {
+			CloseHandle(serverPipe);
+		}
 	}
 
 	return 0;
