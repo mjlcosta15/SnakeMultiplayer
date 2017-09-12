@@ -45,22 +45,22 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
 
 
 	// Verify that the image was loaded
 	if (hBitmap == NULL) {
-		::MessageBox(NULL, ("LoadImage  %s Failed",szFileName), "Error", MB_OK);
+		MessageBox(NULL, ("LoadImage  %s Failed",szFileName), "Error", MB_OK);
 		return false;
 	}
 
 	// Create a device context that is compatible with the window
 	HDC hLocalDC;
-	hLocalDC = ::CreateCompatibleDC(hWinDC);
+	hLocalDC = CreateCompatibleDC(hWinDC);
 
 	// Verify that the device context was created
 	if (hLocalDC == NULL) {
-		::MessageBox(NULL, "CreateCompatibleDC Failed", "Error", MB_OK);
+		MessageBox(NULL, "CreateCompatibleDC Failed", "Error", MB_OK);
 		return false;
 	}
 
@@ -68,33 +68,33 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 	BITMAP qBitmap;
 	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP),reinterpret_cast<LPVOID>(&qBitmap));
 	if (!iReturn) {
-		::MessageBox(NULL, "GetObject Failed", "Error", MB_OK);
+		MessageBox(NULL, "GetObject Failed", "Error", MB_OK);
 		return false;
 	}
 
 
 	// Select the loaded bitmap into the device context
-	HBITMAP hOldBmp = (HBITMAP)::SelectObject(hLocalDC, hBitmap);
+	HBITMAP hOldBmp = (HBITMAP)SelectObject(hLocalDC, hBitmap);
 	if (hOldBmp == NULL) {
-		::MessageBox(NULL, "SelectObject Failed", "Error", MB_OK);
+		MessageBox(NULL, "SelectObject Failed", "Error", MB_OK);
 		return false;
 	}
 
 	
 
 	// Blit the dc which holds the bitmap onto the window's dc
-	BOOL qRetBlit = ::BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
+	BOOL qRetBlit = BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
 		hLocalDC, 0, 0, SRCCOPY);
 	if (!qRetBlit) {
-		::MessageBox(NULL, "Blit Failed", "Error", MB_OK);
+		MessageBox(NULL, "Blit Failed", "Error", MB_OK);
 		return false;
 	}
 
 
 	// Unitialize and deallocate resources
-	::SelectObject(hLocalDC, hOldBmp);
-	::DeleteDC(hLocalDC);
-	::DeleteObject(hBitmap);
+	SelectObject(hLocalDC, hOldBmp);
+	DeleteDC(hLocalDC);
+	DeleteObject(hBitmap);
 	return true;
 }
 

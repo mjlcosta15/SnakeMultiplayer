@@ -227,7 +227,7 @@ void Server::serverMainLoop()
 
 void Server::initialPhaseLoop()
 {
-	startAdminPipe();
+
 	game.setMapHeight(10);
 	game.setMapWidth(10);
 	game.setNumSnakesAI(3);
@@ -240,6 +240,7 @@ void Server::initialPhaseLoop()
 
 void Server::GamePhaseLoop()
 {
+	startAdminPipe();
 	tcout << "Game Phase Loop started" << endl;
 	do {
 		game.updateMap();
@@ -817,94 +818,95 @@ DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 	HANDLE ReadReady;
 	OVERLAPPED OverlRd = { 0 };
 
-	serverPipeAdmin = CreateNamedPipe(
-		lpszPipeNameAdmin, // nome do pipe
-		PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
-		PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		BUFSIZE,
-		BUFSIZE,
-		5000,
-		NULL);
+	while (game.getGamePhase() == IN_PROGRESS_PHASE) {
 
-	if (serverPipeAdmin == INVALID_HANDLE_VALUE) {
-		_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
-		return 1;
-	}
-
-
-	fConnected = ConnectNamedPipe(serverPipeAdmin, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-
-	if (fConnected) {
-
-		ReadReady = CreateEvent(
-			NULL,	// default 
-			TRUE,
-			FALSE,
+		serverPipeAdmin = CreateNamedPipe(
+			lpszPipeNameAdmin, // nome do pipe
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE |
+			PIPE_WAIT,
+			PIPE_UNLIMITED_INSTANCES,
+			BUFSIZE,
+			BUFSIZE,
+			5000,
 			NULL);
 
-		if (ReadReady == NULL) {
-			_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+		if (serverPipeAdmin == INVALID_HANDLE_VALUE) {
+			_tprintf(TEXT("\nFalhou a criacao do pipe, erro = %d"), GetLastError());
 			return 1;
 		}
 
 
-		while (threadSharedMemFlag) {
+		fConnected = ConnectNamedPipe(serverPipeAdmin, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
 
-			ZeroMemory(&OverlRd, sizeof(OverlRd));
-			ResetEvent(ReadReady);
-			OverlRd.hEvent = ReadReady;
+		if (fConnected) {
 
-			fSuccess = ReadFile(
-				serverPipeAdmin,
-				&adminRequest,
-				msg_sz,
-				&cbBytesRead,
-				&OverlRd);
+			ReadReady = CreateEvent(
+				NULL,	// default 
+				TRUE,
+				FALSE,
+				NULL);
 
-			WaitForSingleObject(ReadReady, INFINITE);
-
-			GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
-
-			if (cbBytesRead < msg_sz) {
-				//nao leu tudo do readFile
-				_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
-				break;
+			if (ReadReady == NULL) {
+				_tprintf(TEXT("\nServidor: não foi possível criar o evento Read. Mais vale parar já"));
+				return 1;
 			}
-			else {
-				vector<string> command = getCommand(adminRequest.msg);
 
 
-				switch (commandParser(command, adminRequest))
-				{
-				case SEED_OBJECT:
-					treatCommand(command, adminRequest);
-					adminRequest.code = SUCCESS;
-					sprintf(adminRequest.msg, "Blocos adicionados com sucesso");
-					Write(serverPipeAdmin, adminRequest);
-					break;
-				case FAIL:
-					adminRequest.code = FAIL;
-					sprintf(adminRequest.msg, "Erro no comando!");
-					Write(serverPipeAdmin, adminRequest);
-					break;
-				default:
+			while (threadSharedMemFlag) {
+
+				ZeroMemory(&OverlRd, sizeof(OverlRd));
+				ResetEvent(ReadReady);
+				OverlRd.hEvent = ReadReady;
+
+				fSuccess = ReadFile(
+					serverPipeAdmin,
+					&adminRequest,
+					msg_sz,
+					&cbBytesRead,
+					&OverlRd);
+
+				WaitForSingleObject(ReadReady, INFINITE);
+
+				GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
+
+				if (cbBytesRead < msg_sz) {
+					//nao leu tudo do readFile
+					_tprintf(TEXT("\nErro na leitura do pipe, erro = %d"), GetLastError());
 					break;
 				}
+				else {
+					vector<string> command = getCommand(adminRequest.msg);
 
 
-			}
-		}//end while
-		FlushFileBuffers(serverPipeAdmin);
-		DisconnectNamedPipe(serverPipeAdmin);
-		CloseHandle(serverPipeAdmin);
+					switch (commandParser(command, adminRequest))
+					{
+					case SEED_OBJECT:
+						treatCommand(command, adminRequest);
+						adminRequest.code = SUCCESS;
+						sprintf(adminRequest.msg, "Blocos adicionados com sucesso");
+						Write(serverPipeAdmin, adminRequest);
+						break;
+					case FAIL:
+						adminRequest.code = FAIL;
+						sprintf(adminRequest.msg, "Erro no comando!");
+						Write(serverPipeAdmin, adminRequest);
+						break;
+					default:
+						break;
+					}
 
 
-	}
-	else {
-		CloseHandle(serverPipe);
-		return 1;
+				}
+			}//end while
+			FlushFileBuffers(serverPipeAdmin);
+			DisconnectNamedPipe(serverPipeAdmin);
+			CloseHandle(serverPipeAdmin);
+
+		}
+		else {
+			CloseHandle(serverPipe);
+		}
 	}
 
 	return 0;
