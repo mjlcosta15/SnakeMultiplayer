@@ -2,10 +2,10 @@
 
 #define msg_sz sizeof(Message)
 
-#define IP "192.168.0.102"
-#define LOGIN "Mário Costa"
-#define PASSWORD "b432A09b1F"
-#define PIPENAME "\\\\192.168.0.102\\pipe\\pipeexemplo"
+#define IP "192.168.1.81"
+#define LOGIN "Diogo"
+#define PASSWORD "q1w2e3r4"
+#define PIPENAME "\\\\192.168.1.81\\pipe\\pipeexemplo"
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -14,11 +14,6 @@ int idx_row = 0;
 Message msg;
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 HANDLE hPipe;
-
-HWND mainhWnd;
-UINT mainmessg;
-WPARAM mainwParam;
-LPARAM mainlParam;
 
 HANDLE hThread;
 DWORD dwThreadId = 0;
@@ -104,6 +99,107 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 	return true;
 }
 
+LRESULT CALLBACK WWindow::DesenhaMapa(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, Map map, HDC hdc)
+{
+	int x = map.actualX;
+	int y = map.actualY;
+
+	x = x * BITMAP_PIX_SIZE;
+	y = y * BITMAP_PIX_SIZE;
+
+	int ii = 0;
+	int jj = 0;
+
+
+		// PAREDES - INICIO
+		LoadAndBlitBitmap("skblock.bmp", hdc, 0, 0); // canto superior esquerdo
+		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
+			LoadAndBlitBitmap("skblock.bmp", hdc, i, 0); // parede superior	
+		LoadAndBlitBitmap("skblock.bmp", hdc, x, 0); // canto superior direito
+
+		for (int i = BITMAP_PIX_SIZE; i < y - 1; i += BITMAP_PIX_SIZE) {
+			LoadAndBlitBitmap("skblock.bmp", hdc, 0, i); // parede lateral esquerda
+			LoadAndBlitBitmap("skblock.bmp", hdc, x, i); // parede lateral direita
+		}
+
+		LoadAndBlitBitmap("skblock.bmp", hdc, 0, y); // canto inferior esquerdo
+		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
+			LoadAndBlitBitmap("skblock.bmp", hdc, i, y); // parede inferior
+		LoadAndBlitBitmap("skblock.bmp", hdc, x, y); // canto inferior direito
+													 // PAREDES - FIM
+
+		// Identifica e substitui caracteres
+		for (int i = 0; i < map.actualX; i++) {
+
+			if (i == map.actualX - 1)
+				ii = 0;
+			ii += BITMAP_PIX_SIZE;
+
+
+			for (int j = 1; j < map.actualY; j++) {
+
+				if (j == map.actualY - 1)
+					jj = 0;
+				jj += BITMAP_PIX_SIZE;
+
+
+				switch (map.map[i][j]) {
+				case '_': // grass
+					LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+					break;
+				case 'i': // ice
+					LoadAndBlitBitmap("ice.bmp", hdc, ii, jj);
+					break;
+				case 'f': // food
+					LoadAndBlitBitmap("food.bmp", hdc, ii, jj);
+					break;
+				case 'v': // vodka
+					LoadAndBlitBitmap("vodka.bmp", hdc, ii, jj);
+					break;
+				case 'b': // granade
+					LoadAndBlitBitmap("granade.bmp", hdc, ii, jj);
+					break;
+				case 'o': // oil
+					LoadAndBlitBitmap("oil.bmp", hdc, ii, jj);
+					break;
+				case 'g': // glue
+					LoadAndBlitBitmap("glue.bmp", hdc, ii, jj);
+					break;
+				case 'V': // vodka
+					LoadAndBlitBitmap("o_vodka.bmp", hdc, ii, jj);
+					break;
+				case 'O': // oil
+					LoadAndBlitBitmap("o_oil.bmp", hdc, ii, jj);
+					break;
+				case 'G': // glue
+					LoadAndBlitBitmap("o_glue.bmp", hdc, ii, jj);
+					break;
+				case 's': // snake
+					LoadAndBlitBitmap("snake.bmp", hdc, ii, jj);
+					break;
+				case '>': // oiled snake block
+					LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);
+					break;
+				case '<': // glued snake block
+					LoadAndBlitBitmap("snake_glue.bmp", hdc, ii, jj);
+					break;
+				case '+': // vodka
+					LoadAndBlitBitmap("snake_vodka.bmp", hdc, ii, jj);;
+					break;
+				case 'c': // coffe
+					LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);;
+					break;
+				default: // grass
+					LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+					break;
+				}
+			}
+		}
+
+		return 0;
+
+}
+
 
 //------------Treat Responses Functions-----------------------------------------
 
@@ -126,7 +222,7 @@ void WWindow::treatCommand(vector<string> command, Message msg)
 		break;
 	case MAP:
 		//Update ao map
-		DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
+		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
 		break;
 
 	case START:
@@ -169,7 +265,6 @@ vector<string> WWindow::getCommand(char* buffer)
 }
 
 //------------Treat Responses Functions END-------------------------------------
-
 
 
 
@@ -333,7 +428,9 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
 
-	
+
+		//mainmessg = UpdateWindow(mainhWnd);
+		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
 
 		
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
@@ -573,165 +670,7 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 //------------Thread Client END-------------------------------------------------
 
 
-LRESULT CALLBACK WWindow::DesenhaMapa(
-	HWND hwnd,
-	UINT message,
-	WPARAM wParam,
-	LPARAM lParam,
-	Map map)
-{
-
-	PAINTSTRUCT ps;
-	HDC hdc;
-
-	int x = map.actualX;
-	int y = map.actualY;
-
-	x = x * BITMAP_PIX_SIZE;
-	y = y * BITMAP_PIX_SIZE;
-
-	int ii = 0;
-	int jj = 0;
-
-
-	switch (message) {
-	case WM_CREATE:
-
-		break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	case WM_KEYDOWN: // Programacao das teclas
-	{
-		switch (wParam)
-		{
-		case VK_LEFT:
-			//MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
-			break;
-		case VK_RIGHT:
-			//MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
-			break;
-		case VK_UP:
-			//MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
-			break;
-		case VK_DOWN:
-			//MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
-			break;
-		default:
-			MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
-			break;
-		}
-	}
-	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
-
-		// PAREDES - INICIO
-		LoadAndBlitBitmap("skblock.bmp", hdc, 0, 0); // canto superior esquerdo
-		for (int i = BITMAP_PIX_SIZE; i < x-1; i += BITMAP_PIX_SIZE)
-			LoadAndBlitBitmap("skblock.bmp", hdc, i, 0); // parede superior	
-		LoadAndBlitBitmap("skblock.bmp", hdc, x, 0); // canto superior direito
-
-		for (int i = BITMAP_PIX_SIZE; i < y - 1; i += BITMAP_PIX_SIZE) {
-			LoadAndBlitBitmap("skblock.bmp", hdc, 0, i); // parede lateral esquerda
-			LoadAndBlitBitmap("skblock.bmp", hdc, x, i); // parede lateral direita
-		}
-
-		LoadAndBlitBitmap("skblock.bmp", hdc, 0, y); // canto inferior esquerdo
-		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
-			LoadAndBlitBitmap("skblock.bmp", hdc, i, y); // parede inferior
-		LoadAndBlitBitmap("skblock.bmp", hdc, x, y); // canto inferior direito
-		// PAREDES - FIM
-
-		for (int i = 0; i < map.actualX; i++) {
-
-			if (i == map.actualX-1)
-				ii = 0;
-			ii += BITMAP_PIX_SIZE;
-			
-
-			for (int j = 1; j < map.actualY; j++) {
-
-				if (j == map.actualY - 1)
-					jj = 0;
-				jj += BITMAP_PIX_SIZE;
-				
-
-				switch (map.map[i][j]){
-					case '_': // grass
-						LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
-						break;
-					case 'i': // ice
-						LoadAndBlitBitmap("ice.bmp", hdc, ii, jj);
-						break;
-					case 'f': // food
-						LoadAndBlitBitmap("food.bmp", hdc, ii, jj);
-						break;
-					case 'v': // vodka
-						LoadAndBlitBitmap("vodka.bmp", hdc, ii, jj);
-						break;
-					case 'b': // granade
-						LoadAndBlitBitmap("granade.bmp", hdc, ii, jj);
-						break;
-					case 'o': // oil
-						LoadAndBlitBitmap("oil.bmp", hdc, ii, jj);
-						break;
-					case 'g': // glue
-						LoadAndBlitBitmap("glue.bmp", hdc, ii, jj);
-						break;
-					case 'V': // vodka
-						LoadAndBlitBitmap("o_vodka.bmp", hdc, ii, jj);
-						break;
-					case 'O': // oil
-						LoadAndBlitBitmap("o_oil.bmp", hdc, ii, jj);
-						break;
-					case 'G': // glue
-						LoadAndBlitBitmap("o_glue.bmp", hdc, ii, jj);
-						break;
-					case 's': // snake
-						LoadAndBlitBitmap("snake.bmp", hdc, ii, jj);
-						break;
-					case '>': // oiled snake block
-						LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);
-						break;
-					case '<': // glued snake block
-						LoadAndBlitBitmap("snake_glue.bmp", hdc, ii, jj);
-						break;
-					case '+': // vodka
-						LoadAndBlitBitmap("snake_vodka.bmp", hdc, ii, jj);;
-						break;
-					case 'c': // coffe
-						LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);;
-						break;
-					default: // grass
-						LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
-						break;
-				}
-			}
-		}
-
-		EndPaint(hwnd, &ps);
-		break;
-	default:
-		return DefWindowProc(hwnd, message, wParam, lParam);
-	}
-
-
-	return 0;
-
-
-}
-
-
-WWindow::WWindow(
-	LPCTSTR clsname, 
-	LPCTSTR wndname,
-	HWND parent,
-	DWORD dStyle,
-	DWORD dXStyle,
-	int x,
-	int y,
-	int width,
-	int height)
+WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DWORD dXStyle, int x, int y, int width, int height)
 {
 
 	AppName = clsname;
@@ -765,9 +704,6 @@ WWindow::WWindow(
 		return;
 	}
 }
-
-
-	
 
 
 //---------------------------------------------------------------------------
@@ -842,10 +778,6 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	WWindow *pWin = (WWindow *)GetWindowLongPtr(hWnd, 0);
 	BOOL eRato = FALSE;
 
-	mainhWnd = hWnd;
-	mainmessg = messg;
-	mainwParam = wParam;
-	mainlParam = lParam;
 
 	//TCHAR erro[100];
 	//DWORD lastError;
@@ -869,12 +801,15 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	map.map[1][1] = 'o';*/
 
-	
 
 
 	int direction;
 	switch (messg)
 	{
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &PtStc);
+		DesenhaMapa(hWnd, messg, wParam, lParam, msg.map, hdc);
+		break;
 	case WM_CLOSE:
 		threadSharedMemFlag = false;
 		if (hPipe != NULL && hPipe != INVALID_HANDLE_VALUE) {
@@ -923,8 +858,6 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_LIGAR_SERVIDOR), hWnd, (DLGPROC)TreatDialogConnectToServer);
 			//threads da dll
 
-
-
 			break;
 		case ID_EDITAR_EDITARSKINS:
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_EDITAR_IMAGENS), hWnd, (DLGPROC)TreatDialogEditSkins);
@@ -952,10 +885,6 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 			sprintf(msg.msg, "%d", direction);
 			SetEvent(eWriteToServer);
 
-			break;
-
-		case WM_PAINT:
-			hdc = BeginPaint(hWnd, &PtStc);
 			break;
 		default:
 			return FALSE;
