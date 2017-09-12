@@ -45,6 +45,10 @@ HANDLE hThreadReceiveClients;
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
 
+HANDLE hGamePhaseEvent;
+
+
+
 // Constructor
 Server::Server()
 {
@@ -196,21 +200,24 @@ void Server::startServer()
 void Server::serverMainLoop()
 {
 
+	hGamePhaseEvent = CreateEvent(
+		NULL,              
+		TRUE,               
+		FALSE,             
+		TEXT("GamePhaseEvent"));
+
 	tcout << "Server Online." << endl;
 	game.setInitalPhase();
 	//iniciar thread de aceitar clientes
 
 		//Initial Phase		
-	_tprintf(TEXT("\nFase inicial iniciada"));
+	_tprintf(TEXT("\nFase inicial iniciada\n"));
 	initialPhaseLoop();
-	do {
 
-	} while (game.getGamePhase() == INITIAL_PHASE);
-
+	WaitForSingleObject(hGamePhaseEvent, INFINITE);
 	//Game Phase
-		_tprintf(TEXT("\nFase de jogo iniciada"));
-		//fechar thread de aceitar clientes
-		GamePhaseLoop();
+	_tprintf(TEXT("\nFase de jogo iniciada\n"));
+	GamePhaseLoop();
 
 
 	Message msg;
@@ -219,6 +226,7 @@ void Server::serverMainLoop()
 	Broadcast(msg);
 	//Finish Phase
 
+	CloseHandle(hGamePhaseEvent);
 	finishServer();
 }
 
@@ -252,6 +260,7 @@ void Server::startGame()
 {
 	game.setInProgressPhase();
 	game.initMap();
+	SetEvent(hGamePhaseEvent);
 }
 
 
