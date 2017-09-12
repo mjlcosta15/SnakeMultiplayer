@@ -51,12 +51,12 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE, LR_LOADFROMFILE);
 
 
 	// Verify that the image was loaded
 	if (hBitmap == NULL) {
-		MessageBox(NULL, ("LoadImage  %s Failed",szFileName), "Error", MB_OK);
+		MessageBox(NULL, ("LoadImage  %s Failed", szFileName), "Error", MB_OK);
 		return false;
 	}
 
@@ -72,7 +72,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 
 	// Get the bitmap's parameters and verify the get
 	BITMAP qBitmap;
-	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP),reinterpret_cast<LPVOID>(&qBitmap));
+	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP), reinterpret_cast<LPVOID>(&qBitmap));
 	if (!iReturn) {
 		MessageBox(NULL, "GetObject Failed", "Error", MB_OK);
 		return false;
@@ -86,7 +86,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 		return false;
 	}
 
-	
+
 
 	// Blit the dc which holds the bitmap onto the window's dc
 	BOOL qRetBlit = BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
@@ -110,7 +110,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 void WWindow::treatCommand(vector<string> command, Message msg)
 {
 	switch (msg.code) {
-		
+
 	case SUCCESS:
 		MessageBox(NULL, msg.msg, "Sucess", MB_OK);
 		break;
@@ -310,22 +310,23 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 			msg_sz,
 			&cbBytesRead,
 			&OverlRd);
-			
+
+		WaitForSingleObject(ReadReady, INFINITE);
 		
 		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
 		//if (fSuccess) {
-			vector<string> command = getCommand(response.msg);
-			treatCommand(command, response);
+		vector<string> command = getCommand(response.msg);
+		treatCommand(command, response);
 		//}
-			
 
-		WaitForSingleObject(ReadReady, INFINITE);
+
+		
 		_tprintf(TEXT("\nRead concluido"));
 
 
 		// Testar se correu como esperado
 
-		
+
 
 		if (cbBytesRead < msg_sz)
 			_tprintf(TEXT("\nReadFile falhou. Erro = %d"), GetLastError());
@@ -333,9 +334,9 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
 
-	
 
-		
+
+
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
 		// Esse envio e feito na thread principal
 
@@ -463,14 +464,14 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 		if (GetLastError() != ERROR_PIPE_BUSY) {
 			// Nao ha nenhum servidor a correr
-			
+
 			MessageBox(NULL, "Nenhum servidor disponivel de momento!", "Erro!", MB_OK);
 
 			DWORD i = GetLastError();
 			_tprintf(TEXT("\nCreate file deu erro e nao foi BUSY. Erro = %d\n"), GetLastError());
 			return -1;
 
-			
+
 		}
 
 		// Se chegou aqui é porque todas as instªancias
@@ -627,7 +628,7 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 
 		// PAREDES - INICIO
 		LoadAndBlitBitmap("skblock.bmp", hdc, 0, 0); // canto superior esquerdo
-		for (int i = BITMAP_PIX_SIZE; i < x-1; i += BITMAP_PIX_SIZE)
+		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
 			LoadAndBlitBitmap("skblock.bmp", hdc, i, 0); // parede superior	
 		LoadAndBlitBitmap("skblock.bmp", hdc, x, 0); // canto superior direito
 
@@ -644,67 +645,67 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 
 		for (int i = 0; i < map.actualX; i++) {
 
-			if (i == map.actualX-1)
+			if (i == map.actualX - 1)
 				ii = 0;
 			ii += BITMAP_PIX_SIZE;
-			
+
 
 			for (int j = 1; j < map.actualY; j++) {
 
 				if (j == map.actualY - 1)
 					jj = 0;
 				jj += BITMAP_PIX_SIZE;
-				
 
-				switch (map.map[i][j]){
-					case '_': // grass
-						LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
-						break;
-					case 'i': // ice
-						LoadAndBlitBitmap("ice.bmp", hdc, ii, jj);
-						break;
-					case 'f': // food
-						LoadAndBlitBitmap("food.bmp", hdc, ii, jj);
-						break;
-					case 'v': // vodka
-						LoadAndBlitBitmap("vodka.bmp", hdc, ii, jj);
-						break;
-					case 'b': // granade
-						LoadAndBlitBitmap("granade.bmp", hdc, ii, jj);
-						break;
-					case 'o': // oil
-						LoadAndBlitBitmap("oil.bmp", hdc, ii, jj);
-						break;
-					case 'g': // glue
-						LoadAndBlitBitmap("glue.bmp", hdc, ii, jj);
-						break;
-					case 'V': // vodka
-						LoadAndBlitBitmap("o_vodka.bmp", hdc, ii, jj);
-						break;
-					case 'O': // oil
-						LoadAndBlitBitmap("o_oil.bmp", hdc, ii, jj);
-						break;
-					case 'G': // glue
-						LoadAndBlitBitmap("o_glue.bmp", hdc, ii, jj);
-						break;
-					case 's': // snake
-						LoadAndBlitBitmap("snake.bmp", hdc, ii, jj);
-						break;
-					case '>': // oiled snake block
-						LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);
-						break;
-					case '<': // glued snake block
-						LoadAndBlitBitmap("snake_glue.bmp", hdc, ii, jj);
-						break;
-					case '+': // vodka
-						LoadAndBlitBitmap("snake_vodka.bmp", hdc, ii, jj);;
-						break;
-					case 'c': // coffe
-						LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);;
-						break;
-					default: // grass
-						LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
-						break;
+
+				switch (map.map[i][j]) {
+				case '_': // grass
+					LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+					break;
+				case 'i': // ice
+					LoadAndBlitBitmap("ice.bmp", hdc, ii, jj);
+					break;
+				case 'f': // food
+					LoadAndBlitBitmap("food.bmp", hdc, ii, jj);
+					break;
+				case 'v': // vodka
+					LoadAndBlitBitmap("vodka.bmp", hdc, ii, jj);
+					break;
+				case 'b': // granade
+					LoadAndBlitBitmap("granade.bmp", hdc, ii, jj);
+					break;
+				case 'o': // oil
+					LoadAndBlitBitmap("oil.bmp", hdc, ii, jj);
+					break;
+				case 'g': // glue
+					LoadAndBlitBitmap("glue.bmp", hdc, ii, jj);
+					break;
+				case 'V': // vodka
+					LoadAndBlitBitmap("o_vodka.bmp", hdc, ii, jj);
+					break;
+				case 'O': // oil
+					LoadAndBlitBitmap("o_oil.bmp", hdc, ii, jj);
+					break;
+				case 'G': // glue
+					LoadAndBlitBitmap("o_glue.bmp", hdc, ii, jj);
+					break;
+				case 's': // snake
+					LoadAndBlitBitmap("snake.bmp", hdc, ii, jj);
+					break;
+				case '>': // oiled snake block
+					LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);
+					break;
+				case '<': // glued snake block
+					LoadAndBlitBitmap("snake_glue.bmp", hdc, ii, jj);
+					break;
+				case '+': // vodka
+					LoadAndBlitBitmap("snake_vodka.bmp", hdc, ii, jj);;
+					break;
+				case 'c': // coffe
+					LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);;
+					break;
+				default: // grass
+					LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+					break;
 				}
 			}
 		}
@@ -723,7 +724,7 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 
 
 WWindow::WWindow(
-	LPCTSTR clsname, 
+	LPCTSTR clsname,
 	LPCTSTR wndname,
 	HWND parent,
 	DWORD dStyle,
@@ -767,7 +768,7 @@ WWindow::WWindow(
 }
 
 
-	
+
 
 
 //---------------------------------------------------------------------------
@@ -821,8 +822,8 @@ bool WWindow::doConfirmation(void) {
 //---------------------------------------------------------------------------
 /*WWindow::operator HWND()
 {
-	//Uma vez que cada janela é do tipo HWND, utilizaremos 
-	//um modo de reconhecer o handle da janela quando utilizado 
+	//Uma vez que cada janela é do tipo HWND, utilizaremos
+	//um modo de reconhecer o handle da janela quando utilizado
 	//na aplicação
 	return _hwnd;
 }*/
@@ -869,7 +870,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	map.map[1][1] = 'o';*/
 
-	
+
 
 
 	int direction;
@@ -902,10 +903,10 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 			//lastError = GetLastError();
 			//_stprintf_s(erro, _T("%X"), lastError);
-			 
+
 			//MessageBox(hWnd, erro, "Erro", MB_OK);
 
-			
+
 
 			//EnableWindow(GetDlgItem(hWnd, ID_CRIAR_JOGO), FALSE); // isto nao esta a funcionar nao sei pq
 																  // deveria desativar o botao
@@ -1050,7 +1051,7 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 			msg.code = JOIN;
 			sprintf(msg.msg, "JOIN %s", playerName);
 			SetEvent(eWriteToServer);
-			
+
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_JOGO_PREP), hWnd, (DLGPROC)TreatDialogStartGame);
 			//EndDialog(hWnd, 0);
 			return TRUE;
