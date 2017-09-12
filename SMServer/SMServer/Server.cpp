@@ -227,13 +227,6 @@ void Server::serverMainLoop()
 void Server::initialPhaseLoop()
 {
 
-	//game.setMapHeight(10);
-	//game.setMapWidth(10);
-	//game.setNumSnakesAI(3);
-	//game.setNumberOfObjects(3);
-	//game.setSnakeSize(3);
-	//game.addPlayer(1, "jorge");
-	//startGame();
 	waitConnection();
 }
 
@@ -244,7 +237,7 @@ void Server::GamePhaseLoop()
 	do {
 		game.updateMap();
 		game.exportInfoToMessage();
-		//Broadcast(game.exportInfoToMessage());
+		Broadcast(game.exportInfoToMessage());
 		Sleep(33); //Fazer 30 atualizações por segundo (30 FPS)
 	} while (game.getGamePhase() == IN_PROGRESS_PHASE);
 }
@@ -398,6 +391,15 @@ void Server::treatCommand(vector<string> command, Message msg)
 		break;
 
 	case CREATEGAME:
+		game.setMapHeight(10);
+		game.setMapWidth(10);
+		game.setNumSnakesAI(3);
+		game.setNumberOfObjects(3);
+		game.setSnakeSize(3);
+		game.addPlayer(1, "jorge");
+		//startGame();
+
+
 		game.setMapWidth(stoi(command[0]));
 		game.setMapHeight(stoi(command[1]));
 		game.setNumPlayers(stoi(command[2]));
