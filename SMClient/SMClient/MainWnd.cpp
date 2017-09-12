@@ -3,16 +3,24 @@
 #define msg_sz sizeof(Message)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/diogo
 #define IP "192.168.1.81"
 #define LOGIN "Diogo"
 #define PASSWORD "q1w2e3r4"
 #define PIPENAME "\\\\192.168.1.81\\pipe\\pipeexemplo"
+<<<<<<< HEAD
 =======
 #define IP "192.168.1.70"
 #define LOGIN "M·rio Costa"
 #define PASSWORD "b432A09b1F"
 #define PIPENAME "\\\\192.168.1.70\\pipe\\pipeexemplo"
 >>>>>>> master
+=======
+
+>>>>>>> origin/diogo
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -282,11 +290,11 @@ DWORD WINAPI WWindow::readFromSharedMemory(LPVOID lParam) {
 	Message * (*ptr)(void);
 
 	if (hDLL == NULL) {
-		cout << "n„o H· dll" << endl;
+		cout << "n√£o H√° dll" << endl;
 	}
 	ptr = (Message * (*)(void)) GetProcAddress(hDLL, "ReadFromSharedMemoryBuffer");
 	if (ptr == NULL) {
-		//tcout << TEXT("ptr n„o tem o metodo ReadFromSharedMemoryBuffer") << endl;
+		//tcout << TEXT("ptr n√£o tem o metodo ReadFromSharedMemoryBuffer") << endl;
 		return -1;
 	}
 
@@ -311,11 +319,11 @@ DWORD WINAPI WWindow::WriteForSharedMemory(LPVOID lParam) {
 	bool * (*ptr)(Message);
 
 	if (hDLL == NULL) {
-		cout << "n„o H· dll" << endl;
+		cout << "n√£o H√° dll" << endl;
 	}
 	ptr = (bool * (*)(Message)) GetProcAddress(hDLL, "WriteToSharedMemoryBuffer");
 	if (ptr == NULL) {
-		tcout << TEXT("ptr n„o tem o metodo WriteToSharedMemoryBuffer") << endl;
+		tcout << TEXT("ptr n√£o tem o metodo WriteToSharedMemoryBuffer") << endl;
 		return -1;
 	}
 
@@ -377,13 +385,13 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
-	HANDLE hPipe = (HANDLE)lpvParam; // a informaÁ∫ao enviada È o handle
+	HANDLE hPipe = (HANDLE)lpvParam; // a informa√ß¬∫ao enviada √© o handle
 
 	HANDLE ReadReady;
 	OVERLAPPED OverlRd = { 0 };
 
 	if (hPipe == NULL) {
-		_tprintf(TEXT("\nThreadReader - o handle recibo no param da thread È nulo\n"));
+		_tprintf(TEXT("\nThreadReader - o handle recibo no param da thread √© nulo\n"));
 		return -1;
 	}
 
@@ -394,11 +402,11 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		NULL);	// nao precisa de nome. Uso interno ao processo
 
 	if (ReadReady == NULL) {
-		_tprintf(TEXT("\nCliente: nao foi possÌvel criar o Evento Read. Mais vale parar j·"));
+		_tprintf(TEXT("\nCliente: nao foi poss√≠vel criar o Evento Read. Mais vale parar j√°"));
 		return 1;
 	}
 
-	// Ciclo de di·logo com o cliente
+	// Ciclo de di√°logo com o cliente
 
 	while (DeveContinuar) {
 
@@ -437,11 +445,17 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 		//mainmessg = UpdateWindow(mainhWnd);
 		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
 =======
 >>>>>>> master
+=======
+		//mainmessg = UpdateWindow(mainhWnd);
+		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
+
+>>>>>>> origin/diogo
 
 
 
@@ -464,7 +478,7 @@ DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
 	DWORD cbWritten;
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
-	HANDLE hPipe = (HANDLE)lpvParam; // a informaÁ∫ao enviada È o handle
+	HANDLE hPipe = (HANDLE)lpvParam; // a informa√ß¬∫ao enviada √© o handle
 
 	HANDLE WriteReady; // Handle para o evento da leitura (cada thread tem um)
 	OVERLAPPED OverlWr = { 0 };
@@ -476,11 +490,11 @@ DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
 		NULL);
 
 	if (WriteReady == NULL) {
-		_tprintf(TEXT("\nCliente: n„o foi possÌvel criar o Evento. Mais vale parar j·"));
+		_tprintf(TEXT("\nCliente: n√£o foi poss√≠vel criar o Evento. Mais vale parar j√°"));
 		return 1;
 	}
 
-	_tprintf(TEXT("\nligaÁ„o estabelecida. \"exit\" para sair"));
+	_tprintf(TEXT("\nliga√ß√£o estabelecida. \"exit\" para sair"));
 
 	while (DeveContinuar) {
 
@@ -513,7 +527,7 @@ DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
 
 	DeveContinuar = 0;
 
-	_tprintf(TEXT("\nCleinte vai terminar ligaÁ„o e sair"));
+	_tprintf(TEXT("\nCleinte vai terminar liga√ß√£o e sair"));
 	CloseHandle(WriteReady);
 	CloseHandle(hPipe);
 
@@ -530,9 +544,9 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 	HANDLE hUserToken = NULL;
 	BOOL log;
 
-	TCHAR username[20],	// username da m·quina destino
-		pass[20],			// password desse utilizador (na m·quina destino)
-		dominio[20];		// pode ser o IP da m·quina
+	TCHAR username[20],	// username da m√°quina destino
+		pass[20],			// password desse utilizador (na m√°quina destino)
+		dominio[20];		// pode ser o IP da m√°quina
 
 
 	_tcscpy(dominio, TEXT(IP));
@@ -582,8 +596,8 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 		}
 
-		// Se chegou aqui È porque todas as inst™ancias
-		// do pipe est„o ocupadas. RemÈdio: aguardar que uma
+		// Se chegou aqui √© porque todas as inst¬™ancias
+		// do pipe est√£o ocupadas. Rem√©dio: aguardar que uma
 		// fique livre com um timeout
 
 		if (!WaitNamedPipe(lpszPipename, 30000)) {
@@ -594,13 +608,13 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 	}
 
-	// Aqui È que se tem de abrir a dialog box!!!
+	// Aqui √© que se tem de abrir a dialog box!!!
 
 	dwMode = PIPE_READMODE_MESSAGE;
 	fSuccess = SetNamedPipeHandleState(
 		hPipe,		// handle para o pipe
 		&dwMode,	// Novo modo do pipe
-		NULL,		// Nao È para mudar max. bytes
+		NULL,		// Nao √© para mudar max. bytes
 		NULL);		// Nao e para mudar max. timeout
 
 	if (!fSuccess) {
@@ -619,11 +633,11 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 		NULL);
 
 	if (WriteReady == NULL) {
-		_tprintf(TEXT("\nCliente: n„o foi possÌvel criar o Evento. Mais vale parar j·"));
+		_tprintf(TEXT("\nCliente: n√£o foi poss√≠vel criar o Evento. Mais vale parar j√°"));
 		return 1;
 	}
 
-	_tprintf(TEXT("\nligaÁ„o estabelecida. \"exit\" para sair"));
+	_tprintf(TEXT("\nliga√ß√£o estabelecida. \"exit\" para sair"));
 
 	msg.pid = GetCurrentThreadId();
 
@@ -659,7 +673,7 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 		&dwThreadId);
 
 	if (hThread == NULL) {
-		_tprintf(TEXT("\nErro na criaÁ„o da thread. Erro = %d"), GetLastError());
+		_tprintf(TEXT("\nErro na cria√ß√£o da thread. Erro = %d"), GetLastError());
 		return -1;
 	}
 
@@ -673,7 +687,7 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 		&dwThreadId);
 
 	if (hThread == NULL) {
-		_tprintf(TEXT("\nErro na criaÁ„o da thread. Erro = %d"), GetLastError());
+		_tprintf(TEXT("\nErro na cria√ß√£o da thread. Erro = %d"), GetLastError());
 		return -1;
 	}
 	return 1;
@@ -683,8 +697,14 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DWORD dXStyle, int x, int y, int width, int height)
 =======
+=======
+
+WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DWORD dXStyle, int x, int y, int width, int height)
+
+>>>>>>> origin/diogo
 LRESULT CALLBACK WWindow::DesenhaMapa(
 	HWND hwnd,
 	UINT message,
@@ -844,11 +864,14 @@ WWindow::WWindow(
 	int y,
 	int width,
 	int height)
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> origin/diogo
 {
 
 	AppName = clsname;
-	//Registar a classe se ainda n„o foi registada antes
+	//Registar a classe se ainda n√£o foi registada antes
 	if (!started)
 		StartUp();
 
@@ -856,7 +879,7 @@ WWindow::WWindow(
 	_hwnd = CreateWindowEx(dXStyle, clsname, wndname, dStyle, x, y, width,
 		height, parent, NULL, hInstance, NULL);
 
-	// Se a janela n„o foi criada terminar o programa!
+	// Se a janela n√£o foi criada terminar o programa!
 	if (_hwnd == NULL) {
 		MessageBox(NULL, TEXT("na criacao da janela"), TEXT("Erro"), MB_OK | MB_ICONERROR);
 		exit(1);
@@ -881,18 +904,22 @@ WWindow::WWindow(
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 
 
 >>>>>>> master
+=======
+
+>>>>>>> origin/diogo
 //---------------------------------------------------------------------------
 bool WWindow::Register() {
 	WNDCLASSEX _WndClsEx;
-	//DefiniÁ„o das caracterÌsticas da janela "_WndClsEx"
+	//Defini√ß√£o das caracter√≠sticas da janela "_WndClsEx"
 	_WndClsEx.cbSize = sizeof(WNDCLASSEX);
 	_WndClsEx.style = CS_HREDRAW | CS_VREDRAW;
-	_WndClsEx.lpfnWndProc = WndProc;	//FunÁ„o Membro
+	_WndClsEx.lpfnWndProc = WndProc;	//Fun√ß√£o Membro
 	_WndClsEx.cbClsExtra = 0;
 	_WndClsEx.cbWndExtra = sizeof(WWindow *);
 	_WndClsEx.hInstance = GetModuleHandle(AppName.c_str());
@@ -918,10 +945,10 @@ BOOL WWindow::Show(int dCmdShow)
 	// ============================================================================
 	if (!ShowWindow(_hwnd, dCmdShow))	// "hWnd"= handler da janela, devolvido 
 		return FALSE;					// por "CreateWindow"; "dCmdShow"= modo de
-										// exibiÁ„o (p.e. normal, modal); È passado
-										// como par‚metro de WinMain()
+										// exibi√ß√£o (p.e. normal, modal); √© passado
+										// como par√¢metro de WinMain()
 
-	if (!UpdateWindow(_hwnd))			// Refrescar a janela (Windows envia ‡ janela
+	if (!UpdateWindow(_hwnd))			// Refrescar a janela (Windows envia √† janela
 		return FALSE;					// uma mensagem para pintar, mostrar dados,
 										// (refrescar), etc)
 
@@ -937,9 +964,9 @@ bool WWindow::doConfirmation(void) {
 //---------------------------------------------------------------------------
 /*WWindow::operator HWND()
 {
-	//Uma vez que cada janela È do tipo HWND, utilizaremos
+	//Uma vez que cada janela √© do tipo HWND, utilizaremos
 	//um modo de reconhecer o handle da janela quando utilizado
-	//na aplicaÁ„o
+	//na aplica√ß√£o
 	return _hwnd;
 }*/
 //---------------------------------------------------------------------------
@@ -982,9 +1009,15 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	map.map[1][1] = 'o';*/
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> master
+=======
+
+
+
+>>>>>>> origin/diogo
 
 
 	int direction;
@@ -1064,7 +1097,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 			if (wParam == VK_DOWN)
 				direction = GOING_DOWN;
 
-			//enviar a direÁ„o
+			//enviar a dire√ß√£o
 			msg.code = SETDIRECTION;
 			sprintf(msg.msg, "%d", direction);
 			SetEvent(eWriteToServer);
