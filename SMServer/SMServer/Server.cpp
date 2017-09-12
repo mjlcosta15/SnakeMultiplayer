@@ -785,6 +785,15 @@ DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 				treatCommand(command, clientRequest);
 				clientRequest.code = CREATEGAME;
 				sprintf(clientRequest.msg, "Game created with success");
+
+				clientRequest.map.actualX = 10;
+				clientRequest.map.actualY = 10;
+
+				for (int i = 0; i < clientRequest.map.actualX; i++) {
+					for (int j = 0; j < clientRequest.map.actualY; j++)
+						clientRequest.map.map[i][j] = '_';
+				}
+
 				Write(hPipe, clientRequest);
 				break;
 
