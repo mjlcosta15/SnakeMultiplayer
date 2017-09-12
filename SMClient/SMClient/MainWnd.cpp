@@ -2,10 +2,10 @@
 
 #define msg_sz sizeof(Message)
 
-#define IP "192.168.0.102"
-#define LOGIN "Mário Costa"
-#define PASSWORD "b432A09b1F"
-#define PIPENAME "\\\\192.168.0.102\\pipe\\pipeexemplo"
+#define IP "192.168.1.81"
+#define LOGIN "Diogo"
+#define PASSWORD "q1w2e3r4"
+#define PIPENAME "\\\\192.168.1.81\\pipe\\pipeexemplo"
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -37,6 +37,8 @@ bool threadSharedMemFlag = true;
 bool threadReadFromSMFlag = false;
 bool threadWriteFromSMFlag = false;
 DWORD smThreadID;
+
+Message putinhas;
 
 
 //------------Auxiliary Functions-----------------------------------------
@@ -261,8 +263,6 @@ DWORD WINAPI WWindow::ThreadSharedMemoryReader(LPVOID lParam) {
 //------------Threads Shared Memory END-----------------------------------------
 
 
-
-
 //------------Threads Client-----------------------------------------------------
 
 DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
@@ -327,6 +327,8 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
+
+		putinhas = msg;
 
 		
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
@@ -599,19 +601,19 @@ LRESULT CALLBACK WWindow::DesenhaMapa(
 		switch (wParam)
 		{
 		case VK_LEFT:
-			//::MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
+			//MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
 			break;
 		case VK_RIGHT:
-			//::MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
+			//MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
 			break;
 		case VK_UP:
-			//::MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
+			//MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
 			break;
 		case VK_DOWN:
-			//::MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
+			//MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
 			break;
 		default:
-			::MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
+			MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
 			break;
 		}
 	}
@@ -838,7 +840,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	//TCHAR erro[100];
 	//DWORD lastError;
 
-	Map map;
+	/*Map map;
 
 	map.actualX = 10;
 	map.actualY = 10;
@@ -855,9 +857,9 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	map.map[2][7] = 'g';
 
-	map.map[1][1] = 'o';
+	map.map[1][1] = 'o';*/
 
-	DesenhaMapa(hWnd, messg, wParam, lParam, map);
+	DesenhaMapa(hWnd, messg, wParam, lParam, putinhas.map);
 
 
 	int direction;
