@@ -45,6 +45,10 @@ HANDLE hThreadReceiveClients;
 BOOL fConnected = FALSE;
 DWORD dwThreadId = 0;
 
+HANDLE hGamePhaseEvent;
+
+
+
 // Constructor
 Server::Server()
 {
@@ -196,21 +200,24 @@ void Server::startServer()
 void Server::serverMainLoop()
 {
 
+	hGamePhaseEvent = CreateEvent(
+		NULL,              
+		TRUE,               
+		FALSE,             
+		TEXT("GamePhaseEvent"));
+
 	tcout << "Server Online." << endl;
 	game.setInitalPhase();
 	//iniciar thread de aceitar clientes
 
 		//Initial Phase		
-	_tprintf(TEXT("\nFase inicial iniciada"));
+	_tprintf(TEXT("\nFase inicial iniciada\n"));
 	initialPhaseLoop();
-	do {
 
-	} while (game.getGamePhase() == INITIAL_PHASE);
-
+	WaitForSingleObject(hGamePhaseEvent, INFINITE);
 	//Game Phase
-		_tprintf(TEXT("\nFase de jogo iniciada"));
-		//fechar thread de aceitar clientes
-		GamePhaseLoop();
+	_tprintf(TEXT("\nFase de jogo iniciada\n"));
+	GamePhaseLoop();
 
 
 	Message msg;
@@ -219,6 +226,7 @@ void Server::serverMainLoop()
 	Broadcast(msg);
 	//Finish Phase
 
+	CloseHandle(hGamePhaseEvent);
 	finishServer();
 }
 
@@ -252,6 +260,7 @@ void Server::startGame()
 {
 	game.setInProgressPhase();
 	game.initMap();
+	SetEvent(hGamePhaseEvent);
 }
 
 
@@ -505,13 +514,9 @@ int Server::Write(HANDLE hPipe, Message msg) {
 		&cbWritten,	// ptr p/ guardar num bytes escritos
 		&OverlWr);	// != NULL -> É mesmo overlapped I/O
 
-	//WaitForSingleObject(WriteReady, INFINITE);
+	WaitForSingleObject(WriteReady, INFINITE);
 
 	GetOverlappedResult(hPipe, &OverlWr, &cbWritten, FALSE);
-
-	if (cbWritten < msg_sz)
-		_tprintf(TEXT("\nNao chegou tudo %d"), GetLastError());
-
 	return 1;
 
 }
@@ -545,7 +550,7 @@ void Server::rmClient(HANDLE cli) {
 int Server::Broadcast(Message msg) {
 
 	for (int i = 0; i < MAX_PLAYERS; i++) {
-		if (clients[i] != 0)
+		if (clients[i] != INVALID_HANDLE_VALUE)
 			Write(clients[i], msg);
 	}
 

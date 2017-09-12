@@ -2,10 +2,12 @@
 
 #define msg_sz sizeof(Message)
 
+
 #define IP "192.168.1.81"
 #define LOGIN "Diogo"
 #define PASSWORD "q1w2e3r4"
 #define PIPENAME "\\\\192.168.1.81\\pipe\\pipeexemplo"
+
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -46,12 +48,12 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
-	hBitmap = (HBITMAP)LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE,LR_LOADFROMFILE);
+	hBitmap = (HBITMAP)LoadImage(NULL, szFileName, IMAGE_BITMAP, BITMAP_PIX_SIZE, BITMAP_PIX_SIZE, LR_LOADFROMFILE);
 
 
 	// Verify that the image was loaded
 	if (hBitmap == NULL) {
-		MessageBox(NULL, ("LoadImage  %s Failed",szFileName), "Error", MB_OK);
+		MessageBox(NULL, ("LoadImage  %s Failed", szFileName), "Error", MB_OK);
 		return false;
 	}
 
@@ -67,7 +69,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 
 	// Get the bitmap's parameters and verify the get
 	BITMAP qBitmap;
-	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP),reinterpret_cast<LPVOID>(&qBitmap));
+	int iReturn = GetObject(reinterpret_cast<HGDIOBJ>(hBitmap), sizeof(BITMAP), reinterpret_cast<LPVOID>(&qBitmap));
 	if (!iReturn) {
 		MessageBox(NULL, "GetObject Failed", "Error", MB_OK);
 		return false;
@@ -81,7 +83,7 @@ bool LoadAndBlitBitmap(LPCSTR szFileName, HDC hWinDC, int posX, int posY)
 		return false;
 	}
 
-	
+
 
 	// Blit the dc which holds the bitmap onto the window's dc
 	BOOL qRetBlit = BitBlt(hWinDC, posX, posY, qBitmap.bmWidth, qBitmap.bmHeight,
@@ -206,7 +208,7 @@ LRESULT CALLBACK WWindow::DesenhaMapa(HWND hwnd, UINT message, WPARAM wParam, LP
 void WWindow::treatCommand(vector<string> command, Message msg)
 {
 	switch (msg.code) {
-		
+
 	case SUCCESS:
 		MessageBox(NULL, msg.msg, "Sucess", MB_OK);
 		break;
@@ -275,11 +277,11 @@ DWORD WINAPI WWindow::readFromSharedMemory(LPVOID lParam) {
 	Message * (*ptr)(void);
 
 	if (hDLL == NULL) {
-		cout << "n„o H· dll" << endl;
+		cout << "n√£o H√° dll" << endl;
 	}
 	ptr = (Message * (*)(void)) GetProcAddress(hDLL, "ReadFromSharedMemoryBuffer");
 	if (ptr == NULL) {
-		//tcout << TEXT("ptr n„o tem o metodo ReadFromSharedMemoryBuffer") << endl;
+		//tcout << TEXT("ptr n√£o tem o metodo ReadFromSharedMemoryBuffer") << endl;
 		return -1;
 	}
 
@@ -304,11 +306,11 @@ DWORD WINAPI WWindow::WriteForSharedMemory(LPVOID lParam) {
 	bool * (*ptr)(Message);
 
 	if (hDLL == NULL) {
-		cout << "n„o H· dll" << endl;
+		cout << "n√£o H√° dll" << endl;
 	}
 	ptr = (bool * (*)(Message)) GetProcAddress(hDLL, "WriteToSharedMemoryBuffer");
 	if (ptr == NULL) {
-		tcout << TEXT("ptr n„o tem o metodo WriteToSharedMemoryBuffer") << endl;
+		tcout << TEXT("ptr n√£o tem o metodo WriteToSharedMemoryBuffer") << endl;
 		return -1;
 	}
 
@@ -370,13 +372,13 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
-	HANDLE hPipe = (HANDLE)lpvParam; // a informaÁ∫ao enviada È o handle
+	HANDLE hPipe = (HANDLE)lpvParam; // a informa√ß¬∫ao enviada √© o handle
 
 	HANDLE ReadReady;
 	OVERLAPPED OverlRd = { 0 };
 
 	if (hPipe == NULL) {
-		_tprintf(TEXT("\nThreadReader - o handle recibo no param da thread È nulo\n"));
+		_tprintf(TEXT("\nThreadReader - o handle recibo no param da thread √© nulo\n"));
 		return -1;
 	}
 
@@ -387,11 +389,11 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		NULL);	// nao precisa de nome. Uso interno ao processo
 
 	if (ReadReady == NULL) {
-		_tprintf(TEXT("\nCliente: nao foi possÌvel criar o Evento Read. Mais vale parar j·"));
+		_tprintf(TEXT("\nCliente: nao foi poss√≠vel criar o Evento Read. Mais vale parar j√°"));
 		return 1;
 	}
 
-	// Ciclo de di·logo com o cliente
+	// Ciclo de di√°logo com o cliente
 
 	while (DeveContinuar) {
 
@@ -405,22 +407,23 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 			msg_sz,
 			&cbBytesRead,
 			&OverlRd);
-			
+
+		WaitForSingleObject(ReadReady, INFINITE);
 		
 		GetOverlappedResult(hPipe, &OverlRd, &cbBytesRead, FALSE);
 		//if (fSuccess) {
-			vector<string> command = getCommand(response.msg);
-			treatCommand(command, response);
+		vector<string> command = getCommand(response.msg);
+		treatCommand(command, response);
 		//}
-			
 
-		WaitForSingleObject(ReadReady, INFINITE);
+
+		
 		_tprintf(TEXT("\nRead concluido"));
 
 
 		// Testar se correu como esperado
 
-		
+
 
 		if (cbBytesRead < msg_sz)
 			_tprintf(TEXT("\nReadFile falhou. Erro = %d"), GetLastError());
@@ -428,11 +431,12 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
 
-
 		//mainmessg = UpdateWindow(mainhWnd);
 		//DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
 
-		
+
+
+
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
 		// Esse envio e feito na thread principal
 
@@ -452,7 +456,7 @@ DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
 	DWORD cbWritten;
 	DWORD cbBytesRead = 0;
 	BOOL fSuccess = FALSE;
-	HANDLE hPipe = (HANDLE)lpvParam; // a informaÁ∫ao enviada È o handle
+	HANDLE hPipe = (HANDLE)lpvParam; // a informa√ß¬∫ao enviada √© o handle
 
 	HANDLE WriteReady; // Handle para o evento da leitura (cada thread tem um)
 	OVERLAPPED OverlWr = { 0 };
@@ -464,11 +468,11 @@ DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
 		NULL);
 
 	if (WriteReady == NULL) {
-		_tprintf(TEXT("\nCliente: n„o foi possÌvel criar o Evento. Mais vale parar j·"));
+		_tprintf(TEXT("\nCliente: n√£o foi poss√≠vel criar o Evento. Mais vale parar j√°"));
 		return 1;
 	}
 
-	_tprintf(TEXT("\nligaÁ„o estabelecida. \"exit\" para sair"));
+	_tprintf(TEXT("\nliga√ß√£o estabelecida. \"exit\" para sair"));
 
 	while (DeveContinuar) {
 
@@ -501,7 +505,7 @@ DWORD WINAPI WWindow::ThreadClientWriter(LPVOID lpvParam) {
 
 	DeveContinuar = 0;
 
-	_tprintf(TEXT("\nCleinte vai terminar ligaÁ„o e sair"));
+	_tprintf(TEXT("\nCleinte vai terminar liga√ß√£o e sair"));
 	CloseHandle(WriteReady);
 	CloseHandle(hPipe);
 
@@ -518,9 +522,9 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 	HANDLE hUserToken = NULL;
 	BOOL log;
 
-	TCHAR username[20],	// username da m·quina destino
-		pass[20],			// password desse utilizador (na m·quina destino)
-		dominio[20];		// pode ser o IP da m·quina
+	TCHAR username[20],	// username da m√°quina destino
+		pass[20],			// password desse utilizador (na m√°quina destino)
+		dominio[20];		// pode ser o IP da m√°quina
 
 
 	_tcscpy(dominio, TEXT(IP));
@@ -560,18 +564,18 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 		if (GetLastError() != ERROR_PIPE_BUSY) {
 			// Nao ha nenhum servidor a correr
-			
+
 			MessageBox(NULL, "Nenhum servidor disponivel de momento!", "Erro!", MB_OK);
 
 			DWORD i = GetLastError();
 			_tprintf(TEXT("\nCreate file deu erro e nao foi BUSY. Erro = %d\n"), GetLastError());
 			return -1;
 
-			
+
 		}
 
-		// Se chegou aqui È porque todas as inst™ancias
-		// do pipe est„o ocupadas. RemÈdio: aguardar que uma
+		// Se chegou aqui √© porque todas as inst¬™ancias
+		// do pipe est√£o ocupadas. Rem√©dio: aguardar que uma
 		// fique livre com um timeout
 
 		if (!WaitNamedPipe(lpszPipename, 30000)) {
@@ -582,13 +586,13 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 
 	}
 
-	// Aqui È que se tem de abrir a dialog box!!!
+	// Aqui √© que se tem de abrir a dialog box!!!
 
 	dwMode = PIPE_READMODE_MESSAGE;
 	fSuccess = SetNamedPipeHandleState(
 		hPipe,		// handle para o pipe
 		&dwMode,	// Novo modo do pipe
-		NULL,		// Nao È para mudar max. bytes
+		NULL,		// Nao √© para mudar max. bytes
 		NULL);		// Nao e para mudar max. timeout
 
 	if (!fSuccess) {
@@ -607,11 +611,11 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 		NULL);
 
 	if (WriteReady == NULL) {
-		_tprintf(TEXT("\nCliente: n„o foi possÌvel criar o Evento. Mais vale parar j·"));
+		_tprintf(TEXT("\nCliente: n√£o foi poss√≠vel criar o Evento. Mais vale parar j√°"));
 		return 1;
 	}
 
-	_tprintf(TEXT("\nligaÁ„o estabelecida. \"exit\" para sair"));
+	_tprintf(TEXT("\nliga√ß√£o estabelecida. \"exit\" para sair"));
 
 	msg.pid = GetCurrentThreadId();
 
@@ -647,7 +651,7 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 		&dwThreadId);
 
 	if (hThread == NULL) {
-		_tprintf(TEXT("\nErro na criaÁ„o da thread. Erro = %d"), GetLastError());
+		_tprintf(TEXT("\nErro na cria√ß√£o da thread. Erro = %d"), GetLastError());
 		return -1;
 	}
 
@@ -661,7 +665,7 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 		&dwThreadId);
 
 	if (hThread == NULL) {
-		_tprintf(TEXT("\nErro na criaÁ„o da thread. Erro = %d"), GetLastError());
+		_tprintf(TEXT("\nErro na cria√ß√£o da thread. Erro = %d"), GetLastError());
 		return -1;
 	}
 	return 1;
@@ -670,11 +674,172 @@ DWORD WINAPI WWindow::ThreadConnectClient(LPVOID lpvParam) {
 //------------Thread Client END-------------------------------------------------
 
 
+
 WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DWORD dXStyle, int x, int y, int width, int height)
+
+LRESULT CALLBACK WWindow::DesenhaMapa(
+	HWND hwnd,
+	UINT message,
+	WPARAM wParam,
+	LPARAM lParam,
+	Map map)
+{
+
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	int x = map.actualX;
+	int y = map.actualY;
+
+	x = x * BITMAP_PIX_SIZE;
+	y = y * BITMAP_PIX_SIZE;
+
+	int ii = 0;
+	int jj = 0;
+
+
+	switch (message) {
+	case WM_CREATE:
+
+		break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	case WM_KEYDOWN: // Programacao das teclas
+	{
+		switch (wParam)
+		{
+		case VK_LEFT:
+			//MessageBox(hwnd, "LEFT Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_RIGHT:
+			//MessageBox(hwnd, "RIGHT Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_UP:
+			//MessageBox(hwnd, "UP Arrow", "Key Pressed", MB_OK);
+			break;
+		case VK_DOWN:
+			//MessageBox(hwnd, "DOWN Arrow", "Key Pressed", MB_OK);
+			break;
+		default:
+			MessageBox(hwnd, "UNKONWN key pressed!", "Key Pressed", MB_OK);
+			break;
+		}
+	}
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+
+		// PAREDES - INICIO
+		LoadAndBlitBitmap("skblock.bmp", hdc, 0, 0); // canto superior esquerdo
+		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
+			LoadAndBlitBitmap("skblock.bmp", hdc, i, 0); // parede superior	
+		LoadAndBlitBitmap("skblock.bmp", hdc, x, 0); // canto superior direito
+
+		for (int i = BITMAP_PIX_SIZE; i < y - 1; i += BITMAP_PIX_SIZE) {
+			LoadAndBlitBitmap("skblock.bmp", hdc, 0, i); // parede lateral esquerda
+			LoadAndBlitBitmap("skblock.bmp", hdc, x, i); // parede lateral direita
+		}
+
+		LoadAndBlitBitmap("skblock.bmp", hdc, 0, y); // canto inferior esquerdo
+		for (int i = BITMAP_PIX_SIZE; i < x - 1; i += BITMAP_PIX_SIZE)
+			LoadAndBlitBitmap("skblock.bmp", hdc, i, y); // parede inferior
+		LoadAndBlitBitmap("skblock.bmp", hdc, x, y); // canto inferior direito
+		// PAREDES - FIM
+
+		for (int i = 0; i < map.actualX; i++) {
+
+			if (i == map.actualX - 1)
+				ii = 0;
+			ii += BITMAP_PIX_SIZE;
+
+
+			for (int j = 1; j < map.actualY; j++) {
+
+				if (j == map.actualY - 1)
+					jj = 0;
+				jj += BITMAP_PIX_SIZE;
+
+
+				switch (map.map[i][j]) {
+				case '_': // grass
+					LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+					break;
+				case 'i': // ice
+					LoadAndBlitBitmap("ice.bmp", hdc, ii, jj);
+					break;
+				case 'f': // food
+					LoadAndBlitBitmap("food.bmp", hdc, ii, jj);
+					break;
+				case 'v': // vodka
+					LoadAndBlitBitmap("vodka.bmp", hdc, ii, jj);
+					break;
+				case 'b': // granade
+					LoadAndBlitBitmap("granade.bmp", hdc, ii, jj);
+					break;
+				case 'o': // oil
+					LoadAndBlitBitmap("oil.bmp", hdc, ii, jj);
+					break;
+				case 'g': // glue
+					LoadAndBlitBitmap("glue.bmp", hdc, ii, jj);
+					break;
+				case 'V': // vodka
+					LoadAndBlitBitmap("o_vodka.bmp", hdc, ii, jj);
+					break;
+				case 'O': // oil
+					LoadAndBlitBitmap("o_oil.bmp", hdc, ii, jj);
+					break;
+				case 'G': // glue
+					LoadAndBlitBitmap("o_glue.bmp", hdc, ii, jj);
+					break;
+				case 's': // snake
+					LoadAndBlitBitmap("snake.bmp", hdc, ii, jj);
+					break;
+				case '>': // oiled snake block
+					LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);
+					break;
+				case '<': // glued snake block
+					LoadAndBlitBitmap("snake_glue.bmp", hdc, ii, jj);
+					break;
+				case '+': // vodka
+					LoadAndBlitBitmap("snake_vodka.bmp", hdc, ii, jj);;
+					break;
+				case 'c': // coffe
+					LoadAndBlitBitmap("skblock.bmp", hdc, ii, jj);;
+					break;
+				default: // grass
+					LoadAndBlitBitmap("field.bmp", hdc, ii, jj);
+					break;
+				}
+			}
+		}
+
+		EndPaint(hwnd, &ps);
+		break;
+	default:
+		return DefWindowProc(hwnd, message, wParam, lParam);
+	}
+
+
+	return 0;
+
+
+}
+
+
+WWindow::WWindow(
+	LPCTSTR clsname,
+	LPCTSTR wndname,
+	HWND parent,
+	DWORD dStyle,
+	DWORD dXStyle,
+	int x,
+	int y,
+	int width,
+	int height)
 {
 
 	AppName = clsname;
-	//Registar a classe se ainda n„o foi registada antes
+	//Registar a classe se ainda n√£o foi registada antes
 	if (!started)
 		StartUp();
 
@@ -682,7 +847,7 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DW
 	_hwnd = CreateWindowEx(dXStyle, clsname, wndname, dStyle, x, y, width,
 		height, parent, NULL, hInstance, NULL);
 
-	// Se a janela n„o foi criada terminar o programa!
+	// Se a janela n√£o foi criada terminar o programa!
 	if (_hwnd == NULL) {
 		MessageBox(NULL, TEXT("na criacao da janela"), TEXT("Erro"), MB_OK | MB_ICONERROR);
 		exit(1);
@@ -706,13 +871,14 @@ WWindow::WWindow(LPCTSTR clsname, LPCTSTR wndname, HWND parent,	DWORD dStyle, DW
 }
 
 
+
 //---------------------------------------------------------------------------
 bool WWindow::Register() {
 	WNDCLASSEX _WndClsEx;
-	//DefiniÁ„o das caracterÌsticas da janela "_WndClsEx"
+	//Defini√ß√£o das caracter√≠sticas da janela "_WndClsEx"
 	_WndClsEx.cbSize = sizeof(WNDCLASSEX);
 	_WndClsEx.style = CS_HREDRAW | CS_VREDRAW;
-	_WndClsEx.lpfnWndProc = WndProc;	//FunÁ„o Membro
+	_WndClsEx.lpfnWndProc = WndProc;	//Fun√ß√£o Membro
 	_WndClsEx.cbClsExtra = 0;
 	_WndClsEx.cbWndExtra = sizeof(WWindow *);
 	_WndClsEx.hInstance = GetModuleHandle(AppName.c_str());
@@ -738,10 +904,10 @@ BOOL WWindow::Show(int dCmdShow)
 	// ============================================================================
 	if (!ShowWindow(_hwnd, dCmdShow))	// "hWnd"= handler da janela, devolvido 
 		return FALSE;					// por "CreateWindow"; "dCmdShow"= modo de
-										// exibiÁ„o (p.e. normal, modal); È passado
-										// como par‚metro de WinMain()
+										// exibi√ß√£o (p.e. normal, modal); √© passado
+										// como par√¢metro de WinMain()
 
-	if (!UpdateWindow(_hwnd))			// Refrescar a janela (Windows envia ‡ janela
+	if (!UpdateWindow(_hwnd))			// Refrescar a janela (Windows envia √† janela
 		return FALSE;					// uma mensagem para pintar, mostrar dados,
 										// (refrescar), etc)
 
@@ -757,9 +923,9 @@ bool WWindow::doConfirmation(void) {
 //---------------------------------------------------------------------------
 /*WWindow::operator HWND()
 {
-	//Uma vez que cada janela È do tipo HWND, utilizaremos 
-	//um modo de reconhecer o handle da janela quando utilizado 
-	//na aplicaÁ„o
+	//Uma vez que cada janela √© do tipo HWND, utilizaremos
+	//um modo de reconhecer o handle da janela quando utilizado
+	//na aplica√ß√£o
 	return _hwnd;
 }*/
 //---------------------------------------------------------------------------
@@ -803,6 +969,9 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 
 
+
+
+
 	int direction;
 	switch (messg)
 	{
@@ -837,10 +1006,10 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 			//lastError = GetLastError();
 			//_stprintf_s(erro, _T("%X"), lastError);
-			 
+
 			//MessageBox(hWnd, erro, "Erro", MB_OK);
 
-			
+
 
 			//EnableWindow(GetDlgItem(hWnd, ID_CRIAR_JOGO), FALSE); // isto nao esta a funcionar nao sei pq
 																  // deveria desativar o botao
@@ -880,7 +1049,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 			if (wParam == VK_DOWN)
 				direction = GOING_DOWN;
 
-			//enviar a direÁ„o
+			//enviar a dire√ß√£o
 			msg.code = SETDIRECTION;
 			sprintf(msg.msg, "%d", direction);
 			SetEvent(eWriteToServer);
@@ -979,9 +1148,7 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 			msg.code = JOIN;
 			sprintf(msg.msg, "JOIN %s", playerName);
 			SetEvent(eWriteToServer);
-			
-			DialogBox(NULL, MAKEINTRESOURCE(IDD_JOGO_PREP), hWnd, (DLGPROC)TreatDialogStartGame);
-			//EndDialog(hWnd, 0);
+			EndDialog(hWnd, 0);
 			return TRUE;
 		case ID_DLG_JOIN_CANCEL:
 			EndDialog(hWnd, TRUE);
