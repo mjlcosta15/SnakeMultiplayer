@@ -15,6 +15,11 @@ Message msg;
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeexemplo");
 HANDLE hPipe;
 
+HWND mainhWnd;
+UINT mainmessg;
+WPARAM mainwParam;
+LPARAM mainlParam;
+
 HANDLE hThread;
 DWORD dwThreadId = 0;
 
@@ -38,7 +43,6 @@ bool threadReadFromSMFlag = false;
 bool threadWriteFromSMFlag = false;
 DWORD smThreadID;
 
-Message putinhas;
 
 
 //------------Auxiliary Functions-----------------------------------------
@@ -122,6 +126,7 @@ void WWindow::treatCommand(vector<string> command, Message msg)
 		break;
 	case MAP:
 		//Update ao map
+		DesenhaMapa(mainhWnd, mainmessg, mainwParam, mainlParam, msg.map);
 		break;
 
 	case START:
@@ -328,7 +333,7 @@ DWORD WINAPI WWindow::ThreadClientReader(LPVOID lpvParam) {
 		msg = response;
 		_tprintf(TEXT("\nVeio isto do server -> %s"), msg.msg);
 
-		putinhas = msg;
+	
 
 		
 		// Isto so le servidor + processa mensagem. Nao escreve no pipe
@@ -837,6 +842,11 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 	WWindow *pWin = (WWindow *)GetWindowLongPtr(hWnd, 0);
 	BOOL eRato = FALSE;
 
+	mainhWnd = hWnd;
+	mainmessg = messg;
+	mainwParam = wParam;
+	mainlParam = lParam;
+
 	//TCHAR erro[100];
 	//DWORD lastError;
 
@@ -859,7 +869,7 @@ LRESULT WWindow::WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	map.map[1][1] = 'o';*/
 
-	DesenhaMapa(hWnd, messg, wParam, lParam, putinhas.map);
+	
 
 
 	int direction;

@@ -227,6 +227,7 @@ void Server::serverMainLoop()
 void Server::initialPhaseLoop()
 {
 
+
 	waitConnection();
 }
 
@@ -868,6 +869,7 @@ DWORD Server::ThreadProcAdmin(LPVOID lpvParam)
 					&OverlRd);
 
 				WaitForSingleObject(ReadReady, INFINITE);
+
 
 				GetOverlappedResult(serverPipeAdmin, &OverlRd, &cbBytesRead, FALSE);
 
