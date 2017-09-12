@@ -45,7 +45,7 @@ public:
 
 	void finishServer();
 	
-	void startGame();
+	static void startGame();
 
 
 	//Function that validates the command inputed
@@ -98,6 +98,8 @@ public:
 	HANDLE getHNamedPipe();
 
 	void startAdminPipe();
+
+	static DWORD WINAPI ThreadReceiveClients(LPVOID lbpParam);
 
 	static DWORD WINAPI ThreadProcClient(LPVOID lpvParam);
 	
