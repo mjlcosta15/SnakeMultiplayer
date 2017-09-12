@@ -550,7 +550,7 @@ void Server::rmClient(HANDLE cli) {
 int Server::Broadcast(Message msg) {
 
 	for (int i = 0; i < MAX_PLAYERS; i++) {
-		if (clients[i] != 0)
+		if (clients[i] != INVALID_HANDLE_VALUE)
 			Write(clients[i], msg);
 	}
 

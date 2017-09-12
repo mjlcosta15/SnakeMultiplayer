@@ -2,10 +2,10 @@
 
 #define msg_sz sizeof(Message)
 
-#define IP "192.168.0.102"
+#define IP "192.168.1.70"
 #define LOGIN "Mário Costa"
 #define PASSWORD "b432A09b1F"
-#define PIPENAME "\\\\192.168.0.102\\pipe\\pipeexemplo"
+#define PIPENAME "\\\\192.168.1.70\\pipe\\pipeexemplo"
 
 bool WWindow::started = false;
 tstring WWindow::AppName;
@@ -1051,9 +1051,7 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 			msg.code = JOIN;
 			sprintf(msg.msg, "JOIN %s", playerName);
 			SetEvent(eWriteToServer);
-
-			DialogBox(NULL, MAKEINTRESOURCE(IDD_JOGO_PREP), hWnd, (DLGPROC)TreatDialogStartGame);
-			//EndDialog(hWnd, 0);
+			EndDialog(hWnd, 0);
 			return TRUE;
 		case ID_DLG_JOIN_CANCEL:
 			EndDialog(hWnd, TRUE);
