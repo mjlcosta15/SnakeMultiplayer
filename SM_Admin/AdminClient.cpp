@@ -133,11 +133,9 @@ void AdminClient::startMessaging()
 			WaitForSingleObject(ReadReady, INFINITE);
 			_tprintf(TEXT("\nRead concluido"));
 
-			if (cbBytesRead < msg_sz)
-				_tprintf(TEXT("\nReadFile falhou. Erro = %d"), GetLastError());
-
+			
 			if (msg.code == SUCCESS) {
-				tcout << TEXT("SUCCESS") << endl;
+				tcout << TEXT("Objetos adicionados com sucesso!") << endl;
 			}
 			else {
 				tcout << msg.msg << endl;

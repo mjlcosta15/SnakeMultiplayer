@@ -78,7 +78,6 @@ Server::~Server()
 {
 }
 
-
 // Shared Memory Functions
 DWORD WINAPI ReadFromSharedMemory(LPVOID lParam) {
 
@@ -123,20 +122,20 @@ DWORD WINAPI WriteForSharedMemory(LPVOID lParam) {
 		return -1;
 	}
 
-	while (1) {
+	//while (1) //{
 
-		if (ptr(game.exportInfoToMessage())) {
+		//if (ptr(game.exportInfoToMessage())) {
 			//tcout << TEXT("ENviado com sucesso") << endl;
-		}
-		else {
+		//}
+		//else {
 			//tcout << TEXT("Erro ao enviar") << endl;
-		}
+		//}
 
-		if (threadWriteFromSMFlag) {
+		//if (threadWriteFromSMFlag) {
 			return 1;
-		}
+		//}
 
-	}
+	//}
 
 	return 1;
 }
@@ -187,8 +186,8 @@ void Server::startServer()
 
 	//lançar a thread the leitura
 	threadSharedMemFlag = true;
-	//_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
-	//hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
+	_beginthreadex(0, 0, ThreadSharedMemoryReader, this, 0, &smThreadID);
+	hThreadSharedMemory = OpenThread(THREAD_ALL_ACCESS, FALSE, smThreadID);
 
 	serverMainLoop();
 }
@@ -228,13 +227,13 @@ void Server::serverMainLoop()
 void Server::initialPhaseLoop()
 {
 
-	game.setMapHeight(10);
-	game.setMapWidth(10);
-	game.setNumSnakesAI(3);
-	game.setNumberOfObjects(3);
-	game.setSnakeSize(3);
-	game.addPlayer(1, "jorge");
-	startGame();
+	//game.setMapHeight(10);
+	//game.setMapWidth(10);
+	//game.setNumSnakesAI(3);
+	//game.setNumberOfObjects(3);
+	//game.setSnakeSize(3);
+	//game.addPlayer(1, "jorge");
+	//startGame();
 	waitConnection();
 }
 
@@ -703,7 +702,7 @@ void Server::startAdminPipe()
 DWORD WINAPI Server::ThreadProcClient(LPVOID lpvParam)
 {
 
-	Message clientRequest, Resposta;
+	Message clientRequest;
 	DWORD cbBytesRead = 0, cbReplyBytes = 0;
 	int numresp = 0;
 	BOOL fSuccess = FALSE;

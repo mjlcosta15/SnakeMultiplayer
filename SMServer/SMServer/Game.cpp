@@ -288,13 +288,14 @@ Message Game::exportInfoToMessage()
 				msg.map.map[its->getPosX()][its->getPosY()] = its->getCharId();
 		}
 
-		for (int i = 0; i < mapWidth; i++) {
+		//Imprime o mapa na consola
+		/*for (int i = 0; i < mapWidth; i++) {
 			for (int j = 0; j < mapHeight; j++) {
 				cout << " " << msg.map.map[i][j] << " ";
 			}
 			if (i < mapHeight)
 				cout << endl;
-		}
+		}*/
 
 		//fill the scoresx
 		for (auto it = players.begin(); it != players.end(); it++)

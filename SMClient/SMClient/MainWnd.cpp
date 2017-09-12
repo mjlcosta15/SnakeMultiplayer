@@ -1038,7 +1038,9 @@ LRESULT CALLBACK WWindow::TreatDialogJoinGame(HWND hWnd, UINT messg, WPARAM wPar
 			msg.code = JOIN;
 			sprintf(msg.msg, "JOIN %s", playerName);
 			SetEvent(eWriteToServer);
-			EndDialog(hWnd, 0);
+			
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_JOGO_PREP), hWnd, (DLGPROC)TreatDialogStartGame);
+			//EndDialog(hWnd, 0);
 			return TRUE;
 		case ID_DLG_JOIN_CANCEL:
 			EndDialog(hWnd, TRUE);
