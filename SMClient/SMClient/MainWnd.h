@@ -41,7 +41,7 @@ class WWindow
 	static LRESULT CALLBACK TreatDialogStartGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 
 	//Graphcis
-	static LRESULT CALLBACK WWindow::DesenhaMapa(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, Map map);
+	static LRESULT CALLBACK WWindow::DesenhaMapa(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, Map map, HDC hdc);
 	
 	//Threads
 	static DWORD WINAPI readFromSharedMemory(LPVOID lParam);
