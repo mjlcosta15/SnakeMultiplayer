@@ -41,7 +41,7 @@ class WWindow
 	static LRESULT CALLBACK TreatDialogStartGame(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 
 	//Graphcis
-	static LRESULT CALLBACK WWindow::DesenhaMapa(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, Map map, HDC hdc);
+	static LRESULT CALLBACK WWindow::DesenhaMapa(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, Map map, HDC hdc, PAINTSTRUCT PtStc);
 	
 	//Threads
 	static DWORD WINAPI readFromSharedMemory(LPVOID lParam);
@@ -86,7 +86,7 @@ public:
 	operator HWND();
 
 	void StartUp(void);
-protected:
+public:
 	//Este será o handle global disponível para esta e para outras janelas
 	HWND _hwnd;
 	//Confirmar fecho da janela

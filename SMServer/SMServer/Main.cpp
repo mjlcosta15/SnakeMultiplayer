@@ -10,7 +10,7 @@ int _tmain()
 }
 
 
-/*
+
 #define SERVICE_NAME TEXT("SMServerNT")
 SERVICE_STATUS MyServiceStatus;
 SERVICE_STATUS_HANDLE MyServiceStatusHandle;
@@ -145,7 +145,8 @@ VOID WINAPI MyServiceCtrlHandler(DWORD Opcode)
 	return;
 }
 
-
+/*
+NAO DESCOMENTAR
 void MostrarErro(TCHAR *str, DWORD val)
 {
 	TCHAR buf[TAM * 4];
